@@ -122,6 +122,7 @@ def getArguments():
     parser = ArgumentParser(description='list info for EC2 instances',
                 prog='ec2', version='ec2 0.2.1', usage= 'ec2 [option]')
     parser.add_argument('command', choices=['list', 'start', 'stop', 'ssh'])
+    parser.add_argument('inname', nargs='?', const='', default='')
     parser.add_argument('--name', '-n', action="store",
                 help='list instances with the specified name')
     parser.add_argument('--id', '-i', action="store",
@@ -167,6 +168,10 @@ def getArguments():
         filters = ""
         OutputText = ""
         # add sub-options for no-pem and username modes
+    if options.inname:
+        filterType = "name"
+        filters = options.inname
+        OutputText = "Instances '{}'".format(options.inname)
     if options.name:
         filterType = "name"
         filters = options.name
@@ -325,7 +330,7 @@ def main():
     else:
         numInstances = refineInstanceList(numInstances, filterType2)
         if numInstances == 0:
-            print "%sNo instance name %s found %s%s." % (CLRwarning, filters, filterType2, CLRnormal)
+            print "%sError%s - No instance named %s found %s." % (CLRerror, CLRnormal, filters, filterType2)
             sys.exit()
         if numInstances > 1:
             print "\n%s instances match this query:\n" % (numInstances)
