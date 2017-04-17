@@ -8,9 +8,9 @@ from argparse import ArgumentParser
 
 ################################################################################
 #  Var Declares
-# scriptname = "aws-listp"
-# scriptbuildnum = "0.1.5"
-# scriptbuilddate = "2017-04-16"
+# scriptname = "ec2"
+# scriptbuildnum = "0.2.0"
+# scriptbuilddate = "2017-04-17"
 
 ################################################################################
 #  Classes
@@ -121,8 +121,10 @@ def printList(listname, displayname):
         print "\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal, displayname, CLRtitle, y, CLRnormal)
 
 def getArguments():
+    global debug
+    # global filterType2
     parser = ArgumentParser(description='list info for EC2 instances',
-                prog='ec2', version='ec2 0.1.6', usage= 'ec2 [option]')
+                prog='ec2', version='ec2 0.2.0', usage= 'ec2 [option]')
     parser.add_argument('command', choices=['list', 'start', 'stop', 'ssh'])
     parser.add_argument('--name', '-n', action="store",
                 help='list instances with the specified name')
@@ -137,6 +139,7 @@ def getArguments():
     options = parser.parse_args()
     if options.command == "list":
         actionType="list"
+        filterType2 = ""
         if options.running:
             filterType = "running"
             filters = "running"
@@ -151,19 +154,23 @@ def getArguments():
             OutputText = "All Instances"
     elif options.command == "start":
         actionType = "start"
+        filterType2 = "stopped"
         filterType = ""
         filters = ""
         OutputText = ""
     elif options.command == "stop":
         actionType = "stop"
+        filterType2 = "running"
         filterType = ""
         filters = ""
         OutputText = ""
     elif options.command == "ssh":
         actionType = "ssh"
+        filterType2 = "running"
         filterType = ""
         filters = ""
         OutputText = ""
+        # add sub-options for no-pem and username modes
     if options.name:
         filterType = "name"
         filters = options.name
@@ -174,7 +181,7 @@ def getArguments():
         OutputText = "Instance '{}'".format(options.id)
     if options.debug:
         debug=True
-    return actionType, filterType, filters, OutputText
+    return actionType, filterType, filterType2, filters, OutputText
 
 def getInstanceIDs(filtype, filter):
     instanceID = {}
@@ -214,6 +221,20 @@ def getInstanceDetails(qty,idlist):
         instanceAMIName[i] = getAMIname(instanceAMI[i])
     return instanceState, instanceAMI, instanceName, instanceAMIName
 
+# def refineInstanceList(qty, names, idlist, state, ami, aminame):
+def refineInstanceList(numInstances, filterType2):
+    newQty = numInstances
+    for i in range(numInstances):
+        if instanceState[i] != filterType2:        # it's in a state we want to filter out
+            # print "REMOVAL - item: %s  -  filter: %s" % (instanceState[i], filterType2)
+            del instanceName[i]
+            del instanceID[i]
+            del instanceState[i]
+            del instanceAMI[i]
+            del instanceAMIName[i]
+            newQty -= 1
+    return newQty
+
 def getInstanceConnectInfo(specificid):
     instanceData = ec2R.Instance(specificid)
     # PublicDNS=instanceData.public_dns_name
@@ -222,6 +243,46 @@ def getInstanceConnectInfo(specificid):
     return instanceIP, instanceKey
 
 # def displayInstanceList(title, qty, names, idlist, state, ami, aminame, numbered="no"):
+def displayInstanceList(title, numbered="no"):
+    # Print Info gathered grouped by instance
+    if numbered == "no":
+        print "\n%s%s%s\n" % (CLRheading, title, CLRnormal)
+    for i in range(numInstances):
+        if numbered == "yes":
+            print "Instance %s#%s%s" % (CLRwarning, i+1, CLRnormal)
+        CLRstatus = colorInstanceStatus(instanceState[i])
+        print "\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" % (CLRtitle, instanceName[i], CLRnormal, CLRtitle, instanceID[i], CLRnormal, CLRstatus, instanceState[i], CLRnormal)
+        print "\tAMI: %s%s%s\tAMI Name: %s%s%s\n" % (CLRtitle, instanceAMI[i], CLRnormal, CLRtitle, instanceAMIName[i], CLRnormal)
+
+def selectFromList(OutputText, actionType):
+    getch = _Getch()
+    selectionValid = "False"
+    displayInstanceList(OutputText, "yes")
+    while selectionValid != "True":
+        printWithoutCR("Enter %s#%s of instance to %s (1-%i) [0 aborts]: " % (CLRwarning, CLRnormal, actionType, numInstances))
+        RawkeyEntered = getch()
+        printWithoutCR(RawkeyEntered)
+        try:
+            KeyEntered = int(RawkeyEntered)
+        except:
+            print
+            continue
+        if KeyEntered == 0:
+            print "\n\n%saborting%s - %s instance\n" % (CLRerror, CLRnormal, actionType)
+            sys.exit()
+        if KeyEntered >= 1 and KeyEntered <= numInstances:
+            instanceForAction = KeyEntered - 1
+            selectionValid = "True"
+        else:
+            printWithoutCR("\n%sInvalid entry:%s enter a number between 1 and %s.\n" % (CLRerror, CLRnormal, numInstances))
+    return instanceForAction
+
+# def displayInstances(title, qty, idlist, numbered="no"):
+#     state = {}
+#     ami = {}
+#     names = {}
+#     aminame = {}
+#     (state, ami, names, aminame) = getInstanceDetails(qty, idlist)
 #     # Print Info gathered grouped by instance
 #     if numbered == "no":
 #         print "\n%s%s%s\n" % (CLRheading, title, CLRnormal)
@@ -232,115 +293,91 @@ def getInstanceConnectInfo(specificid):
 #         print "\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" % (CLRtitle, names[i], CLRnormal, CLRtitle, idlist[i], CLRnormal, CLRstatus, state[i], CLRnormal)
 #         print "\tAMI: %s%s%s\tAMI Name: %s%s%s\n" % (CLRtitle, ami[i], CLRnormal, CLRtitle, aminame[i], CLRnormal)
 
-def displayInstances(title, qty, idlist, numbered="no"):
-    state = {}
-    ami = {}
-    names = {}
-    aminame = {}
-    (state, ami, names, aminame) = getInstanceDetails(qty, idlist)
-    # Print Info gathered grouped by instance
-    if numbered == "no":
-        print "\n%s%s%s\n" % (CLRheading, title, CLRnormal)
-    for i in range(qty):
-        if numbered == "yes":
-            print "Instance %s#%s%s" % (CLRwarning, i+1, CLRnormal)
-        CLRstatus = colorInstanceStatus(state[i])
-        print "\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" % (CLRtitle, names[i], CLRnormal, CLRtitle, idlist[i], CLRnormal, CLRstatus, state[i], CLRnormal)
-        print "\tAMI: %s%s%s\tAMI Name: %s%s%s\n" % (CLRtitle, ami[i], CLRnormal, CLRtitle, aminame[i], CLRnormal)
-
-
+# def debugPrintList(instanceID, instanceState, instanceAMI, instanceName, instanceAMIName):
+def debugPrintList():
+    print "%sDebug Listing of Info by Type%s\n" % (CLRheading2, CLRnormal)
+    printList(instanceID, "instanceID")
+    printList(instanceState, "instanceState")
+    printList(instanceAMI, "instanceAMI")
+    printList(instanceName, "instanceName")
+    printList(instanceAMIName, "instanceAMIName")
 
 ################################################################################
 #  Execution Begins
 
 def main():
 
-    global debug
+    # global debug
     global ec2C
     global ec2R
+
+    global numInstances
+    global instanceID
+    global instanceState
+    global instanceAMI
+    global instanceName
+    global instanceAMIName
 
     instanceID = {}
     instanceState = {}
     instanceAMI = {}
     instanceName = {}
     instanceAMIName = {}
+
     debug = False
-    getch = _Getch()
-    selectionValid = "False"
+
 
     # Setup AWS EC2 connections
     ec2C = boto3.client('ec2')
     ec2R = boto3.resource('ec2')
 
     setupColor()
-    actionType, filterType, filters, OutputText = getArguments()
+    (actionType, filterType, filterType2, filters, OutputText) = getArguments()
 
     if (debug):
         print "actionType = ", actionType
+        print "filterType = ", filterType
+        print "filterType2 = ", filterType2
         print "filters = ", filters
         print "OutputText = ", OutputText
 
-    (instanceID, numInstances) = getInstanceIDs(filterType, filters)
+    if actionType != "list" and filterType == "":
+        print "%sError%s - instance identifier not specified" % (CLRerror, CLRnormal)
+        sys.exit()
 
-    if actionType == "start" or actionType == "stop":
-        # need to filter the filtered data based on start/stop condition
-        #   because it's showing stopped instances in the list of options to stop, etc..
-        
+    (instanceID, numInstances) = getInstanceIDs(filterType, filters)
+    (instanceState, instanceAMI, instanceName, instanceAMIName) = getInstanceDetails(numInstances, instanceID)
+
+    if actionType == "list":
+        displayInstanceList(OutputText)
+    # elif actionType == "start" or actionType == "stop":
+    else:
+        # refine list of instances based on actionType
+        numInstances = refineInstanceList(numInstances, filterType2)
+        if numInstances == 0:
+            print "%sNo instance name %s found %s%s." % (CLRwarning, filters, filterType2, CLRnormal)
+            sys.exit()
         if numInstances > 1:
             print "\n%s instances match this query:\n" % (numInstances)
-            # (instanceState, instanceAMI, instanceName, instanceAMIName) = getInstanceDetails(numInstances, instanceID)
-            # displayInstanceList(OutputText, numInstances, instanceName, instanceID, instanceState, instanceAMI, instanceAMIName, "yes")
-            displayInstances(OutputText, numInstances, instanceID, "yes")
-            while selectionValid != "True":
-                printWithoutCR("Enter %s#%s of instance to %s (1-%i) [0 aborts]: " % (CLRwarning, CLRnormal, actionType, numInstances))
-                RawkeyEntered = getch()
-                printWithoutCR(RawkeyEntered)
-                try:
-                    KeyEntered = int(RawkeyEntered)
-                except:
-                    print
-                    continue
-                if KeyEntered == 0:
-                    print "\n\n%saborting%s - %s instance\n" % (CLRerror, CLRnormal, actionType)
-                    sys.exit()
-                if KeyEntered >= 1 and KeyEntered <= numInstances:
-                    instanceForAction = KeyEntered - 1
-                    selectionValid = "True"
-                else:
-                    printWithoutCR("\n%sInvalid entry:%s enter a number between 1 and %s.\n" % (CLRerror, CLRnormal, numInstances))
+            instanceForAction = selectFromList(OutputText, actionType)
         else:
-            instanceForAction=0
-        instanceIDForAction=instanceID[instanceForAction]
+            instanceForAction = 0
+        instanceIDForAction = instanceID[instanceForAction]
         print "\n%sing instance: %s%s%s with id: %s%s%s" % (actionType, CLRtitle, filters, CLRnormal, CLRtitle, instanceIDForAction, CLRnormal)
-        (instanceIP, instanceKey) = getInstanceConnectInfo(instanceIDForAction)
-        if (debug):
-            print "target IP= ", instanceIP
-            print "target key = ", instanceKey
-        sys.exit()
-    if actionType == "ssh":
-        print "ssh selected"
-        sys.exit()
-    if actionType == "list":
-        # (instanceState, instanceAMI, instanceName, instanceAMIName) = getInstanceDetails(numInstances, instanceID)
-        # displayInstanceList(OutputText, numInstances, instanceName, instanceID, instanceState, instanceAMI, instanceAMIName)
-
-        displayInstances(OutputText, numInstances, instanceID)
-
-    ################################################################################
-    # debug print all info gathered by type
-    if (debug):
-        print "%sDebug Listing of Info by Type%s\n" % (CLRheading2, CLRnormal)
-        printList(instanceID, "instanceID")
-        printList(instanceState, "instanceState")
-        printList(instanceAMI, "instanceAMI")
-        printList(instanceName, "instanceName")
-        printList(instanceAMIName, "instanceAMIName")
-
-    #   FOR SSH COMMAND - wait until public DNS entry exists
-    #
-    # instance.wait_until_exists(
-    #  or
-    # wait_until_running
+        if actionType == "start":
+            # ec2 command to start & results
+            print "starting"
+        elif actionType == "stop":
+            # ec2 command to stop & results
+            print "stopping"
+        elif actionType == "ssh":
+            print "sshing"
+            # ec2 command to connect via ssh & results
+            (instanceIP, instanceKey) = getInstanceConnectInfo(instanceIDForAction)
+            if (debug):
+                print "target IP= ", instanceIP
+                print "target key = ", instanceKey
+    sys.exit()
 
 if __name__ == '__main__':
     main()
