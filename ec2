@@ -1,0 +1,223 @@
+#!/usr/bin/env python
+
+import boto3       # returns results in DICT not JSON
+import sys
+import subprocess
+import re
+from optparse import OptionParser
+
+################################################################################
+#  Var Declares
+scriptname = "aws-listp"
+scriptbuildnum = "0.1.5"
+scriptbuilddate = "2017-04-16"
+
+debug = False
+# NAME = ""
+# filterType = ""
+# filters = ""
+# OutputText = ""
+instanceID = {}  # len(instanceID) - returns the # of items in dict
+instanceState = {}
+instanceAMI = {}
+instanceName = {}
+instanceAMIName = {}
+
+################################################################################
+#  Functions
+
+def colorInstanceStatus(state):
+    if state == "running":
+        CLRstatus = CLRsuccess
+    elif state == "stopped":
+        CLRstatus = CLRerror
+    elif state == "stopping":
+        CLRstatus = CLRwarning
+    elif state == "pending":
+        CLRstatus = CLRwarning
+    elif state == "starting":
+        CLRstatus = CLRwarning
+    else:
+        CLRstatus = CLRnormal
+    return CLRstatus
+
+def displayVer():
+    print "%s%s%s  ver  %s%s%s - %s%s%s" % (CLRheading, scriptname, CLRnormal, CLRtitle, scriptbuildnum, CLRnormal, CLRtitle, scriptbuilddate, CLRnormal)
+  # echo -e "${CLRheading}${scriptname}${CLRnormal}  ver ${CLRtitle}${scriptbuildnum} ${CLRnormal}- ${CLRtitle}${scriptbuilddate}${CLRnormal}"
+
+
+def runBash(cmd):
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    # out = p.stdout.read().strip()  # original
+    # return out  #This is the stdout from the shell command
+    # new
+    (output, err) = p.communicate()
+    if err:
+        p_status = p.wait()
+        print "Command exit status / return code : ", p_status
+    return output.rstrip()
+
+def printList(listname, displayname):
+    print "%sListing %s %s" % (CLRheading, displayname, CLRnormal)
+    for x,y in listname.items():
+        print "\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal, displayname, CLRtitle, y, CLRnormal)
+
+def getAMIname(ID):
+    instanceImage = ec2R.Image(ID).name
+    return instanceImage
+
+def getArguments():
+    global filterType
+    global filters
+    global OutputText
+    #Create instance of OptionParser Module, included in Standard Library
+    parser = OptionParser(description='list info for EC2 instances',
+                prog='aws-listp',
+                version='aws-listp 0.1.5',
+                usage= '%prog [option]')
+    parser.add_option('--name', '-n',
+                action="store", type="string", dest="instancename",
+                help='list instances with the specified name')
+    parser.add_option('--id', '-i',
+                action="store", type="string", dest="instanceid",
+                help='list instance info for instance-id')
+    parser.add_option('--running', '-r',
+                action = "store_true", dest = "running",
+                help = 'list all running instances')
+    parser.add_option('--stopped', '-s',
+                action = "store_true", dest = "stopped",
+                help='list all stopped instances')
+    parser.add_option('--debug', '-d',
+                action="store_true", dest="debug",
+                help='debug mode')
+    # parser.add_option('-v', '--version',
+    #             action = 'store_true', dest="verinfo",
+    #             help='display version info')
+
+    #Option Handling passes correct parameter to runBash
+    options, arguments = parser.parse_args()
+    if options.instancename:
+        filterType = "name"
+        filters = options.instancename
+        OutputText = "Instances '{}'".format(options.instancename)
+    elif options.instanceid:
+        filterType = "id"
+        filters = options.instanceid
+        OutputText = "Instance '{}'".format(options.instanceid)
+        # filters = re.sub(r'(\-|\]|\^|\$|\*|\.|\\)',lambda m:{'-':'\-',']':'\]','\\':'\\\\','^':'\^','$':'\$','*':'\*','.':'\.'}[m.group()],"Filters =[{'Name':'resource-id', 'Values':[options.ID]}]")
+    elif options.running:
+        filterType = "running"
+        filters = "running"
+        OutputText = "Running EC2 Instances"
+    elif options.stopped:
+        filterType = "stopped"
+        filters = "stopped"
+        OutputText = "Stopped EC2 Instances"
+    else:
+        filterType = "all"
+        filters = ""
+        OutputText = "All Instances"
+    if options.debug:
+        debug=True
+    # if options.verinfo:
+    #     displayVer
+    #     sys.exit()
+    return filterType, filters, OutputText
+
+
+################################################################################
+#  Execution Begins
+
+
+if sys.stdout.isatty():
+    ncolors = runBash("tput colors")    # see if it supports colors
+    if ncolors != "" and ncolors >= 8:
+        # Set Colors
+        bold = runBash("tput bold")
+        red = runBash("tput setaf 1")
+        green = runBash("tput setaf 2")
+        yellow = runBash("tput setaf 3")
+        blue = runBash("tput setaf 4")
+        magenta = runBash("tput setaf 5")
+        cyan = runBash("tput setaf 6")
+        white = runBash("tput setaf 7")
+        # Set Color Theme
+        CLRnormal = bold + white
+        CLRheading = bold + green
+        CLRheading2 = bold + blue
+        CLRtitle = bold + cyan
+        CLRtitle2 = bold + yellow
+        CLRsuccess = bold + green
+        CLRwarning = bold + yellow
+        CLRerror = bold + red
+
+# Setup AWS EC2 connections
+global ec2C
+global ec2R
+ec2C = boto3.client('ec2')
+ec2R = boto3.resource('ec2')
+
+getArguments()
+
+if (debug):
+    print "filterType = ", filterType
+    print "filters = ", filters
+    print "OutputText = ", OutputText
+
+# Get info for all Instances
+if filterType == "id":
+    instanceSummaryData = ec2C.describe_instances( InstanceIds=["{0}".format(filters)])
+elif filterType == "running" or filterType == "stopped":
+    instanceSummaryData = ec2C.describe_instances( Filters =[{'Name':'instance-state-name', 'Values':["{0}".format(filters)]}])
+elif filterType == "name":
+    instanceSummaryData = ec2C.describe_instances( Filters =[{'Name':'tag:Name', 'Values':["{0}".format(filters)]}])
+else:
+    instanceSummaryData = ec2C.describe_instances()
+
+# instanceTags = ec2C.describe_tags( Filters =[{'Name':'resource-id', 'Values':[instanceID[i]]}])
+for i,v in enumerate(instanceSummaryData['Reservations']):
+    ID = v['Instances'][0]['InstanceId']
+    instanceID[i] = ID
+
+numInstances=len(instanceID)
+
+# Get Details for each instance
+for i in range(numInstances):
+    instanceData = ec2R.Instance(instanceID[i])
+    instanceState[i] = instanceData.state['Name']
+    instanceAMI[i] = instanceData.image_id
+    instanceTag = instanceData.tags
+    for j in range(len(instanceTag)):
+        if instanceTag[j]['Key'] == 'Name':
+            instanceName[i]=instanceTag[j]['Value']
+            break
+    # PublicDNS=instanceData.public_dns_name
+    # PublicIP=instanceData.public_ip_address
+    # ConnectKey=instanceData.key_name
+    instanceAMIName[i] = getAMIname(instanceAMI[i])
+
+# Print Info gathered grouped by instance
+for i in range(numInstances):
+    CLRstatus = colorInstanceStatus(instanceState[i])
+    print "\n\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" % (CLRtitle, instanceName[i], CLRnormal, CLRtitle, instanceID[i], CLRnormal, CLRstatus, instanceState[i], CLRnormal)
+    print "\tAMI: %s%s%s\tAMI Name: %s%s%s" % (CLRtitle, instanceAMI[i], CLRnormal, CLRtitle, instanceAMIName[i], CLRnormal)
+
+print
+
+################################################################################
+# debug print all info gathered by type
+if (debug):
+    print "%sDebug Listing of Info by Type%s\n" % (CLRheading2, CLRnormal)
+    printList(instanceID, "instanceID")
+    printList(instanceState, "instanceState")
+    printList(instanceAMI, "instanceAMI")
+    printList(instanceName, "instanceName")
+    printList(instanceAMIName, "instanceAMIName")
+
+
+
+#   FOR SSH COMMAND - wait until public DNS entry exists
+#
+# instance.wait_until_exists(
+#  or
+# wait_until_running
