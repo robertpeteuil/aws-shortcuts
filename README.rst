@@ -8,57 +8,81 @@ List, start, stop and ssh to AWS instances using Name or Instance-ID
 
 --------------
 
-This utility allows you to easily manage and connect to AWS instances using their name or instance-ID. It provides the ability to quickly list, start, stop and connect to instances by referencing their Name or instance-ID.
+AWS Shortcuts utility (awss) provides an easy method to manage and connect to AWS instances.  It allows listing, starting, stoping and connecting to instances by Name or instance-ID.  Future updates will allow specifying instances by any ``Tag`` and ``Value`` combination.
 
-If start, stop, or ssh is specified with a NAME that occurs on multiple instances, the matching instances are listed and the user allowed to choose the intended instance. For example, if ``awss start Ubuntu`` is ran while there are multiple instance named Ubuntu, a listing of those instances would be displayed from which the user can choose which to start.
 
 Overview:
 ---------
 
-**awss** supports the four main commands of **list**, **start**, **stop**, and **ssh**.
+``awss`` has the following sub-commands: ``list``, ``start``, ``stop``, and ``ssh``.
 
-- commands are executed by typing ``awss`` followed by the command name; for example: ``awss list``.
-- Some commands require an additional paramter which specifies an instance, either by NAME or Instance-ID.
-  - examples: ``awss ssh Ubuntu`` or ``awss start -i i-0c875fa80862d1b16``
+- SSH to an Instance: ``awss ssh NAME`` or ``aws ssh -i ID``
+- List Instances: ``awss list`` or ``awss list --running``
+- Start Instance: ``awss start NAME`` or ``awss start -i ID``
+- Stop Instance: ``awss stop NAME`` or ``awss stop -i ID``
+- The ``ssh`` and ``list`` commands allow additional paramters which are described in the following section.
 
 Command Summary:
 ----------------
 
-- SSH to an Instance: **awss ssh NAME** or **-i ID**
-  -  calculates login-name based on image-type of the instance
-  -  optionally override the calculated login-name
-  -  optionally connect without PEM keys (if properly configured)
-  -  command specific help available by typing ``awss ssh - h``
-- List Instances: **awss list**
-  -  list all instances
-  -  list all running or stopped instances
-  -  list instances with a specified name
-  -  list instance with a specified instance-id
-  -  command specific help available by typing ``awss list - h``
-- Start Instance: **awss start NAME** or **-i ID**
-  -  start an instance by name or instance-id
-  -  command specific help available by typing ``awss start - h``
-- Stop Instance: **awss stop NAME** or **-i ID**
-  -  start an instance by name or instance-id
-  -  command specific help available by typing ``awss stop - h``
+- SSH to an Instance: ``awss ssh NAME`` or ``aws ssh -i ID``
+
+  - automatically calculates login-name based on image-type  of the instance
+  - optionally override the calculated login-name ``-u USERNAME``
+  - optionally connect without PEM keys (if properly configured) ``-p``
+  - command specific help available by typing ``awss ssh - h``
+
+- List Instances: ``awss list`` or ``awss list --running``
+
+  - list all instances
+  - list all running instances ``-r`` or ``--running``
+	- list all stopped instances ``-s`` or ``--stopped``
+  - list instances with a specified name ``awss list NAME``
+  - list instance with a specified instance-id ``awss list -i ID``
+  - command specific help available by typing ``awss list -h``
+
+- Start Instance: ``awss start NAME`` or ``awss start -i ID``
+
+  - start an instance by name or instance-id
+  - command specific help available by typing ``awss start -h``
+
+- Stop Instance: ``awss stop NAME`` or ``awss stop -i ID``
+
+  - start an instance by name or instance-id
+  - command specific help available by typing ``awss stop -h``
+
+Instance Identification:
+------------------------
+
+The ``start``, ``stop``, and ``ssh`` commands verify that the action will be performed for the intended instance by checking for multiple instances that match the NAME and running-state expected by the command.
+
+- For example, ``awss start Ubuntu`` will check for other instances named ``Ubuntu`` that are **stopped**.
+- **Running*** instances named ``Ubuntu`` have no effect on the ``start`` command, so they are ignored in this particular search.
+- If multiple instances are found that match these conditions, they are listed and the user selects the intended instance.
 
 Supported Platforms:
 --------------------
 
 -  Linux
 -  macOS (OS X)
--  Windows 10 'Bash on Windows'
+-  Windows
 
 Pre-Requisites:
 ---------------
 
-- Requires a python version of 2.7 or newer. Check by typing ``python -V``
-- Requires Python package manager **pip**
+- Python version of 2.7 or newer. Check by typing ``python -V``
+- Python package manager ``pip``
+
   - can be installed with: ``sudo easy_install pip``
+
 - Requires the following Python libraries:
-  - **boto3** library (AWS Python library)
-    - Installation and configuration info can be found `here <https://boto3.readthedocs.io/en/latest/guide/quickstart.html>`__
-  - **future** library
+
+  - ``boto3`` library (AWS Python library)
+
+    - Installation and configuration info can be found `here  <https://boto3.readthedocs.io/en/latest/guide/quickstart.html>`__
+
+  - ``future`` library
+
     - can be installed by typing ``pip install future`` or ``pip install future --upgrade``
     - if the above command generated permission errors, use ``pip install future --upgrade --user``
 
@@ -69,6 +93,6 @@ Pre-Requisites:
 .. |GitHub release| image:: https://img.shields.io/github/release/robertpeteuil/aws-shortcuts.svg?colorB=1c64bf
    :target: https://github.com/robertpeteuil/aws-shortcuts
 .. |lang| image:: https://img.shields.io/badge/language-python-3572A5.svg?style=flat-square
-   :target:
+   :target: https://github.com/robertpeteuil/aws-shortcuts
 .. |license| image:: https://img.shields.io/github/license/robertpeteuil/aws-shortcuts.svg?colorB=1c64bf
    :target: https://github.com/robertpeteuil/aws-shortcuts
