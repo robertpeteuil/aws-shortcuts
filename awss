@@ -138,7 +138,7 @@ def getArguments():
     parser = argparse.ArgumentParser(description="Control AWS instances from the command line with: list, start, stop or ssh.", usage="\tawss {command} ( 'NAME' or '-i ID' ) [ OPTIONS ]\n\t{command} = list | start | stop | ssh",
         prog='awss')
         # prog='awss', version='awss 0.9.0')
-    parser.add_argument('-v', '--version', action = "version", version='awss 0.9.1')
+    parser.add_argument('-v', '--version', action = "version", version='awss 0.9.2')
     subparsers = parser.add_subparsers(dest='command', title='For additional help on command parameters', description="type 'awss {command} -h', where {command} is: list, start, stop or ssh")
     parser_list = subparsers.add_parser('list', description="List AWS instances from the command line. List all by typing 'awss list', or specify instances by name, instance-id or state.", usage="\tawss list ( (none) | 'NAME' | '-i ID' | -r | -s ) [ OPTIONS ]")
     parser_list.add_argument('instname', nargs='?', metavar='NAME', help='specify instance by name')
