@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import boto3
 import sys
 import subprocess
@@ -108,16 +109,16 @@ def runBash(cmd):
     (output, err) = p.communicate()
     if err:
         p_status = p.wait()
-        print "Command exit status / return code : ", p_status
+        print("Command exit status / return code : ", p_status)
     return (output.rstrip())
 
 def printWithoutCR(value):
     sys.stdout.write(value)
 
 def printList(listname, displayname):
-    print "%sListing %s %s" % (CLRheading, displayname, CLRnormal)
+    print("%sListing %s %s" % (CLRheading, displayname, CLRnormal))
     for x,y in listname.items():
-        print "\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal, displayname, CLRtitle, y, CLRnormal)
+        print("\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal, displayname, CLRtitle, y, CLRnormal))
 
 def getArguments():
     nopem = False
@@ -248,13 +249,13 @@ def getInstanceConnectInfo(specificid):
 
 def displayInstanceList(title, numbered="no"):
     if numbered == "no":
-        print "\n%s%s%s\n" % (CLRheading, title, CLRnormal)
+        print("\n%s%s%s\n" % (CLRheading, title, CLRnormal))
     for i in range(numInstances):
         if numbered == "yes":
-            print "Instance %s#%s%s" % (CLRwarning, i+1, CLRnormal)
+            print("Instance %s#%s%s" % (CLRwarning, i+1, CLRnormal))
         CLRstatus = colorInstanceStatus(instanceState[i])
-        print "\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" % (CLRtitle, instanceName[i], CLRnormal, CLRtitle, instanceID[i], CLRnormal, CLRstatus, instanceState[i], CLRnormal)
-        print "\tAMI: %s%s%s\tAMI Name: %s%s%s\n" % (CLRtitle, instanceAMI[i], CLRnormal, CLRtitle, instanceAMIName[i], CLRnormal)
+        print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" % (CLRtitle, instanceName[i], CLRnormal, CLRtitle, instanceID[i], CLRnormal, CLRstatus, instanceState[i], CLRnormal))
+        print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" % (CLRtitle, instanceAMI[i], CLRnormal, CLRtitle, instanceAMIName[i], CLRnormal))
 
 def selectFromList(OutputText, actionType):
     getch = _Getch()
@@ -269,18 +270,18 @@ def selectFromList(OutputText, actionType):
         except:
             KeyEntered = RawkeyEntered
         if KeyEntered == 0:
-            print "\n\n%saborting%s - %s instance\n" % (CLRerror, CLRnormal, actionType)
+            print("\n\n%saborting%s - %s instance\n" % (CLRerror, CLRnormal, actionType))
             sys.exit()
         if KeyEntered >= 1 and KeyEntered <= numInstances:
             instanceForAction = KeyEntered - 1
             selectionValid = "True"
         else:
             printWithoutCR("\n%sInvalid entry:%s enter a number between 1 and %s.\n" % (CLRerror, CLRnormal, numInstances))
-    print
+    print()
     return (instanceForAction)
 
 def debugPrintList():
-    print "%sDebug Listing of Info by Type%s\n" % (CLRheading2, CLRnormal)
+    print("%sDebug Listing of Info by Type%s\n" % (CLRheading2, CLRnormal))
     printList(instanceID, "instanceID")
     printList(instanceState, "instanceState")
     printList(instanceAMI, "instanceAMI")
@@ -315,17 +316,17 @@ def main():
     setupColor()
 
     if (debug):
-        print "actionType = ", actionType
-        print "filterType = ", filterType
-        print "filterType2 = ", filterType2
-        print "filters = ", filters
-        print "OutputText = ", OutputText
-        print "nopem = ", nopem
-        print "loginuser = ", loginuser
+        print("actionType = ", actionType)
+        print("filterType = ", filterType)
+        print("filterType2 = ", filterType2)
+        print("filters = ", filters)
+        print("OutputText = ", OutputText)
+        print("nopem = ", nopem)
+        print("loginuser = ", loginuser)
 
 
     if actionType != "list" and filterType == "":
-        print "%sError%s - instance identifier not specified" % (CLRerror, CLRnormal)
+        print("%sError%s - instance identifier not specified" % (CLRerror, CLRnormal))
         sys.exit()
 
     (instanceID, numInstances) = getInstanceIDs(filterType, filters)
@@ -335,31 +336,31 @@ def main():
         if numInstances > 0:
             displayInstanceList(OutputText)
         else:
-            print "No instance '%s' found." % (filters)
+            print("No instance '%s' found." % (filters))
     else:
         numInstances = refineInstanceList(numInstances, filterType2)
         if numInstances == 0:
-            print "No instance '%s' found %s." % (filters, filterType2)
+            print("No instance '%s' found %s." % (filters, filterType2))
             sys.exit()
         if numInstances > 1:
-            print "\n%s instances match these parameters:\n" % (numInstances)
+            print("\n%s instances match these parameters:\n" % (numInstances))
             instanceForAction = selectFromList(OutputText, actionType)
         else:
             instanceForAction = 0
         instanceIDForAction = instanceID[instanceForAction]
-        print "\n%s%sing%s instance: %s%s%s with id: %s%s%s" % (colorInstanceStatus(actionType), actionType, CLRnormal, CLRtitle, filters, CLRnormal, CLRtitle, instanceIDForAction, CLRnormal)
+        print("\n%s%sing%s instance: %s%s%s with id: %s%s%s" % (colorInstanceStatus(actionType), actionType, CLRnormal, CLRtitle, filters, CLRnormal, CLRtitle, instanceIDForAction, CLRnormal))
         if actionType == "start":
-            print "starting"
+            print("starting")
             # ec2 command to start & results
         elif actionType == "stop":
-            print "stopping"
+            print("stopping")
             # ec2 command to stop & results
         elif actionType == "ssh":
-            print "sshing"
+            print("sshing")
             (instanceIP, instanceKey) = getInstanceConnectInfo(instanceIDForAction)
             if (debug):
-                print "target IP= ", instanceIP
-                print "target key = ", instanceKey
+                print("target IP= ", instanceIP)
+                print("target key = ", instanceKey)
             # ec2 command to connect via ssh & results
 
     sys.exit()
