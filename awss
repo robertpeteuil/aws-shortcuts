@@ -4,7 +4,7 @@
 #
 #       https://github.com/robertpeteuil/aws-quick-cli
 #
-#   Build: 0.9.0    Date 2017-04-18
+#   Build: 0.9.1    Date 2017-04-18
 #
 #  Author: Robert Peteuil   @RobertPeteuil
 
@@ -66,27 +66,33 @@ def setupColor():
     global CLRsuccess
     global CLRwarning
     global CLRerror
+    CLRnormal = ""
+    CLRheading = ""
+    CLRheading2 = ""
+    CLRtitle = ""
+    CLRtitle2 = ""
+    CLRsuccess = ""
+    CLRwarning = ""
+    CLRerror = ""
     if sys.stdout.isatty():
-        ncolors = runBash("tput colors")
+        ncolors = int(runBash("tput colors 2> /dev/null"))
         if ncolors != "" and ncolors >= 8:
             # Set Colors
-            bold = runBash("tput bold")
-            red = runBash("tput setaf 1")
-            green = runBash("tput setaf 2")
-            yellow = runBash("tput setaf 3")
-            blue = runBash("tput setaf 4")
-            magenta = runBash("tput setaf 5")
-            cyan = runBash("tput setaf 6")
-            white = runBash("tput setaf 7")
+            blue="\033[1;34m"
+            white="\033[1;37m"
+            green="\033[1;32m"
+            red="\033[1;31m"
+            yellow="\033[1;33m"
+            cyan="\033[1;36m"
             # Set Color Theme
-            CLRnormal = bold + white
-            CLRheading = bold + green
-            CLRheading2 = bold + blue
-            CLRtitle = bold + cyan
-            CLRtitle2 = bold + yellow
-            CLRsuccess = bold + green
-            CLRwarning = bold + yellow
-            CLRerror = bold + red
+            CLRnormal = white
+            CLRheading = green
+            CLRheading2 = blue
+            CLRtitle = cyan
+            CLRtitle2 = yellow
+            CLRsuccess = green
+            CLRwarning = yellow
+            CLRerror = red
 
 def colorInstanceStatus(state):
     if state == "running":
@@ -130,7 +136,9 @@ def getArguments():
     filters = ""
     OutputText = ""
     parser = argparse.ArgumentParser(description="Control AWS instances from the command line with: list, start, stop or ssh.", usage="\tawss {command} ( 'NAME' or '-i ID' ) [ OPTIONS ]\n\t{command} = list | start | stop | ssh",
-        prog='awss', version='awss 0.9.0')
+        prog='awss')
+        # prog='awss', version='awss 0.9.0')
+    parser.add_argument('-v', '--version', action = "version", version='awss 0.9.1')
     subparsers = parser.add_subparsers(dest='command', title='For additional help on command parameters', description="type 'awss {command} -h', where {command} is: list, start, stop or ssh")
     parser_list = subparsers.add_parser('list', description="List AWS instances from the command line. List all by typing 'awss list', or specify instances by name, instance-id or state.", usage="\tawss list ( (none) | 'NAME' | '-i ID' | -r | -s ) [ OPTIONS ]")
     parser_list.add_argument('instname', nargs='?', metavar='NAME', help='specify instance by name')
