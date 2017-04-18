@@ -3,11 +3,11 @@
 from __future__ import print_function
 from builtins import range
 from builtins import object
+from argparse import ArgumentParser
 import boto3
 import sys
 import subprocess
 import re
-from argparse import ArgumentParser
 
 ################################################################################
 # scriptname = "ec2"
@@ -240,14 +240,14 @@ def refineInstanceList(numInstances, filterType2):
             del instanceAMI[i]
             del instanceAMIName[i]
             newQty -= 1
-    return (newQty)
+    return (newQty, instanceName, instanceID, instanceState, instanceAMI, instanceAMIName)
 
-def getInstanceConnectInfo(specificid):
-    instanceData = ec2R.Instance(specificid)
-    # PublicDNS=instanceData.public_dns_name
-    instanceIP = instanceData.public_ip_address
-    instanceKey = instanceData.key_name
-    return (instanceIP, instanceKey)
+# def getInstanceConnectInfo(specificid):
+#     instanceData = ec2R.Instance(specificid)
+#     # PublicDNS=instanceData.public_dns_name
+#     instanceIP = instanceData.public_ip_address
+#     instanceKey = instanceData.key_name
+#     return (instanceIP, instanceKey)
 
 def displayInstanceList(title, numbered="no"):
     if numbered == "no":
@@ -340,7 +340,7 @@ def main():
         else:
             print("No instance '%s' found." % (filters))
     else:
-        numInstances = refineInstanceList(numInstances, filterType2)
+        (numInstances, instanceName, instanceID, instanceState, instanceAMI, instanceAMIName) = refineInstanceList(numInstances, filterType2)
         if numInstances == 0:
             print("No instance '%s' found %s." % (filters, filterType2))
             sys.exit()
@@ -349,21 +349,32 @@ def main():
             instanceForAction = selectFromList(OutputText, actionType)
         else:
             instanceForAction = 0
-        instanceIDForAction = instanceID[instanceForAction]
+        if (debug):
+            debugPrintList()
+
+        index, instanceIDForAction = instanceID.items()[instanceForAction]
         print("\n%s%sing%s instance: %s%s%s with id: %s%s%s" % (colorInstanceStatus(actionType), actionType, CLRnormal, CLRtitle, filters, CLRnormal, CLRtitle, instanceIDForAction, CLRnormal))
         if actionType == "start":
-            print("starting")
-            # ec2 command to start & results
+            specifiedInstance = ec2R.Instance(instanceIDForAction)
+            response = specifiedInstance.start()
+            currentState = response['StartingInstances'][0]['CurrentState']['Name']
+            prevState = response['StartingInstances'][0]['PreviousState']['Name']
+            print("Current State: %s%s%s  -  Previous State: %s%s%s" % (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
         elif actionType == "stop":
-            print("stopping")
-            # ec2 command to stop & results
+            specifiedInstance = ec2R.Instance(instanceIDForAction)
+            response = specifiedInstance.stop()
+            currentState = response['StoppingInstances'][0]['CurrentState']['Name']
+            prevState = response['StoppingInstances'][0]['PreviousState']['Name']
+            print("Current State: %s%s%s  -  Previous State: %s%s%s" % (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
         elif actionType == "ssh":
-            print("sshing")
-            (instanceIP, instanceKey) = getInstanceConnectInfo(instanceIDForAction)
+            specifiedInstance = ec2R.Instance(instanceIDForAction)
+            # (instanceIP, instanceKey) = getInstanceConnectInfo(instanceIDForAction)
+            instanceIP = specifiedInstance.public_ip_address
+            instanceKey = specifiedInstance.key_name
             if (debug):
                 print("target IP= ", instanceIP)
                 print("target key = ", instanceKey)
-            # ec2 command to connect via ssh & results
+
 
     sys.exit()
 
