@@ -25,18 +25,18 @@ Overview:
 Command Summary:
 ----------------
 
-- SSH to an Instance: ``awss ssh NAME`` or ``aws ssh -i ID``
+- SSH to an Instance: ``awss ssh NAME`` or ``awss ssh -i ID``
 
   - automatically calculates login-name based on image-type  of the instance
   - optionally override the calculated login-name ``-u USERNAME``
   - optionally connect without PEM keys (if properly configured) ``-p``
-  - command specific help available by typing ``awss ssh - h``
+  - command specific help available by typing ``awss ssh -h``
 
 - List Instances: ``awss list`` or ``awss list --running``
 
   - list all instances
   - list all running instances ``-r`` or ``--running``
-	- list all stopped instances ``-s`` or ``--stopped``
+  - list all stopped instances ``-s`` or ``--stopped``
   - list instances with a specified name ``awss list NAME``
   - list instance with a specified instance-id ``awss list -i ID``
   - command specific help available by typing ``awss list -h``
@@ -57,7 +57,7 @@ Instance Identification:
 The ``start``, ``stop``, and ``ssh`` commands verify that the action will be performed for the intended instance by checking for multiple instances that match the NAME and running-state expected by the command.
 
 - For example, ``awss start Ubuntu`` will check for other instances named ``Ubuntu`` that are **stopped**.
-- **Running*** instances named ``Ubuntu`` have no effect on the ``start`` command, so they are ignored in this particular search.
+- Because the ``start`` command will have no effect on **running** instances, they are ignored in the search.  Likewise, stopped instances are ignored when running the ``stop`` command.
 - If multiple instances are found that match these conditions, they are listed and the user selects the intended instance.
 
 Supported Platforms:
