@@ -9,7 +9,9 @@ engines:
     enabled: true
   radon:
     enabled: true
+  pep8:
+    enabled: true
 ratings:
   paths:
-  - "awss"
+  - awss
 exclude_paths: []
