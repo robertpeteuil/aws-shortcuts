@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from builtins import range
+from builtins import object
 import boto3
 import sys
 import subprocess
@@ -15,7 +17,7 @@ from argparse import ArgumentParser
 ################################################################################
 #  Classes
 
-class _Getch:
+class _Getch(object):
     def __init__(self):
         try:
             self.impl = _GetchWindows()
@@ -24,7 +26,7 @@ class _Getch:
 
     def __call__(self): return self.impl()
 
-class _GetchUnix:
+class _GetchUnix(object):
     def __init__(self):
         import tty, sys
 
@@ -39,7 +41,7 @@ class _GetchUnix:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
-class _GetchWindows:
+class _GetchWindows(object):
     def __init__(self):
         import msvcrt
 
@@ -117,7 +119,7 @@ def printWithoutCR(value):
 
 def printList(listname, displayname):
     print("%sListing %s %s" % (CLRheading, displayname, CLRnormal))
-    for x,y in listname.items():
+    for x,y in list(listname.items()):
         print("\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal, displayname, CLRtitle, y, CLRnormal))
 
 def getArguments():
