@@ -2,9 +2,9 @@
 
 # awss - Control AWS instances from the command line with: list, start, stop or ssh.
 #
-#       https://github.com/robertpeteuil/aws-quick-cli
+#       https://github.com/robertpeteuil/aws-shortcuts
 #
-#   Build: 0.9.1    Date 2017-04-18
+#   Build: 0.9.2    Date 2017-04-18
 #
 #  Author: Robert Peteuil   @RobertPeteuil
 
