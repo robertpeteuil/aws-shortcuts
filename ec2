@@ -3,7 +3,7 @@
 from __future__ import print_function
 from builtins import range
 from builtins import object
-from argparse import ArgumentParser
+import argparse
 import boto3
 import sys
 import subprocess
@@ -129,25 +129,26 @@ def getArguments():
     filterType = ""
     filters = ""
     OutputText = ""
-    parser = ArgumentParser(description='list info for EC2 instances',
-                prog='ec2', version='ec2 0.4.0', usage= 'ec2 [option]')
-    parser.add_argument('command', choices=['list', 'start', 'stop', 'ssh'])
-    parser.add_argument('inname', nargs='?')
-    # parser.add_argument('inname', nargs='?', const='', default='')
-    parser.add_argument('--name', '-n', action="store",
-                help='instances with specified name')
-    parser.add_argument('--id', '-i', action="store",
-                help='instances with instance-id')
-    parser.add_argument('--running', '-r', action = "store_true",
-                help = 'all running instances')
-    parser.add_argument('--stopped', '-s', action = "store_true",
-                help='all stopped instances')
-    parser.add_argument('--nopem', '-p', action = "store_true",
-                help='connect without PEM key')
-    parser.add_argument('--user', '-u', action="store",
-                help='specify ssh username')
-    parser.add_argument('--debug', '-d', action="store_true",
+    parser = argparse.ArgumentParser(description='Command Line control of AWS instances',
+                prog='ec2', version='ec2 0.4.0', usage= '\tec2 list [INSTNAME | -i ID | -r | -s ] [-d]\n\tec2 (start | stop) (INSTNAME | -i ID) [-d]\n\tec2 ssh (INSTNAME | -i ID) [-p -u USER -d]')
+    parser.add_argument('command', choices=['list', 'start', 'stop', 'ssh'], help='execute command: list, start, stop or ssh')
+    parser.add_argument('instname', nargs='?', help='specify instance name')
+    # parser.add_argument('instname', nargs='?', const='', default='')
+    # parser.add_argument('--name', '-n', action="store",
+    #             help='instance name')
+    parser.add_argument('-i', '--id', action="store",
+                help='specify instance-id')
+    parser.add_argument('-r', '--running', action = "store_true",
+                help = 'list running instances')
+    parser.add_argument('-s', '--stopped', action = "store_true",
+                help='list stopped instances')
+    parser.add_argument('-u', '--user', action="store",
+                help='ssh - specify username')
+    parser.add_argument('-p', '--nopem', action = "store_true",
+                help='ssh - connect without PEM key')
+    parser.add_argument('-d', '--debug', action="store_true",
                 help='debug mode')
+    # parser.add_argument('-v', help=argparse.SUPPRESS)
     options = parser.parse_args()
     if options.command == "list":
         actionType="list"
@@ -176,10 +177,10 @@ def getArguments():
             nopem = True
         if options.user:
             loginuser = options.user
-    if options.inname:
+    if options.instname:
         filterType = "name"
-        filters = options.inname
-        OutputText = "Instances '{}'".format(options.inname)
+        filters = options.instname
+        OutputText = "Instances '{}'".format(options.instname)
     elif options.name:
         filterType = "name"
         filters = options.name
@@ -414,13 +415,13 @@ def main():
                     print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading, CLRnormal))
                 # runBash("ssh {0}@{1}".format(loginuser,instanceIP))
                 subprocess.call(["ssh {0}@{1}".format(loginuser,instanceIP)], shell=True)
-                sys.exit()
+                # sys.exit()
             else:
                 if (debug):
                     print("Connect string: %sssh -i %s/.aws/%s.pem %s@%s%s\n" % (CLRtitle, homeDir, instanceKey, loginuser, instanceIP, CLRnormal))
                 # runBash(["ssh","-i","{0}/.aws/{1}.pem".format(homeDir,instanceKey),"{0}@{1}".format(loginuser, instanceIP)])
                 subprocess.call(["ssh","-i","{0}/.aws/{1}.pem".format(homeDir,instanceKey),"{0}@{1}".format(loginuser, instanceIP)], shell=True)
-                sys.exit()
+                # sys.exit()
                 # ssh -i "${HOME}/.aws/${InstanceKey[$SELECTION]}.pem" "${LoginUser}@${InstanceAddy[$SELECTION]}"
 
     sys.exit()
