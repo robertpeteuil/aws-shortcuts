@@ -8,10 +8,11 @@ import boto3
 import sys
 import subprocess
 import re
+import os
 
 ################################################################################
 # scriptname = "ec2"
-# scriptbuildnum = "0.2.1"
+# scriptbuildnum = "0.4.0"
 # scriptbuilddate = "2017-04-17"
 
 ################################################################################
@@ -129,7 +130,7 @@ def getArguments():
     filters = ""
     OutputText = ""
     parser = ArgumentParser(description='list info for EC2 instances',
-                prog='ec2', version='ec2 0.2.1', usage= 'ec2 [option]')
+                prog='ec2', version='ec2 0.4.0', usage= 'ec2 [option]')
     parser.add_argument('command', choices=['list', 'start', 'stop', 'ssh'])
     parser.add_argument('inname', nargs='?')
     # parser.add_argument('inname', nargs='?', const='', default='')
@@ -282,6 +283,30 @@ def selectFromList(OutputText, actionType):
     print()
     return (instanceForAction)
 
+def DetermineLoginUser(ID):
+    selectedImageDescription = instanceAMIName[ID]
+    if selectedImageDescription.startswith( 'ubuntu' ):
+        loginuser="ubuntu"
+    elif selectedImageDescription.startswith( 'suse' ):
+        loginuser="ec2-user"
+    elif selectedImageDescription.startswith( 'amzn' ):
+        loginuser="ec2-user"
+    elif selectedImageDescription.startswith( 'RHEL' ):
+        loginuser="ec2-user"
+    elif selectedImageDescription.startswith( 'debian' ):
+        loginuser="admin"
+    elif selectedImageDescription.startswith( 'fedora' ):
+        loginuser="fedora"
+    elif selectedImageDescription.startswith( 'centos' ):
+        loginuser="centos"
+    elif selectedImageDescription.startswith( 'openBSD' ):
+        loginuser="root"
+    else:
+        loginuser="ec2-user"
+    if (debug):
+        print("loginuser calculated as: %s%s%s\n" % (CLRtitle, loginuser, CLRnormal))
+    return (loginuser)
+
 def debugPrintList():
     print("%sDebug Listing of Info by Type%s\n" % (CLRheading2, CLRnormal))
     printList(instanceID, "instanceID")
@@ -295,6 +320,7 @@ def debugPrintList():
 
 def main():
 
+    global debug
     global ec2C
     global ec2R
     global numInstances
@@ -359,22 +385,43 @@ def main():
             response = specifiedInstance.start()
             currentState = response['StartingInstances'][0]['CurrentState']['Name']
             prevState = response['StartingInstances'][0]['PreviousState']['Name']
-            print("Current State: %s%s%s  -  Previous State: %s%s%s" % (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
+            print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s" % (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
         elif actionType == "stop":
             specifiedInstance = ec2R.Instance(instanceIDForAction)
             response = specifiedInstance.stop()
             currentState = response['StoppingInstances'][0]['CurrentState']['Name']
             prevState = response['StoppingInstances'][0]['PreviousState']['Name']
-            print("Current State: %s%s%s  -  Previous State: %s%s%s" % (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
+            print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s" % (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
         elif actionType == "ssh":
             specifiedInstance = ec2R.Instance(instanceIDForAction)
             # (instanceIP, instanceKey) = getInstanceConnectInfo(instanceIDForAction)
             instanceIP = specifiedInstance.public_ip_address
             instanceKey = specifiedInstance.key_name
+            homeDir = os.environ['HOME']
             if (debug):
                 print("target IP= ", instanceIP)
                 print("target key = ", instanceKey)
-
+            if loginuser == "":
+                loginuser = DetermineLoginUser(index)
+            else:
+                pass
+                if (debug):
+                    print("LoginUser set by user: %s%s%s\n" % (CLRtitle, loginuser, CLRnormal))
+            if (nopem):
+                if (debug):
+                    print("%sNo PEM mode%s  Connect string: %sssh %s@%s%s\n" % (CLRheading, CLRnormal, CLRtitle, loginuser, instanceIP, CLRnormal))
+                else:
+                    print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading, CLRnormal))
+                # runBash("ssh {0}@{1}".format(loginuser,instanceIP))
+                subprocess.call(["ssh {0}@{1}".format(loginuser,instanceIP)], shell=True)
+                sys.exit()
+            else:
+                if (debug):
+                    print("Connect string: %sssh -i %s/.aws/%s.pem %s@%s%s\n" % (CLRtitle, homeDir, instanceKey, loginuser, instanceIP, CLRnormal))
+                # runBash(["ssh","-i","{0}/.aws/{1}.pem".format(homeDir,instanceKey),"{0}@{1}".format(loginuser, instanceIP)])
+                subprocess.call(["ssh","-i","{0}/.aws/{1}.pem".format(homeDir,instanceKey),"{0}@{1}".format(loginuser, instanceIP)], shell=True)
+                sys.exit()
+                # ssh -i "${HOME}/.aws/${InstanceKey[$SELECTION]}.pem" "${LoginUser}@${InstanceAddy[$SELECTION]}"
 
     sys.exit()
 
