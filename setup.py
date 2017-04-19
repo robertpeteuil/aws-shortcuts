@@ -18,13 +18,12 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='awss',
     packages=['awss'],
-    entry_points={ 'console_scripts': [ 'awss=awss:main'] },
+    entry_points={'console_scripts': ['awss=awss:main']},
     version='0.9.3',
-    author = "Robert Peteuil",
-    author_email = "robert.s.peteuil@gmail.com",
+    author="Robert Peteuil",
+    author_email="robert.s.peteuil@gmail.com",
     url='https://github.com/robertpeteuil/aws-shortcuts',
     description='AWS Shortcuts for Command-Line Instance Control',
-    long_description=long_description,
     keywords='AWS EC2 instance control ssh',
     license='The MIT License: http://www.opensource.org/licenses/mit-license.php',
     install_requires=['boto3>=1.4',
@@ -43,6 +42,7 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
         'Topic :: System :: Distributed Computing',
-        'Topic :: System :: Systems Administration']
+        'Topic :: System :: Systems Administration'],
+    long_description=long_description
 
 )
