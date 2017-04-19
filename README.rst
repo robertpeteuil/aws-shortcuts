@@ -1,5 +1,5 @@
-AWS Shortcuts for controlling instances from the command line
-=============================================================
+AWS Shortcuts for Command-Line Instance Controll 
+================================================
 
 List, start, stop and ssh to AWS instances using Name or Instance-ID
 ---------------------------------------------------------------------------------
@@ -8,9 +8,9 @@ List, start, stop and ssh to AWS instances using Name or Instance-ID
 
 --------------
 
-AWS Shortcut (awss) allows listing, starting, stopping and connecting to instances referenced by Name or instance-ID.  Future versions will also allow referencing instances with any ``Tag`` :  ``Value`` combination.
+AWS Shortcuts (awss) allows listing, starting, stopping and connecting to instances by Name or ID.  Future versions will also allow referencing instances with any ``Tag`` :  ``Value`` combination.
 
-Note: This utility is written in Python.  If you do not have Python installed there is a similar utility written in Bash:  `aws-quick-cli <https://github.com/robertpeteuil/aws-quick-cli>`_.
+Note: This utility requires Python 2.7 or newer.  There is a similar utility written in Bash called `aws-quick-cli <https://github.com/robertpeteuil/aws-quick-cli>`_.
 
 
 Overview
@@ -46,17 +46,17 @@ Details
   - list stopped instances ``-s`` or ``--stopped``
   - list instances with specified name ``awss list NAME``
   - list instance with specified instance-id ``awss list -i ID``
-  - command specific help ``awss ssh -h``
+  - command specific help ``awss list -h``
 
 - Start Instance: ``awss start NAME`` or ``awss start -i ID``
 
   - start instance by name or instance-id
-  - command specific help ``awss ssh -h``
+  - command specific help ``awss start -h``
 
 - Stop Instance: ``awss stop NAME`` or ``awss stop -i ID``
 
   - start instance by name or instance-id
-  - command specific help ``awss ssh -h``
+  - command specific help ``awss stop -h``
 
 Target Instance Verification
 ----------------------------
@@ -68,7 +68,7 @@ The ``start``, ``stop``, and ``ssh`` commands verify that their action will appl
   - the instance-specification given (name or ID)
   - the running-state appropriate for the command
 
-- If multiple instances match these conditions, they are listed and the user is asked to select the intended target instance.
+- If multiple instances match these conditions, they are listed and the user is asked to select the intended target.
 
 The **running-state** appropriate for each command is as follows:
 
@@ -88,12 +88,12 @@ Supported Platforms
 Pre-Requisites
 --------------
 
-- Python version of 2.7 or newer. Check by typing ``python -V``
+- Python version of 2.7 or newer
 
 Installation
 ------------
 
-The easiest method of installation if via ``pip``:
+The easiest method of installation is with ``pip``:
 
 .. code:: shell.bash
 
