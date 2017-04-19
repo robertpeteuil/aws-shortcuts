@@ -17,7 +17,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='awss',
-    py_modules=['awss'],
+    packages=['awss'],
     entry_points={ 'console_scripts': [ 'awss=awss:main'] },
     version='0.9.2',
     author = "Robert Peteuil",
