@@ -42,15 +42,14 @@ install:
 - pip install --upgrade pip
 - pip install --upgrade readme_renderer
 - pip install --upgrade flake8
+- pip install --upgrade codeclimate-test-reporter
 - pip install -e .
 script:
 - python setup.py check -m -r -s
 - flake8 --ignore=E501 awss
 after_success:
-- echo Test Success
-env:
-  global:
-  - secure:
+  - codeclimate-test-reporter
+  - echo Test Success
 deploy:
   provider: pypi
   user: robertpeteuil
@@ -60,3 +59,6 @@ deploy:
   on:
     branch: master
     tags: true
+env:
+  global:
+  - secure:
