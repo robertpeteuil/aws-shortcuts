@@ -95,7 +95,7 @@ Installation
 
 This utility can be installed with ``pip``:
 
-.. code:: shell.bash
+.. code:: shell
 
   pip install awss
 
