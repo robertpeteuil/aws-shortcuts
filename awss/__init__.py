@@ -15,7 +15,6 @@ import argparse
 import boto3
 import sys
 import subprocess
-import re
 import os
 
 ################################################################################
@@ -391,7 +390,7 @@ def main():
         index, instanceIDForAction = instanceID.items()[instanceForAction]
         print("\n%s%sing%s instance: %s%s%s with id: %s%s%s" % (colorInstanceStatus(actionType), actionType, CLRnormal, CLRtitle, filters, CLRnormal, CLRtitle, instanceIDForAction, CLRnormal))
         specifiedInstance = ec2R.Instance(instanceIDForAction)
-        # perform instance specific actions 
+        # perform instance specific actions
         if actionType == "start":
             response = specifiedInstance.start()
             currentState = response['StartingInstances'][0]['CurrentState']['Name']
