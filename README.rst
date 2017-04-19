@@ -93,20 +93,11 @@ Pre-Requisites
 Installation
 ------------
 
-The easiest method of installation is with ``pip``:
+This utility can be installed with ``pip``:
 
 .. code:: shell.bash
 
   pip install awss
-
-
-Alternatively, the repo can be downloaded and installed with these commands:
-
-.. code:: shell.bash
-
-  git clone https://github.com/robertpeteuil/aws-shortcuts
-  cd aws-shortcuts
-  python setup.py develop
 
 
 .. |Code Climate| image:: https://codeclimate.com/github/robertpeteuil/aws-shortcuts/badges/gpa.svg?style=flat-square
