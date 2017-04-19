@@ -27,12 +27,14 @@ matrix:
     env: CACHE_NAME=JOB5
   - os: osx
     language: generic
-    env: BREW_PYTHON='python'
-    env: CACHE_NAME=JOB6
+    env:
+    - BREW_PYTHON='python'
+    - CACHE_NAME=JOB6
   - os: osx
     language: generic
-    env: BREW_PYTHON='python3'
-    env: CACHE_NAME=JOB7
+    env:
+    - BREW_PYTHON='python3'
+    - CACHE_NAME=JOB7
 before_install:
 - if [[ $BREW_PYTHON == 'python3' ]]; then brew update; brew install $BREW_PYTHON;
   python3 -m venv venv; source venv/bin/activate; fi
