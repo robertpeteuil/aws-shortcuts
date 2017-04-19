@@ -13,5 +13,5 @@ engines:
     enabled: true
 ratings:
   paths:
-  - awss
+  - "awss/*"
 exclude_paths: []
