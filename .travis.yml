@@ -31,10 +31,10 @@ script:
 - python setup.py check -m -r -s
 - flake8 --ignore=E501 awss
 after_success:
-- echo done
+- echo "Test Success"
 env:
   global:
-  - secure: 
+  - secure:
 deploy:
   provider: pypi
   user: robertpeteuil
