@@ -97,20 +97,12 @@ def setupColor():
 
 
 def colorInstanceStatus(state):
-    if state == "running":
+    if state == "running" or state == "start":
         CLRstatus = CLRsuccess
-    elif state == "stopped":
+    elif state == "stopped" or state == "stop":
         CLRstatus = CLRerror
-    elif state == "stopping":
+    elif state == "stopping" or state == "pending" or state == "starting":
         CLRstatus = CLRwarning
-    elif state == "pending":
-        CLRstatus = CLRwarning
-    elif state == "starting":
-        CLRstatus = CLRwarning
-    elif state == "start":
-        CLRstatus = CLRsuccess
-    elif state == "stop":
-        CLRstatus = CLRerror
     else:
         CLRstatus = CLRnormal
     return CLRstatus
@@ -295,22 +287,16 @@ def selectFromList(OutputText, actionType):
 
 
 def DetermineLoginUser(ID):
-    selectedImageDescription = instanceAMIName[ID]
-    if selectedImageDescription.startswith('ubuntu'):
+    selImgDesc = instanceAMIName[ID]
+    if selImgDesc.startswith('ubuntu'):
         loginuser = "ubuntu"
-    elif selectedImageDescription.startswith('suse'):
-        loginuser = "ec2-user"
-    elif selectedImageDescription.startswith('amzn'):
-        loginuser = "ec2-user"
-    elif selectedImageDescription.startswith('RHEL'):
-        loginuser = "ec2-user"
-    elif selectedImageDescription.startswith('debian'):
+    elif selImgDesc.startswith('debian'):
         loginuser = "admin"
-    elif selectedImageDescription.startswith('fedora'):
+    elif selImgDesc.startswith('fedora'):
         loginuser = "fedora"
-    elif selectedImageDescription.startswith('centos'):
+    elif selImgDesc.startswith('centos'):
         loginuser = "centos"
-    elif selectedImageDescription.startswith('openBSD'):
+    elif selImgDesc.startswith('openBSD'):
         loginuser = "root"
     else:
         loginuser = "ec2-user"
