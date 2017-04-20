@@ -1,0 +1,3 @@
+readme_renderer
+flake8
+codeclimate-test-reporter
