@@ -286,7 +286,7 @@ def selectFromList(OutputText, actionType):
         printWithoutCR(RawkeyEntered)
         try:
             KeyEntered = int(RawkeyEntered)
-        except:
+        except ValueError:
             KeyEntered = RawkeyEntered
         if KeyEntered == 0:
             print("\n\n%saborting%s - %s instance\n" % (CLRerror, CLRnormal, actionType))
