@@ -80,17 +80,16 @@ The **running-state** appropriate for each command is as follows:
 - The ``list`` command looks at all instances, unless optional parameters have been specified to narrow its search to **running**, **stopped** or specific instances.
 
 
-Supported Platforms
--------------------
+Supported Versions & Platforms
+------------------------------
 
--  Linux
--  macOS (OS X)
--  Windows
+Python 2.7, 3.3, 3.4, 3.5, 3.6
 
-Pre-Requisites
---------------
+Platforms:
 
-- Python version of 2.7 or newer
+- Linux
+- macOS (OS X)
+- Windows
 
 Installation
 ------------
