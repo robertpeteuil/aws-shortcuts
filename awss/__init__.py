@@ -377,6 +377,12 @@ def DetermineLoginUser(ID):
     return (loginuser)
 
 
+def debugPrint(item1, item2=""):
+    global debug
+    if (debug):
+        print(item1, "%s%s%s" % (CLRtitle, item2, CLRnormal))
+
+
 def debugPrintList(listname, displayname):   # pragma: no cover
     print("%sListing %s %s" % (CLRheading, displayname, CLRnormal))
     for x, y in list(listname.items()):
@@ -434,14 +440,13 @@ def main():
 
     setupColor()
 
-    if (debug):  # pragma: no cover
-        print("actionType = ", actionType)
-        print("filterType = ", filterType)
-        print("filterType2 = ", filterType2)
-        print("filters = ", filters)
-        print("OutputText = ", OutputText)
-        print("nopem = ", nopem)
-        print("loginuser = ", loginuser)
+    debugPrint("actionType =", actionType)
+    debugPrint("filterType =", filterType)
+    debugPrint("filterType2 =", filterType2)
+    debugPrint("filters =", filters)
+    debugPrint("OutputText =", OutputText)
+    debugPrint("nopem =", nopem)
+    debugPrint("loginuser =", loginuser)
 
     if actionType != "list" and filterType == "":
         print("%sError%s - instance identifier not specified" % (CLRerror, CLRnormal))
@@ -476,24 +481,18 @@ def main():
         instanceIP = specifiedInstance.public_ip_address
         instanceKey = specifiedInstance.key_name
         homeDir = os.environ['HOME']
-        if (debug):         # pragma: no cover
-            print("target IP= ", instanceIP)
-            print("target key = ", instanceKey)
+        debugPrint("target IP =", instanceIP)
+        debugPrint("target key =", instanceKey)
         if loginuser == "":
             loginuser = DetermineLoginUser(index)
         else:
-            pass
-            if (debug):     # pragma: no cover
-                print("LoginUser set by user: %s%s%s\n" % (CLRtitle, loginuser, CLRnormal))
+            debugPrint("LoginUser set by user:", loginuser)
         if (nopem):
-            if (debug):     # pragma: no cover
-                print("%sNo PEM mode%s  Connect string: %sssh %s@%s%s\n" % (CLRheading, CLRnormal, CLRtitle, loginuser, instanceIP, CLRnormal))
-            else:
-                print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading, CLRnormal))
+            debugPrint("Connect string:", "ssh %s@%s" % (loginuser, instanceIP))
+            print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading, CLRnormal))
             subprocess.call(["ssh {0}@{1}".format(loginuser, instanceIP)], shell=True)
         else:
-            if (debug):     # pragma: no cover
-                print("Connect string: %sssh -i %s/.aws/%s.pem %s@%s%s\n" % (CLRtitle, homeDir, instanceKey, loginuser, instanceIP, CLRnormal))
+            debugPrint("Connect string:", "ssh -i %s/.aws/%s.pem %s@%s\n" % (homeDir, instanceKey, loginuser, instanceIP))
             subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".format(homeDir, instanceKey, loginuser, instanceIP)], shell=True)
 
     sys.exit()
