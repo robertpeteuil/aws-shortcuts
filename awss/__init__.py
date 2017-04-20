@@ -48,7 +48,7 @@ class _GetchUnix(object):
         return ch
 
 
-class _GetchWindows(object):
+class _GetchWindows(object):    # pragma: no cover
     def __init__(self):
         import msvcrt       # noqa: F401
 
@@ -119,7 +119,7 @@ def colorInstanceStatus(state):
 def runBash(cmd):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     (output, err) = p.communicate()
-    if err:
+    if err:     # pragma: no cover
         p_status = p.wait()
         print("Command exit status / return code : ", p_status)
     return (output.rstrip())
@@ -127,12 +127,6 @@ def runBash(cmd):
 
 def printWithoutCR(value):
     sys.stdout.write(value)
-
-
-def printList(listname, displayname):
-    print("%sListing %s %s" % (CLRheading, displayname, CLRnormal))
-    for x, y in list(listname.items()):
-        print("\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal, displayname, CLRtitle, y, CLRnormal))
 
 
 def getArguments():
@@ -325,7 +319,13 @@ def DetermineLoginUser(ID):
     return (loginuser)
 
 
-def debugPrintList():
+def printList(listname, displayname):   # pragma: no cover
+    print("%sListing %s %s" % (CLRheading, displayname, CLRnormal))
+    for x, y in list(listname.items()):
+        print("\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal, displayname, CLRtitle, y, CLRnormal))
+
+
+def debugPrintList():   # pragma: no cover
     print("%sDebug Listing of Info by Type%s\n" % (CLRheading2, CLRnormal))
     printList(instanceID, "instanceID")
     printList(instanceState, "instanceState")
@@ -363,7 +363,7 @@ def main():
 
     setupColor()
 
-    if (debug):
+    if (debug):  # pragma: no cover
         print("actionType = ", actionType)
         print("filterType = ", filterType)
         print("filterType2 = ", filterType2)
@@ -395,7 +395,7 @@ def main():
             instanceForAction = selectFromList(OutputText, actionType)
         else:
             instanceForAction = 0
-        if (debug):
+        if (debug):             # pragma: no cover
             debugPrintList()
         # get index# and instance-id of target instance
         index, instanceIDForAction = instanceID.items()[instanceForAction]
@@ -416,23 +416,23 @@ def main():
             instanceIP = specifiedInstance.public_ip_address
             instanceKey = specifiedInstance.key_name
             homeDir = os.environ['HOME']
-            if (debug):
+            if (debug):         # pragma: no cover
                 print("target IP= ", instanceIP)
                 print("target key = ", instanceKey)
             if loginuser == "":
                 loginuser = DetermineLoginUser(index)
             else:
                 pass
-                if (debug):
+                if (debug):     # pragma: no cover
                     print("LoginUser set by user: %s%s%s\n" % (CLRtitle, loginuser, CLRnormal))
             if (nopem):
-                if (debug):
+                if (debug):     # pragma: no cover
                     print("%sNo PEM mode%s  Connect string: %sssh %s@%s%s\n" % (CLRheading, CLRnormal, CLRtitle, loginuser, instanceIP, CLRnormal))
                 else:
                     print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading, CLRnormal))
                 subprocess.call(["ssh {0}@{1}".format(loginuser, instanceIP)], shell=True)
             else:
-                if (debug):
+                if (debug):     # pragma: no cover
                     print("Connect string: %sssh -i %s/.aws/%s.pem %s@%s%s\n" % (CLRtitle, homeDir, instanceKey, loginuser, instanceIP, CLRnormal))
                 subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".format(homeDir, instanceKey, loginuser, instanceIP)], shell=True)
 
