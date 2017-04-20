@@ -14,4 +14,8 @@ engines:
 ratings:
   paths:
   - "awss/*"
-exclude_paths: []
+exclude_paths:
+  - ".tox/*"
+  - "build/*"
+  - "dist/*"
+  - "*.egg-info/*"
