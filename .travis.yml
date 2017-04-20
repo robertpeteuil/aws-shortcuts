@@ -1,0 +1,64 @@
+branches:
+  only:
+  - master
+  - develop
+language: python
+cache: pip
+notifications:
+  email:
+    on_success: never
+    on_failure: never
+matrix:
+  include:
+  - os: linux
+    python: 3.6
+    env: CACHE_NAME=JOB1
+  - os: linux
+    python: 3.5
+    env: CACHE_NAME=JOB2
+  - os: linux
+    python: 3.4
+    env: CACHE_NAME=JOB3
+  - os: linux
+    python: 3.3
+    env: CACHE_NAME=JOB4
+  - os: linux
+    python: 2.7
+    env: CACHE_NAME=JOB5
+  - os: osx
+    language: generic
+    env:
+    - BREW_PYTHON='python'
+    - CACHE_NAME=JOB6
+  - os: osx
+    language: generic
+    env:
+    - BREW_PYTHON='python3'
+    - CACHE_NAME=JOB7
+before_install:
+- if [[ $BREW_PYTHON == 'python3' ]]; then brew update; brew install $BREW_PYTHON;
+  python3 -m venv venv; source venv/bin/activate; fi
+install:
+- pip install --upgrade pip
+- pip install --upgrade readme_renderer
+- pip install --upgrade flake8
+- pip install --upgrade codeclimate-test-reporter
+- pip install -e .
+script:
+- python setup.py check -m -r -s
+- flake8 --ignore=E501 awss
+after_success:
+  - codeclimate-test-reporter
+  - echo Test Success
+deploy:
+  provider: pypi
+  user: robertpeteuil
+  password:
+    secure: H8hRA3NPFOkuvPMSJOv69zvSVownLcR8j1uYhKhULxWKLKnzHay1c+v14XJo2WQ1/oUUncjx6gi/UIQx8nYfxElmybVRYqjauabNW/HORtQcEBqWVpLPFWNrY+LJPcxYqijT1ifP73JHkBqz8qBV1tnph849iq3DNsm3PbLpndWWiTsxklUBuom00O6OirHJqhvwfroHwMWozDfzhG10qw5ABTl8xaAbkXeekqTZlLVMZCUbKzBipxBTj0mnAf1V2nwGmpXkckrxJls2yanwEfqaSE2AoZpktmOzsy4qNzX94lEXJ4fDBTZYVgN5hK+aQOemGSfUwhtXZlHJS90INE17tbyYrzec0kY1CRLWmzQyyMKiAo+IgHRL2d47gZwkPfZYBhH84BHaRKx8jX7rH8aCmy73MhzyqOpSjejZTRMJ1KchxtMWMtLomILTUkz5D+6cDp5moCySrj3Iu92VuknaDDZv/yvTjLwqoQYHcte+nAVQbLTGEEkuK0z7uB/LOU1U+PIZgXDkBESTzVWNua5HWVc/5+BBwbjy12Dec6OYqYcxjZWSie/LakMXb6hyCt7BIw9wiXpg85gAYFd78SItTE3aC4MqoUEjwEdrsI52uhq4240JWaYNmcORqJT5KXJeZBNCkzvYF5LAh5azPjNSJgmk3bc74koOTi/PuPc=
+  distributions: "sdist bdist_wheel"
+  on:
+    branch: master
+    tags: true
+env:
+  global:
+  - secure:

@@ -20,6 +20,7 @@ import os
 ################################################################################
 #  Classes
 
+
 class _Getch(object):
     def __init__(self):
         try:
@@ -27,14 +28,16 @@ class _Getch(object):
         except ImportError:
             self.impl = _GetchUnix()
 
-    def __call__(self): return self.impl()
+    def __call__(self):
+        return self.impl()
+
 
 class _GetchUnix(object):
     def __init__(self):
-        import tty, sys
+        import tty, sys     # noqa: F401, E401
 
     def __call__(self):
-        import sys, tty, termios
+        import sys, tty, termios    # noqa: E401
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
         try:
@@ -44,9 +47,10 @@ class _GetchUnix(object):
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
+
 class _GetchWindows(object):
     def __init__(self):
-        import msvcrt
+        import msvcrt       # noqa: F401
 
     def __call__(self):
         import msvcrt
@@ -54,6 +58,7 @@ class _GetchWindows(object):
 
 ################################################################################
 #  Functions
+
 
 def setupColor():
     global CLRnormal
@@ -75,12 +80,12 @@ def setupColor():
     if sys.stdout.isatty():
         ncolors = int(runBash("tput colors 2> /dev/null"))
         if ncolors != "" and ncolors >= 8:
-            blue="\033[1;34m"
-            white="\033[1;37m"
-            green="\033[1;32m"
-            red="\033[1;31m"
-            yellow="\033[1;33m"
-            cyan="\033[1;36m"
+            blue = "\033[1;34m"
+            white = "\033[1;37m"
+            green = "\033[1;32m"
+            red = "\033[1;31m"
+            yellow = "\033[1;33m"
+            cyan = "\033[1;36m"
             CLRnormal = white
             CLRheading = green
             CLRheading2 = blue
@@ -89,6 +94,7 @@ def setupColor():
             CLRsuccess = green
             CLRwarning = yellow
             CLRerror = red
+
 
 def colorInstanceStatus(state):
     if state == "running":
@@ -109,6 +115,7 @@ def colorInstanceStatus(state):
         CLRstatus = CLRnormal
     return CLRstatus
 
+
 def runBash(cmd):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     (output, err) = p.communicate()
@@ -117,13 +124,16 @@ def runBash(cmd):
         print("Command exit status / return code : ", p_status)
     return (output.rstrip())
 
+
 def printWithoutCR(value):
     sys.stdout.write(value)
 
+
 def printList(listname, displayname):
     print("%sListing %s %s" % (CLRheading, displayname, CLRnormal))
-    for x,y in list(listname.items()):
+    for x, y in list(listname.items()):
         print("\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal, displayname, CLRtitle, y, CLRnormal))
+
 
 def getArguments():
     nopem = False
@@ -132,14 +142,14 @@ def getArguments():
     filters = ""
     OutputText = ""
     parser = argparse.ArgumentParser(description="Control AWS instances from the command line with: list, start, stop or ssh.", usage="\tawss {command} ( 'NAME' or '-i ID' ) [ OPTIONS ]\n\t{command} = list | start | stop | ssh", prog='awss')
-    parser.add_argument('-v', '--version', action = "version", version='awss 0.9.3')
+    parser.add_argument('-v', '--version', action="version", version='awss 0.9.3')
     subparsers = parser.add_subparsers(dest='command', title='For additional help on command parameters', description="type 'awss {command} -h', where {command} is: list, start, stop or ssh")
     # Parser for LIST command
     parser_list = subparsers.add_parser('list', description="List AWS instances from the command line. List all by typing 'awss list', or specify instances by name, instance-id or state.", usage="\tawss list ( (none) | 'NAME' | '-i ID' | -r | -s ) [ OPTIONS ]")
     parser_list.add_argument('instname', nargs='?', metavar='NAME', help='specify instance by name')
     parser_list.add_argument('-i', '--id', action="store", help='specify instance by id')
-    parser_list.add_argument('-r', '--running', action = "store_true", help = 'list running instances')
-    parser_list.add_argument('-s', '--stopped', action = "store_true", help='list stopped instances')
+    parser_list.add_argument('-r', '--running', action="store_true", help='list running instances')
+    parser_list.add_argument('-s', '--stopped', action="store_true", help='list stopped instances')
     parser_list.add_argument('-d', '--debug', action="store_true", help=argparse.SUPPRESS)
     # Parser for START command
     parser_start = subparsers.add_parser('start', description="Start an AWS instance from the command line.", usage="\tawss start ( 'NAME' | '-i ID' ) [ OPTIONS ]")
@@ -151,17 +161,17 @@ def getArguments():
     parser_stop.add_argument('instname', nargs='?', metavar='NAME', help='specify instance by name')
     parser_stop.add_argument('-i', '--id', action="store", help='specify instance-id')
     parser_stop.add_argument('-d', '--debug', action="store_true", help=argparse.SUPPRESS)
-    # Parser for SSH command 
+    # Parser for SSH command
     parser_ssh = subparsers.add_parser('ssh', description="Connect to an AWS instance via ssh.", usage="\tawss ssh ( 'NAME' | '-i ID' ) [ -u USER -p -h ]")
     parser_ssh.add_argument('instname', nargs='?', metavar='NAME', help='specify instance by name')
     parser_ssh.add_argument('-i', '--id', action="store", help='specify instance-id')
     parser_ssh.add_argument('-u', '--user', action="store", help='specify username to use for ssh')
-    parser_ssh.add_argument('-p', '--nopem', action = "store_true", help='connect without PEM key')
+    parser_ssh.add_argument('-p', '--nopem', action="store_true", help='connect without PEM key')
     parser_ssh.add_argument('-d', '--debug', action="store_true", help=argparse.SUPPRESS)
 
     options = parser.parse_args()
     if options.command == "list":
-        actionType="list"
+        actionType = "list"
         filterType2 = ""
         if options.running:
             filterType = "running"
@@ -201,27 +211,30 @@ def getArguments():
         debug = False
     return (actionType, filterType, filterType2, filters, OutputText, debug, nopem, loginuser)
 
+
 def getInstanceIDs(filtype, filter):
     instanceID = {}
     if filtype == "id":
-        instanceSummaryData = ec2C.describe_instances( InstanceIds=["{0}".format(filter)])
+        instanceSummaryData = ec2C.describe_instances(InstanceIds=["{0}".format(filter)])
     elif filtype == "running" or filtype == "stopped":
-        instanceSummaryData = ec2C.describe_instances( Filters =[{'Name':'instance-state-name', 'Values':["{0}".format(filter)]}])
+        instanceSummaryData = ec2C.describe_instances(Filters=[{'Name': 'instance-state-name', 'Values': ["{0}".format(filter)]}])
     elif filtype == "name":
-        instanceSummaryData = ec2C.describe_instances( Filters =[{'Name':'tag:Name', 'Values':["{0}".format(filter)]}])
+        instanceSummaryData = ec2C.describe_instances(Filters=[{'Name': 'tag:Name', 'Values': ["{0}".format(filter)]}])
     else:
         instanceSummaryData = ec2C.describe_instances()
-    for i,v in enumerate(instanceSummaryData['Reservations']):
+    for i, v in enumerate(instanceSummaryData['Reservations']):
         ID = v['Instances'][0]['InstanceId']
         instanceID[i] = ID
-    numInstances=len(instanceID)
+    numInstances = len(instanceID)
     return (instanceID, numInstances)
+
 
 def getAMIname(ID):
     instanceImage = ec2R.Image(ID).name
     return (instanceImage)
 
-def getInstanceDetails(qty,idlist):
+
+def getInstanceDetails(qty, idlist):
     instanceState = {}
     instanceAMI = {}
     instanceName = {}
@@ -233,10 +246,11 @@ def getInstanceDetails(qty,idlist):
         instanceTag = instanceData.tags
         for j in range(len(instanceTag)):
             if instanceTag[j]['Key'] == 'Name':
-                instanceName[i]=instanceTag[j]['Value']
+                instanceName[i] = instanceTag[j]['Value']
                 break
         instanceAMIName[i] = getAMIname(instanceAMI[i])
     return (instanceState, instanceAMI, instanceName, instanceAMIName)
+
 
 def refineInstanceList(numInstances, filterType2):
     newQty = numInstances
@@ -250,15 +264,17 @@ def refineInstanceList(numInstances, filterType2):
             newQty -= 1
     return (newQty, instanceName, instanceID, instanceState, instanceAMI, instanceAMIName)
 
+
 def displayInstanceList(title, numbered="no"):
     if numbered == "no":
         print("\n%s%s%s\n" % (CLRheading, title, CLRnormal))
     for i in range(numInstances):
         if numbered == "yes":
-            print("Instance %s#%s%s" % (CLRwarning, i+1, CLRnormal))
+            print("Instance %s#%s%s" % (CLRwarning, i + 1, CLRnormal))
         CLRstatus = colorInstanceStatus(instanceState[i])
         print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" % (CLRtitle, instanceName[i], CLRnormal, CLRtitle, instanceID[i], CLRnormal, CLRstatus, instanceState[i], CLRnormal))
         print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" % (CLRtitle, instanceAMI[i], CLRnormal, CLRtitle, instanceAMIName[i], CLRnormal))
+
 
 def selectFromList(OutputText, actionType):
     getch = _Getch()
@@ -283,29 +299,31 @@ def selectFromList(OutputText, actionType):
     print()
     return (instanceForAction)
 
+
 def DetermineLoginUser(ID):
     selectedImageDescription = instanceAMIName[ID]
-    if selectedImageDescription.startswith( 'ubuntu' ):
-        loginuser="ubuntu"
-    elif selectedImageDescription.startswith( 'suse' ):
-        loginuser="ec2-user"
-    elif selectedImageDescription.startswith( 'amzn' ):
-        loginuser="ec2-user"
-    elif selectedImageDescription.startswith( 'RHEL' ):
-        loginuser="ec2-user"
-    elif selectedImageDescription.startswith( 'debian' ):
-        loginuser="admin"
-    elif selectedImageDescription.startswith( 'fedora' ):
-        loginuser="fedora"
-    elif selectedImageDescription.startswith( 'centos' ):
-        loginuser="centos"
-    elif selectedImageDescription.startswith( 'openBSD' ):
-        loginuser="root"
+    if selectedImageDescription.startswith('ubuntu'):
+        loginuser = "ubuntu"
+    elif selectedImageDescription.startswith('suse'):
+        loginuser = "ec2-user"
+    elif selectedImageDescription.startswith('amzn'):
+        loginuser = "ec2-user"
+    elif selectedImageDescription.startswith('RHEL'):
+        loginuser = "ec2-user"
+    elif selectedImageDescription.startswith('debian'):
+        loginuser = "admin"
+    elif selectedImageDescription.startswith('fedora'):
+        loginuser = "fedora"
+    elif selectedImageDescription.startswith('centos'):
+        loginuser = "centos"
+    elif selectedImageDescription.startswith('openBSD'):
+        loginuser = "root"
     else:
-        loginuser="ec2-user"
+        loginuser = "ec2-user"
     if (debug):
         print("loginuser calculated as: %s%s%s\n" % (CLRtitle, loginuser, CLRnormal))
     return (loginuser)
+
 
 def debugPrintList():
     print("%sDebug Listing of Info by Type%s\n" % (CLRheading2, CLRnormal))
@@ -317,6 +335,7 @@ def debugPrintList():
 
 ################################################################################
 #  Execution Begins
+
 
 def main():
 
@@ -411,13 +430,14 @@ def main():
                     print("%sNo PEM mode%s  Connect string: %sssh %s@%s%s\n" % (CLRheading, CLRnormal, CLRtitle, loginuser, instanceIP, CLRnormal))
                 else:
                     print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading, CLRnormal))
-                subprocess.call(["ssh {0}@{1}".format(loginuser,instanceIP)], shell=True)
+                subprocess.call(["ssh {0}@{1}".format(loginuser, instanceIP)], shell=True)
             else:
                 if (debug):
                     print("Connect string: %sssh -i %s/.aws/%s.pem %s@%s%s\n" % (CLRtitle, homeDir, instanceKey, loginuser, instanceIP, CLRnormal))
-                subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".format(homeDir,instanceKey,loginuser, instanceIP)], shell=True)
+                subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".format(homeDir, instanceKey, loginuser, instanceIP)], shell=True)
 
     sys.exit()
+
 
 if __name__ == '__main__':
     main()
