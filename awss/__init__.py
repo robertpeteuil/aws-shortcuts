@@ -155,7 +155,6 @@ def getArguments():
 
 
 def decodeArguments(options):
-    # global debug
     loginuser = ""
     filterType = ""
     filters = ""
@@ -164,31 +163,21 @@ def decodeArguments(options):
     if options.instname:
         filterType = "name"
         filters = options.instname
-        OutputText = "Instances '{}'".format(options.instname)
     elif options.id:
         filterType = "id"
         filters = options.id
-        OutputText = "Instance '{}'".format(options.id)
-    # else:               # TEST LINES
-    #     print("what was entered?")
-    # if options.debug:
-    #     debug = True
-    # else:
-    #     debug = False
     if options.command == "list":
-        actionType = "list"
         filterType2 = ""
-        (filterType, filters, OutputText) = decodeLIST(options, filterType, filters, OutputText)
+        (filterType, filters, OutputText) = decodeLIST(options, filterType, filters)
     elif options.command == "ssh":
-        actionType = "ssh"
         filterType2 = "running"
         (nopem, loginuser) = decodeSSH(options)
     else:       # must be stop or start left
-        (actionType, filterType2) = decodeToggle(options)
-    return (actionType, filterType, filterType2, filters, OutputText, nopem, loginuser, options.debug)
+        (filterType2) = decodeToggle(options)
+    return (options.command, filterType, filterType2, filters, OutputText, nopem, loginuser, options.debug)
 
 
-def decodeLIST(options, filterType, filters, OutputText):
+def decodeLIST(options, filterType, filters):
     if filterType == "":        # only call if NAME or ID not specified
         if options.running:
             filterType = "running"
@@ -202,6 +191,8 @@ def decodeLIST(options, filterType, filters, OutputText):
             filterType = "all"
             filters = ""
             OutputText = "All Instances"
+    else:
+        OutputText = "Instances '{}'".format(filters)
     return (filterType, filters, OutputText)
 
 
@@ -219,12 +210,10 @@ def decodeSSH(options):
 
 def decodeToggle(options):
     if options.command == "start":
-        actionType = "start"
         filterType2 = "stopped"
     elif options.command == "stop":
-        actionType = "stop"
         filterType2 = "running"
-    return (actionType, filterType2)
+    return (filterType2)
 
 
 def getInstanceIDs(filtype, filter):
@@ -299,20 +288,27 @@ def selectFromList(OutputText, actionType):
         printWithoutCR("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0 aborts%s]: " % (CLRwarning, CLRnormal, actionType, CLRwarning, CLRnormal, CLRwarning, numInstances, CLRnormal, CLRtitle, CLRnormal))
         RawkeyEntered = getch()
         printWithoutCR(RawkeyEntered)
-        try:
-            KeyEntered = int(RawkeyEntered)
-        except ValueError:
-            KeyEntered = RawkeyEntered
-        if KeyEntered == 0:
-            print("\n\n%saborting%s - %s instance\n" % (CLRerror, CLRnormal, actionType))
-            sys.exit()
-        elif KeyEntered >= 1 and KeyEntered <= numInstances:
-            instanceForAction = KeyEntered - 1
-            selectionValid = "True"
-        else:
-            printWithoutCR("\n%sInvalid entry:%s enter a number between 1 and %s.\n" % (CLRerror, CLRnormal, numInstances))
+        (instanceForAction, selectionValid) = validateKeyEntry(RawkeyEntered, actionType)
     print()
     return (instanceForAction)
+
+
+def validateKeyEntry(RawkeyEntered, actionType):
+    selectionValid = "False"
+    try:
+        KeyEntered = int(RawkeyEntered)
+    except ValueError:
+        KeyEntered = RawkeyEntered
+    if KeyEntered == 0:
+        print("\n\n%saborting%s - %s instance\n" % (CLRerror, CLRnormal, actionType))
+        sys.exit()
+    elif KeyEntered >= 1 and KeyEntered <= numInstances:
+        instanceForAction = KeyEntered - 1
+        selectionValid = "True"
+    else:
+        printWithoutCR("\n%sInvalid entry:%s enter a number between 1 and %s.\n" % (CLRerror, CLRnormal, numInstances))
+        instanceForAction = KeyEntered
+    return (instanceForAction, selectionValid)
 
 
 def DetermineLoginUser(ID):
