@@ -155,10 +155,12 @@ def getArguments():
 
 
 def decodeArguments(options):
+    # global debug
     loginuser = ""
     filterType = ""
     filters = ""
     OutputText = ""
+    nopem = False
     if options.instname:
         filterType = "name"
         filters = options.instname
@@ -167,47 +169,52 @@ def decodeArguments(options):
         filterType = "id"
         filters = options.id
         OutputText = "Instance '{}'".format(options.id)
-    else:               # TEST LINES
-        print("what was entered?")
-    if options.debug:
-        debug = True
-    else:
-        debug = False
-    if options.command == "ssh":
-        decodeSSH(options)
+    # else:               # TEST LINES
+    #     print("what was entered?")
+    # if options.debug:
+    #     debug = True
+    # else:
+    #     debug = False
     if options.command == "list":
-        decodeLIST(option)
+        actionType = "list"
+        filterType2 = ""
+        (filterType, filters, OutputText) = decodeLIST(options, filterType, filters, OutputText)
+    elif options.command == "ssh":
+        actionType = "ssh"
+        filterType2 = "running"
+        (nopem, loginuser) = decodeSSH(options)
     else:       # must be stop or start left
-        decodeToggle(options)
+        (actionType, filterType2) = decodeToggle(options)
+    return (actionType, filterType, filterType2, filters, OutputText, nopem, loginuser, options.debug)
+
+
+def decodeLIST(options, filterType, filters, OutputText):
+    if filterType == "":        # only call if NAME or ID not specified
+        if options.running:
+            filterType = "running"
+            filters = "running"
+            OutputText = "Running EC2 Instances"
+        elif options.stopped:
+            filterType = "stopped"
+            filters = "stopped"
+            OutputText = "Stopped EC2 Instances"
+        else:
+            filterType = "all"
+            filters = ""
+            OutputText = "All Instances"
+    return (filterType, filters, OutputText)
 
 
 def decodeSSH(options):
-    actionType = "ssh"
-    filterType2 = "running"
     if options.nopem:
         nopem = True
     else:
         nopem = False
     if options.user:
         loginuser = options.user
-    return (actionType, filterType, filterType2, filters, OutputText, nopem, loginuser)
-
-
-def decodeLIST(option):
-    actionType = "list"
-    filterType2 = ""
-    if options.running:
-        filterType = "running"
-        filters = "running"
-        OutputText = "Running EC2 Instances"
-    elif options.stopped:
-        filterType = "stopped"
-        filters = "stopped"
-        OutputText = "Stopped EC2 Instances"
     else:
-        filterType = "all"
-        OutputText = "All Instances"
-    return (actionType, filterType, filterType2, filters, OutputText, nopem, loginuser)
+        loginuser = ""
+    return (nopem, loginuser)
 
 
 def decodeToggle(options):
@@ -217,7 +224,7 @@ def decodeToggle(options):
     elif options.command == "stop":
         actionType = "stop"
         filterType2 = "running"
-    return (actionType, filterType, filterType2, filters, OutputText, nopem, loginuser)
+    return (actionType, filterType2)
 
 
 def getInstanceIDs(filtype, filter):
@@ -368,7 +375,7 @@ def main():
     ec2R = boto3.resource('ec2')
 
     (options) = getArguments()
-    (actionType, filterType, filterType2, filters, OutputText, nopem, loginuser) = decodeArguments(options)
+    (actionType, filterType, filterType2, filters, OutputText, nopem, loginuser, debug) = decodeArguments(options)
 
     setupColor()
 
