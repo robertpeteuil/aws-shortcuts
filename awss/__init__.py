@@ -217,6 +217,8 @@ def decodeToggle(options):
 
 
 def getInstanceIDs(filtype, filter):
+    global instanceID
+    global numInstances
     instanceID = {}
     if filtype == "id":
         instanceSummaryData = ec2C.describe_instances(InstanceIds=["{0}".format(filter)])
@@ -230,7 +232,8 @@ def getInstanceIDs(filtype, filter):
         ID = v['Instances'][0]['InstanceId']
         instanceID[i] = ID
     numInstances = len(instanceID)
-    return (instanceID, numInstances)
+    # return (instanceID, numInstances)
+    return
 
 
 def getAMIname(ID):
@@ -239,6 +242,10 @@ def getAMIname(ID):
 
 
 def getInstanceDetails(qty, idlist):
+    global instanceState
+    global instanceAMI
+    global instanceName
+    global instanceAMIName
     instanceState = {}
     instanceAMI = {}
     instanceName = {}
@@ -253,10 +260,12 @@ def getInstanceDetails(qty, idlist):
                 instanceName[i] = instanceTag[j]['Value']
                 break
         instanceAMIName[i] = getAMIname(instanceAMI[i])
-    return (instanceState, instanceAMI, instanceName, instanceAMIName)
+    # return (instanceState, instanceAMI, instanceName, instanceAMIName)
+    return
 
 
-def refineInstanceList(numInstances, filterType2):
+def refineInstanceList(filterType2):
+    global numInstances
     newQty = numInstances
     for i in range(numInstances):
         if instanceState[i] != filterType2:
@@ -266,7 +275,9 @@ def refineInstanceList(numInstances, filterType2):
             del instanceAMI[i]
             del instanceAMIName[i]
             newQty -= 1
-    return (newQty, instanceName, instanceID, instanceState, instanceAMI, instanceAMIName)
+    numInstances = newQty
+    # return (newQty, instanceName, instanceID, instanceState, instanceAMI, instanceAMIName)
+    return
 
 
 def displayInstanceList(title, numbered="no"):
@@ -325,8 +336,6 @@ def DetermineLoginUser(ID):
         loginuser = "root"
     else:
         loginuser = "ec2-user"
-    # if (debug):         # pragma: no cover
-    #     print("loginuser calculated as: %s%s%s\n" % (CLRtitle, loginuser, CLRnormal))
     return (loginuser)
 
 
@@ -360,11 +369,11 @@ def main():
     global instanceName
     global instanceAMIName
 
-    instanceID = {}
-    instanceState = {}
-    instanceAMI = {}
-    instanceName = {}
-    instanceAMIName = {}
+    # instanceID = {}
+    # instanceState = {}
+    # instanceAMI = {}
+    # instanceName = {}
+    # instanceAMIName = {}
 
     # Setup AWS EC2 connections
     ec2C = boto3.client('ec2')
@@ -388,8 +397,10 @@ def main():
         print("%sError%s - instance identifier not specified" % (CLRerror, CLRnormal))
         sys.exit()
 
-    (instanceID, numInstances) = getInstanceIDs(filterType, filters)
-    (instanceState, instanceAMI, instanceName, instanceAMIName) = getInstanceDetails(numInstances, instanceID)
+    # (instanceID, numInstances) = getInstanceIDs(filterType, filters)
+    getInstanceIDs(filterType, filters)
+    # (instanceState, instanceAMI, instanceName, instanceAMIName) = getInstanceDetails(numInstances, instanceID)
+    getInstanceDetails(numInstances, instanceID)
 
     if actionType == "list":
         if numInstances > 0:
@@ -398,7 +409,8 @@ def main():
             print("No instance '%s' found." % (filters))
     else:
         # narrow it down to one instance
-        (numInstances, instanceName, instanceID, instanceState, instanceAMI, instanceAMIName) = refineInstanceList(numInstances, filterType2)
+        # (numInstances, instanceName, instanceID, instanceState, instanceAMI, instanceAMIName) = refineInstanceList(numInstances, filterType2)
+        refineInstanceList(filterType2)
         if numInstances == 0:
             print("No instance '%s' found %s." % (filters, filterType2))
             sys.exit()
@@ -410,7 +422,7 @@ def main():
         if (debug):             # pragma: no cover
             debugPrintAllLists()
         # get index# and instance-id of target instance
-        index, instanceIDForAction = instanceID.items()[instanceForAction]
+        (index, instanceIDForAction) = instanceID.items()[instanceForAction]
         print("\n%s%sing%s instance: %s%s%s with id: %s%s%s" % (colorInstanceStatus(actionType), actionType, CLRnormal, CLRtitle, filters, CLRnormal, CLRtitle, instanceIDForAction, CLRnormal))
         specifiedInstance = ec2R.Instance(instanceIDForAction)
         # perform instance specific actions
