@@ -4,7 +4,9 @@ AWS Shortcuts for Command-Line Instance Control
 List, start, stop and ssh to AWS instances using Name or Instance-ID
 ---------------------------------------------------------------------------------
 
+
 |Code Climate| |GitHub issues| |PyPi release| |lang| |license| 
+
 
 --------------
 
