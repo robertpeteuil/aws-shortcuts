@@ -17,9 +17,6 @@ import sys
 import subprocess
 import os
 
-################################################################################
-#  Classes
-
 
 class _Getch(object):
     def __init__(self):
@@ -55,9 +52,6 @@ class _GetchWindows(object):    # pragma: no cover
     def __call__(self):
         import msvcrt
         return msvcrt.getch()
-
-################################################################################
-#  Functions
 
 
 def setupColor():
@@ -122,33 +116,78 @@ def printWithoutCR(value):
 
 
 def getArguments():
-    parser = argparse.ArgumentParser(description="Control AWS instances from the command line with: list, start, stop or ssh.", usage="\tawss {command} ( 'NAME' or '-i ID' ) [ OPTIONS ]\n\t{command} = list | start | stop | ssh", prog='awss')
-    parser.add_argument('-v', '--version', action="version", version='awss 0.9.3.1')
-    subparsers = parser.add_subparsers(dest='command', title='For additional help on command parameters', description="type 'awss {command} -h', where {command} is: list, start, stop or ssh")
+    parser = argparse.ArgumentParser(description="Control AWS instances from"
+                                     " the command line with: list, start,"
+                                     " stop or ssh.", prog='awss',
+                                     usage="\tawss {command} ( 'NAME' or"
+                                     " '-i ID' ) [ OPTIONS ]\n\t{command} ="
+                                     " list | start | stop | ssh")
+    parser.add_argument('-v', '--version', action="version",
+                        version='awss 0.9.3.1')
+
+    subparsers = parser.add_subparsers(title="For additional help on"
+                                       " command parameters", dest='command',
+                                       description="type 'awss {command} -h',"
+                                       " where {command} is: list, start,"
+                                       " stop or ssh")
+
     # Parser for LIST command
-    parser_list = subparsers.add_parser('list', description="List AWS instances from the command line. List all by typing 'awss list', or specify instances by name, instance-id or state.", usage="\tawss list ( (none) | 'NAME' | '-i ID' | -r | -s ) [ OPTIONS ]")
-    parser_list.add_argument('instname', nargs='?', metavar='NAME', help='specify instance by name')
-    parser_list.add_argument('-i', '--id', action="store", help='specify instance by id')
-    parser_list.add_argument('-r', '--running', action="store_true", help='list running instances')
-    parser_list.add_argument('-s', '--stopped', action="store_true", help='list stopped instances')
-    parser_list.add_argument('-d', '--debug', action="store_true", help=argparse.SUPPRESS)
+    parser_list = subparsers.add_parser('list', description="List AWS "
+                                        "instances from the command line. "
+                                        "List all by typing 'awss list', or"
+                                        " specify instances by name, instance"
+                                        "-id or state.", usage="\tawss list"
+                                        " ( (none) | 'NAME' | '-i ID' | -r |"
+                                        " -s ) [ OPTIONS ]")
+    parser_list.add_argument('instname', nargs='?', metavar='NAME',
+                             help='specify instance by name')
+    parser_list.add_argument('-i', '--id', action="store",
+                             help='specify instance by id')
+    parser_list.add_argument('-r', '--running', action="store_true",
+                             help='list running instances')
+    parser_list.add_argument('-s', '--stopped', action="store_true",
+                             help='list stopped instances')
+    parser_list.add_argument('-d', '--debug', action="store_true",
+                             help=argparse.SUPPRESS)
+
     # Parser for START command
-    parser_start = subparsers.add_parser('start', description="Start an AWS instance from the command line.", usage="\tawss start ( 'NAME' | '-i ID' ) [ OPTIONS ]")
-    parser_start.add_argument('instname', nargs='?', metavar='NAME', help='specify instance by name')
-    parser_start.add_argument('-i', '--id', action="store", help='specify instance-id')
-    parser_start.add_argument('-d', '--debug', action="store_true", help=argparse.SUPPRESS)
+    parser_start = subparsers.add_parser('start', usage="\tawss start ( 'NAME'"
+                                         " | '-i ID' ) [ OPTIONS ]",
+                                         description="Start an AWS instance"
+                                         " from the command line.")
+    parser_start.add_argument('instname', nargs='?', metavar='NAME',
+                              help='specify instance by name')
+    parser_start.add_argument('-i', '--id', action="store",
+                              help='specify instance-id')
+    parser_start.add_argument('-d', '--debug', action="store_true",
+                              help=argparse.SUPPRESS)
+
     # Parser for STOP command
-    parser_stop = subparsers.add_parser('stop', description="Stop an AWS instance from the command line.", usage="\tawss stop ( 'NAME' | '-i ID' ) [ OPTIONS ]")
-    parser_stop.add_argument('instname', nargs='?', metavar='NAME', help='specify instance by name')
-    parser_stop.add_argument('-i', '--id', action="store", help='specify instance-id')
-    parser_stop.add_argument('-d', '--debug', action="store_true", help=argparse.SUPPRESS)
+    parser_stop = subparsers.add_parser('stop', usage="\tawss stop ( 'NAME' |"
+                                        " '-i ID' ) [ OPTIONS ]",
+                                        description="Stop an AWS instance from"
+                                        " the command line.")
+    parser_stop.add_argument('instname', nargs='?', metavar='NAME',
+                             help='specify instance by name')
+    parser_stop.add_argument('-i', '--id', action="store",
+                             help='specify instance-id')
+    parser_stop.add_argument('-d', '--debug', action="store_true",
+                             help=argparse.SUPPRESS)
+
     # Parser for SSH command
-    parser_ssh = subparsers.add_parser('ssh', description="Connect to an AWS instance via ssh.", usage="\tawss ssh ( 'NAME' | '-i ID' ) [ -u USER -p -h ]")
-    parser_ssh.add_argument('instname', nargs='?', metavar='NAME', help='specify instance by name')
-    parser_ssh.add_argument('-i', '--id', action="store", help='specify instance-id')
-    parser_ssh.add_argument('-u', '--user', action="store", help='specify username to use for ssh')
-    parser_ssh.add_argument('-p', '--nopem', action="store_true", help='connect without PEM key')
-    parser_ssh.add_argument('-d', '--debug', action="store_true", help=argparse.SUPPRESS)
+    parser_ssh = subparsers.add_parser('ssh', description="Connect to an AWS "
+                                       "instance via ssh.", usage="\tawss ssh "
+                                       "( 'NAME' | '-i ID' ) [ -u USER -p -h ]")
+    parser_ssh.add_argument('instname', nargs='?', metavar='NAME',
+                            help='specify instance by name')
+    parser_ssh.add_argument('-i', '--id', action="store",
+                            help='specify instance-id')
+    parser_ssh.add_argument('-u', '--user', action="store",
+                            help='specify username to use for ssh')
+    parser_ssh.add_argument('-p', '--nopem', action="store_true",
+                            help='connect without PEM key')
+    parser_ssh.add_argument('-d', '--debug', action="store_true",
+                            help=argparse.SUPPRESS)
 
     options = parser.parse_args()
     return(options)
@@ -232,7 +271,6 @@ def getInstanceIDs(filtype, filter):
         ID = v['Instances'][0]['InstanceId']
         instanceID[i] = ID
     numInstances = len(instanceID)
-    # return (instanceID, numInstances)
     return
 
 
@@ -241,7 +279,9 @@ def getAMIname(ID):
     return (instanceImage)
 
 
-def getInstanceDetails(qty, idlist):
+def getInstanceDetails():
+    global numInstances
+    global instanceID
     global instanceState
     global instanceAMI
     global instanceName
@@ -250,8 +290,8 @@ def getInstanceDetails(qty, idlist):
     instanceAMI = {}
     instanceName = {}
     instanceAMIName = {}
-    for i in range(qty):
-        instanceData = ec2R.Instance(idlist[i])
+    for i in range(numInstances):
+        instanceData = ec2R.Instance(instanceID[i])
         instanceState[i] = instanceData.state['Name']
         instanceAMI[i] = instanceData.image_id
         instanceTag = instanceData.tags
@@ -260,7 +300,6 @@ def getInstanceDetails(qty, idlist):
                 instanceName[i] = instanceTag[j]['Value']
                 break
         instanceAMIName[i] = getAMIname(instanceAMI[i])
-    # return (instanceState, instanceAMI, instanceName, instanceAMIName)
     return
 
 
@@ -276,7 +315,6 @@ def refineInstanceList(filterType2):
             del instanceAMIName[i]
             newQty -= 1
     numInstances = newQty
-    # return (newQty, instanceName, instanceID, instanceState, instanceAMI, instanceAMIName)
     return
 
 
@@ -353,8 +391,26 @@ def debugPrintAllLists():   # pragma: no cover
     debugPrintList(instanceName, "instanceName")
     debugPrintList(instanceAMIName, "instanceAMIName")
 
-################################################################################
-#  Execution Begins
+
+def determineTargetIntance(filterType2, filters, OutputText, actionType):
+    global numInstances
+    global debug
+    refineInstanceList(filterType2)
+    if numInstances == 0:
+        print("No instance '%s' found %s." % (filters, filterType2))
+        sys.exit()
+    elif numInstances > 1:
+        print("\n%s instances match these parameters:\n" % (numInstances))
+        instanceForAction = selectFromList(OutputText, actionType)
+    else:
+        instanceForAction = 0
+    if (debug):             # pragma: no cover
+        debugPrintAllLists()
+    # get index# and instance-id of target instance
+    (index, instanceIDForAction) = instanceID.items()[instanceForAction]
+    print("\n%s%sing%s instance: %s%s%s with id: %s%s%s" % (colorInstanceStatus(actionType), actionType, CLRnormal, CLRtitle, filters, CLRnormal, CLRtitle, instanceIDForAction, CLRnormal))
+    specifiedInstance = ec2R.Instance(instanceIDForAction)
+    return (index, specifiedInstance)
 
 
 def main():
@@ -368,12 +424,6 @@ def main():
     global instanceAMI
     global instanceName
     global instanceAMIName
-
-    # instanceID = {}
-    # instanceState = {}
-    # instanceAMI = {}
-    # instanceName = {}
-    # instanceAMIName = {}
 
     # Setup AWS EC2 connections
     ec2C = boto3.client('ec2')
@@ -397,68 +447,54 @@ def main():
         print("%sError%s - instance identifier not specified" % (CLRerror, CLRnormal))
         sys.exit()
 
-    # (instanceID, numInstances) = getInstanceIDs(filterType, filters)
     getInstanceIDs(filterType, filters)
-    # (instanceState, instanceAMI, instanceName, instanceAMIName) = getInstanceDetails(numInstances, instanceID)
-    getInstanceDetails(numInstances, instanceID)
+    getInstanceDetails()
 
     if actionType == "list":
         if numInstances > 0:
             displayInstanceList(OutputText)
         else:
             print("No instance '%s' found." % (filters))
+        sys.exit()
+
+    (index, specifiedInstance) = determineTargetIntance(filterType2, filters, OutputText, actionType)
+
+    # perform instance specific actions
+    if actionType == "start":
+        thecmd = getattr(specifiedInstance, actionType)
+        response = thecmd()
+        currentState = response['StartingInstances'][0]['CurrentState']['Name']
+        prevState = response['StartingInstances'][0]['PreviousState']['Name']
+        print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s" % (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
+    elif actionType == "stop":
+        thecmd = getattr(specifiedInstance, actionType)
+        response = thecmd()
+        currentState = response['StoppingInstances'][0]['CurrentState']['Name']
+        prevState = response['StoppingInstances'][0]['PreviousState']['Name']
+        print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s" % (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
     else:
-        # narrow it down to one instance
-        # (numInstances, instanceName, instanceID, instanceState, instanceAMI, instanceAMIName) = refineInstanceList(numInstances, filterType2)
-        refineInstanceList(filterType2)
-        if numInstances == 0:
-            print("No instance '%s' found %s." % (filters, filterType2))
-            sys.exit()
-        elif numInstances > 1:
-            print("\n%s instances match these parameters:\n" % (numInstances))
-            instanceForAction = selectFromList(OutputText, actionType)
+        instanceIP = specifiedInstance.public_ip_address
+        instanceKey = specifiedInstance.key_name
+        homeDir = os.environ['HOME']
+        if (debug):         # pragma: no cover
+            print("target IP= ", instanceIP)
+            print("target key = ", instanceKey)
+        if loginuser == "":
+            loginuser = DetermineLoginUser(index)
         else:
-            instanceForAction = 0
-        if (debug):             # pragma: no cover
-            debugPrintAllLists()
-        # get index# and instance-id of target instance
-        (index, instanceIDForAction) = instanceID.items()[instanceForAction]
-        print("\n%s%sing%s instance: %s%s%s with id: %s%s%s" % (colorInstanceStatus(actionType), actionType, CLRnormal, CLRtitle, filters, CLRnormal, CLRtitle, instanceIDForAction, CLRnormal))
-        specifiedInstance = ec2R.Instance(instanceIDForAction)
-        # perform instance specific actions
-        if actionType == "start":
-            response = specifiedInstance.start()
-            currentState = response['StartingInstances'][0]['CurrentState']['Name']
-            prevState = response['StartingInstances'][0]['PreviousState']['Name']
-            print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s" % (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
-        elif actionType == "stop":
-            response = specifiedInstance.stop()
-            currentState = response['StoppingInstances'][0]['CurrentState']['Name']
-            prevState = response['StoppingInstances'][0]['PreviousState']['Name']
-            print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s" % (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
-        elif actionType == "ssh":
-            instanceIP = specifiedInstance.public_ip_address
-            instanceKey = specifiedInstance.key_name
-            homeDir = os.environ['HOME']
-            if (debug):         # pragma: no cover
-                print("target IP= ", instanceIP)
-                print("target key = ", instanceKey)
-            if loginuser == "":
-                loginuser = DetermineLoginUser(index)
+            pass
+            if (debug):     # pragma: no cover
+                print("LoginUser set by user: %s%s%s\n" % (CLRtitle, loginuser, CLRnormal))
+        if (nopem):
+            if (debug):     # pragma: no cover
+                print("%sNo PEM mode%s  Connect string: %sssh %s@%s%s\n" % (CLRheading, CLRnormal, CLRtitle, loginuser, instanceIP, CLRnormal))
             else:
-                pass
-                if (debug):     # pragma: no cover
-                    print("LoginUser set by user: %s%s%s\n" % (CLRtitle, loginuser, CLRnormal))
-            if (nopem):
-                if (debug):     # pragma: no cover
-                    print("%sNo PEM mode%s  Connect string: %sssh %s@%s%s\n" % (CLRheading, CLRnormal, CLRtitle, loginuser, instanceIP, CLRnormal))
-                else:
-                    print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading, CLRnormal))
-                subprocess.call(["ssh {0}@{1}".format(loginuser, instanceIP)], shell=True)
-            else:
-                if (debug):     # pragma: no cover
-                    print("Connect string: %sssh -i %s/.aws/%s.pem %s@%s%s\n" % (CLRtitle, homeDir, instanceKey, loginuser, instanceIP, CLRnormal))
-                subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".format(homeDir, instanceKey, loginuser, instanceIP)], shell=True)
+                print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading, CLRnormal))
+            subprocess.call(["ssh {0}@{1}".format(loginuser, instanceIP)], shell=True)
+        else:
+            if (debug):     # pragma: no cover
+                print("Connect string: %sssh -i %s/.aws/%s.pem %s@%s%s\n" % (CLRtitle, homeDir, instanceKey, loginuser, instanceIP, CLRnormal))
+            subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".format(homeDir, instanceKey, loginuser, instanceIP)], shell=True)
 
     sys.exit()
 
