@@ -4,7 +4,7 @@
 #
 #       https://github.com/robertpeteuil/aws-shortcuts
 #
-#   Build: 0.9.3    Date 2017-04-19
+#   Build: 0.9.3.1    Date 2017-04-20
 #
 #  Author: Robert Peteuil   @RobertPeteuil
 
@@ -122,13 +122,8 @@ def printWithoutCR(value):
 
 
 def getArguments():
-    nopem = False
-    loginuser = ""
-    filterType = ""
-    filters = ""
-    OutputText = ""
     parser = argparse.ArgumentParser(description="Control AWS instances from the command line with: list, start, stop or ssh.", usage="\tawss {command} ( 'NAME' or '-i ID' ) [ OPTIONS ]\n\t{command} = list | start | stop | ssh", prog='awss')
-    parser.add_argument('-v', '--version', action="version", version='awss 0.9.3')
+    parser.add_argument('-v', '--version', action="version", version='awss 0.9.3.1')
     subparsers = parser.add_subparsers(dest='command', title='For additional help on command parameters', description="type 'awss {command} -h', where {command} is: list, start, stop or ssh")
     # Parser for LIST command
     parser_list = subparsers.add_parser('list', description="List AWS instances from the command line. List all by typing 'awss list', or specify instances by name, instance-id or state.", usage="\tawss list ( (none) | 'NAME' | '-i ID' | -r | -s ) [ OPTIONS ]")
@@ -156,33 +151,14 @@ def getArguments():
     parser_ssh.add_argument('-d', '--debug', action="store_true", help=argparse.SUPPRESS)
 
     options = parser.parse_args()
-    if options.command == "list":
-        actionType = "list"
-        filterType2 = ""
-        if options.running:
-            filterType = "running"
-            filters = "running"
-            OutputText = "Running EC2 Instances"
-        elif options.stopped:
-            filterType = "stopped"
-            filters = "stopped"
-            OutputText = "Stopped EC2 Instances"
-        else:
-            filterType = "all"
-            OutputText = "All Instances"
-    elif options.command == "start":
-        actionType = "start"
-        filterType2 = "stopped"
-    elif options.command == "stop":
-        actionType = "stop"
-        filterType2 = "running"
-    elif options.command == "ssh":
-        actionType = "ssh"
-        filterType2 = "running"
-        if options.nopem:
-            nopem = True
-        if options.user:
-            loginuser = options.user
+    return(options)
+
+
+def decodeArguments(options):
+    loginuser = ""
+    filterType = ""
+    filters = ""
+    OutputText = ""
     if options.instname:
         filterType = "name"
         filters = options.instname
@@ -191,11 +167,57 @@ def getArguments():
         filterType = "id"
         filters = options.id
         OutputText = "Instance '{}'".format(options.id)
+    else:               # TEST LINES
+        print("what was entered?")
     if options.debug:
         debug = True
     else:
         debug = False
-    return (actionType, filterType, filterType2, filters, OutputText, debug, nopem, loginuser)
+    if options.command == "ssh":
+        decodeSSH(options)
+    if options.command == "list":
+        decodeLIST(option)
+    else:       # must be stop or start left
+        decodeToggle(options)
+
+
+def decodeSSH(options):
+    actionType = "ssh"
+    filterType2 = "running"
+    if options.nopem:
+        nopem = True
+    else:
+        nopem = False
+    if options.user:
+        loginuser = options.user
+    return (actionType, filterType, filterType2, filters, OutputText, nopem, loginuser)
+
+
+def decodeLIST(option):
+    actionType = "list"
+    filterType2 = ""
+    if options.running:
+        filterType = "running"
+        filters = "running"
+        OutputText = "Running EC2 Instances"
+    elif options.stopped:
+        filterType = "stopped"
+        filters = "stopped"
+        OutputText = "Stopped EC2 Instances"
+    else:
+        filterType = "all"
+        OutputText = "All Instances"
+    return (actionType, filterType, filterType2, filters, OutputText, nopem, loginuser)
+
+
+def decodeToggle(options):
+    if options.command == "start":
+        actionType = "start"
+        filterType2 = "stopped"
+    elif options.command == "stop":
+        actionType = "stop"
+        filterType2 = "running"
+    return (actionType, filterType, filterType2, filters, OutputText, nopem, loginuser)
 
 
 def getInstanceIDs(filtype, filter):
@@ -277,7 +299,7 @@ def selectFromList(OutputText, actionType):
         if KeyEntered == 0:
             print("\n\n%saborting%s - %s instance\n" % (CLRerror, CLRnormal, actionType))
             sys.exit()
-        if KeyEntered >= 1 and KeyEntered <= numInstances:
+        elif KeyEntered >= 1 and KeyEntered <= numInstances:
             instanceForAction = KeyEntered - 1
             selectionValid = "True"
         else:
@@ -300,24 +322,24 @@ def DetermineLoginUser(ID):
         loginuser = "root"
     else:
         loginuser = "ec2-user"
-    if (debug):
-        print("loginuser calculated as: %s%s%s\n" % (CLRtitle, loginuser, CLRnormal))
+    # if (debug):         # pragma: no cover
+    #     print("loginuser calculated as: %s%s%s\n" % (CLRtitle, loginuser, CLRnormal))
     return (loginuser)
 
 
-def printList(listname, displayname):   # pragma: no cover
+def debugPrintList(listname, displayname):   # pragma: no cover
     print("%sListing %s %s" % (CLRheading, displayname, CLRnormal))
     for x, y in list(listname.items()):
         print("\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal, displayname, CLRtitle, y, CLRnormal))
 
 
-def debugPrintList():   # pragma: no cover
+def debugPrintAllLists():   # pragma: no cover
     print("%sDebug Listing of Info by Type%s\n" % (CLRheading2, CLRnormal))
-    printList(instanceID, "instanceID")
-    printList(instanceState, "instanceState")
-    printList(instanceAMI, "instanceAMI")
-    printList(instanceName, "instanceName")
-    printList(instanceAMIName, "instanceAMIName")
+    debugPrintList(instanceID, "instanceID")
+    debugPrintList(instanceState, "instanceState")
+    debugPrintList(instanceAMI, "instanceAMI")
+    debugPrintList(instanceName, "instanceName")
+    debugPrintList(instanceAMIName, "instanceAMIName")
 
 ################################################################################
 #  Execution Begins
@@ -345,7 +367,8 @@ def main():
     ec2C = boto3.client('ec2')
     ec2R = boto3.resource('ec2')
 
-    (actionType, filterType, filterType2, filters, OutputText, debug, nopem, loginuser) = getArguments()
+    (options) = getArguments()
+    (actionType, filterType, filterType2, filters, OutputText, nopem, loginuser) = decodeArguments(options)
 
     setupColor()
 
@@ -376,13 +399,13 @@ def main():
         if numInstances == 0:
             print("No instance '%s' found %s." % (filters, filterType2))
             sys.exit()
-        if numInstances > 1:
+        elif numInstances > 1:
             print("\n%s instances match these parameters:\n" % (numInstances))
             instanceForAction = selectFromList(OutputText, actionType)
         else:
             instanceForAction = 0
         if (debug):             # pragma: no cover
-            debugPrintList()
+            debugPrintAllLists()
         # get index# and instance-id of target instance
         index, instanceIDForAction = instanceID.items()[instanceForAction]
         print("\n%s%sing%s instance: %s%s%s with id: %s%s%s" % (colorInstanceStatus(actionType), actionType, CLRnormal, CLRtitle, filters, CLRnormal, CLRtitle, instanceIDForAction, CLRnormal))
