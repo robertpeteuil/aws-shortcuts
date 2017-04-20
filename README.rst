@@ -5,7 +5,7 @@ List, start, stop and ssh to AWS instances using Name or Instance-ID
 ---------------------------------------------------------------------------------
 
 
-|Code Climate| |GitHub issues| |PyPi release| |lang| |license| 
+|TRAVIS| |Code Climate| |GitHub issues| |PyPi release| |lang| |license| 
 
 
 --------------
@@ -114,3 +114,6 @@ This utility can be installed with ``pip``:
    :target: https://github.com/robertpeteuil/aws-shortcuts
 .. |PyPi release| image:: https://img.shields.io/pypi/v/awss.svg
    :target: https://pypi.python.org/pypi/awss
+.. |Travis| image:: https://travis-ci.org/robertpeteuil/aws-shortcuts.svg?branch=master
+   :target: https://travis-ci.org/robertpeteuil/aws-shortcuts
+   
