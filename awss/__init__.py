@@ -324,7 +324,8 @@ def displayInstanceList(title, numbered="no"):
             print("Instance %s#%s%s" % (CLRwarning, i + 1, CLRnormal))
         print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" %
               (CLRtitle, instanceName[i], CLRnormal, CLRtitle, instanceID[i],
-               CLRnormal, statCLR[instanceState[i]], instanceState[i], CLRnormal))
+               CLRnormal, statCLR[instanceState[i]], instanceState[i],
+               CLRnormal))
         print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" %
               (CLRtitle, instanceAMI[i], CLRnormal, CLRtitle,
                instanceAMIName[i], CLRnormal))
