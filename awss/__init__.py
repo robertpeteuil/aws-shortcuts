@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-# awss - Control AWS instances from the command line with: list, start, stop or ssh.
+# awss - Control AWS instances from command line: list, start, stop or ssh
 #
 #       https://github.com/robertpeteuil/aws-shortcuts
 #
-#   Build: 0.9.3.1    Date 2017-04-20
+#   Build: 0.9.3.4    Date 2017-04-20
 #
 #  Author: Robert Peteuil   @RobertPeteuil
 
@@ -123,7 +123,7 @@ def getArguments():
                                      " '-i ID' ) [ OPTIONS ]\n\t{command} ="
                                      " list | start | stop | ssh")
     parser.add_argument('-v', '--version', action="version",
-                        version='awss 0.9.3.1')
+                        version='awss 0.9.3.4')
 
     subparsers = parser.add_subparsers(title="For additional help on"
                                        " command parameters", dest='command',
@@ -207,13 +207,15 @@ def decodeArguments(options):
         filters = options.id
     if options.command == "list":
         filterType2 = ""
-        (filterType, filters, OutputText) = decodeLIST(options, filterType, filters)
+        (filterType, filters, OutputText) = decodeLIST(options, filterType,
+                                                       filters)
     elif options.command == "ssh":
         filterType2 = "running"
         (nopem, loginuser) = decodeSSH(options)
     else:       # must be stop or start left
         (filterType2) = decodeToggle(options)
-    return (options.command, filterType, filterType2, filters, OutputText, nopem, loginuser, options.debug)
+    return (options.command, filterType, filterType2, filters, OutputText,
+            nopem, loginuser, options.debug)
 
 
 def decodeLIST(options, filterType, filters):
@@ -260,11 +262,15 @@ def getInstanceIDs(filtype, filter):
     global numInstances
     instanceID = {}
     if filtype == "id":
-        instanceSummaryData = ec2C.describe_instances(InstanceIds=["{0}".format(filter)])
+        instanceSummaryData = ec2C.describe_instances(
+            InstanceIds=["{0}".format(filter)])
     elif filtype == "running" or filtype == "stopped":
-        instanceSummaryData = ec2C.describe_instances(Filters=[{'Name': 'instance-state-name', 'Values': ["{0}".format(filter)]}])
+        instanceSummaryData = ec2C.describe_instances(
+            Filters=[{'Name': 'instance-state-name',
+                      'Values': ["{0}".format(filter)]}])
     elif filtype == "name":
-        instanceSummaryData = ec2C.describe_instances(Filters=[{'Name': 'tag:Name', 'Values': ["{0}".format(filter)]}])
+        instanceSummaryData = ec2C.describe_instances(
+            Filters=[{'Name': 'tag:Name', 'Values': ["{0}".format(filter)]}])
     else:
         instanceSummaryData = ec2C.describe_instances()
     for i, v in enumerate(instanceSummaryData['Reservations']):
@@ -325,8 +331,12 @@ def displayInstanceList(title, numbered="no"):
         if numbered == "yes":
             print("Instance %s#%s%s" % (CLRwarning, i + 1, CLRnormal))
         CLRstatus = colorInstanceStatus(instanceState[i])
-        print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" % (CLRtitle, instanceName[i], CLRnormal, CLRtitle, instanceID[i], CLRnormal, CLRstatus, instanceState[i], CLRnormal))
-        print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" % (CLRtitle, instanceAMI[i], CLRnormal, CLRtitle, instanceAMIName[i], CLRnormal))
+        print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" %
+              (CLRtitle, instanceName[i], CLRnormal, CLRtitle, instanceID[i],
+               CLRnormal, CLRstatus, instanceState[i], CLRnormal))
+        print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" %
+              (CLRtitle, instanceAMI[i], CLRnormal, CLRtitle,
+               instanceAMIName[i], CLRnormal))
 
 
 def selectFromList(OutputText, actionType):
@@ -334,10 +344,15 @@ def selectFromList(OutputText, actionType):
     selectionValid = "False"
     displayInstanceList(OutputText, "yes")
     while selectionValid != "True":
-        printWithoutCR("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0 aborts%s]: " % (CLRwarning, CLRnormal, actionType, CLRwarning, CLRnormal, CLRwarning, numInstances, CLRnormal, CLRtitle, CLRnormal))
+        printWithoutCR("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0 "
+                       "aborts%s]: " % (CLRwarning, CLRnormal, actionType,
+                                        CLRwarning, CLRnormal, CLRwarning,
+                                        numInstances, CLRnormal, CLRtitle,
+                                        CLRnormal))
         RawkeyEntered = getch()
         printWithoutCR(RawkeyEntered)
-        (instanceForAction, selectionValid) = validateKeyEntry(RawkeyEntered, actionType)
+        (instanceForAction, selectionValid) = validateKeyEntry(RawkeyEntered,
+                                                               actionType)
     print()
     return (instanceForAction)
 
@@ -349,13 +364,15 @@ def validateKeyEntry(RawkeyEntered, actionType):
     except ValueError:
         KeyEntered = RawkeyEntered
     if KeyEntered == 0:
-        print("\n\n%saborting%s - %s instance\n" % (CLRerror, CLRnormal, actionType))
+        print("\n\n%saborting%s - %s instance\n" %
+              (CLRerror, CLRnormal, actionType))
         sys.exit()
     elif KeyEntered >= 1 and KeyEntered <= numInstances:
         instanceForAction = KeyEntered - 1
         selectionValid = "True"
     else:
-        printWithoutCR("\n%sInvalid entry:%s enter a number between 1 and %s.\n" % (CLRerror, CLRnormal, numInstances))
+        printWithoutCR("\n%sInvalid entry:%s enter a number between 1 and %s.\n"
+                       % (CLRerror, CLRnormal, numInstances))
         instanceForAction = KeyEntered
     return (instanceForAction, selectionValid)
 
@@ -386,7 +403,9 @@ def debugPrint(item1, item2=""):
 def debugPrintList(listname, displayname):   # pragma: no cover
     print("%sListing %s %s" % (CLRheading, displayname, CLRnormal))
     for x, y in list(listname.items()):
-        print("\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal, displayname, CLRtitle, y, CLRnormal))
+        print("\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal,
+                                             displayname, CLRtitle, y,
+                                             CLRnormal))
 
 
 def debugPrintAllLists():   # pragma: no cover
@@ -396,6 +415,43 @@ def debugPrintAllLists():   # pragma: no cover
     debugPrintList(instanceAMI, "instanceAMI")
     debugPrintList(instanceName, "instanceName")
     debugPrintList(instanceAMIName, "instanceAMIName")
+
+
+def performSSHAction(specifiedInstance, loginuser, index, nopem):
+    instanceIP = specifiedInstance.public_ip_address
+    instanceKey = specifiedInstance.key_name
+    homeDir = os.environ['HOME']
+    debugPrint("target IP =", instanceIP)
+    debugPrint("target key =", instanceKey)
+    if loginuser == "":
+        loginuser = DetermineLoginUser(index)
+    else:
+        debugPrint("LoginUser set by user:", loginuser)
+    if (nopem):
+        debugPrint("Connect string:", "ssh %s@%s" % (loginuser, instanceIP))
+        print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading,
+                                                                  CLRnormal))
+        subprocess.call(["ssh {0}@{1}".format(loginuser, instanceIP)],
+                        shell=True)
+    else:
+        debugPrint("Connect string:", "ssh -i %s/.aws/%s.pem %s@%s\n" %
+                   (homeDir, instanceKey, loginuser, instanceIP))
+        subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".
+                         format(homeDir, instanceKey, loginuser, instanceIP)],
+                        shell=True)
+
+
+def performToggleAction(specifiedInstance, actionType):
+    if actionType == "start":
+        filterS = "StartingInstances"
+    else:
+        filterS = "StoppingInstances"
+    thecmd = getattr(specifiedInstance, actionType)
+    response = thecmd()
+    currentState = response["{0}".format(filterS)][0]['CurrentState']['Name']
+    prevState = response["{0}".format(filterS)][0]['PreviousState']['Name']
+    print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s" %
+          (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
 
 
 def determineTargetIntance(filterType2, filters, OutputText, actionType):
@@ -412,11 +468,30 @@ def determineTargetIntance(filterType2, filters, OutputText, actionType):
         instanceForAction = 0
     if (debug):             # pragma: no cover
         debugPrintAllLists()
-    # get index# and instance-id of target instance
     (index, instanceIDForAction) = instanceID.items()[instanceForAction]
-    print("\n%s%sing%s instance: %s%s%s with id: %s%s%s" % (colorInstanceStatus(actionType), actionType, CLRnormal, CLRtitle, filters, CLRnormal, CLRtitle, instanceIDForAction, CLRnormal))
+    print("\n%s%sing%s instance: %s%s%s with id: %s%s%s" %
+          (colorInstanceStatus(actionType), actionType, CLRnormal, CLRtitle,
+           filters, CLRnormal, CLRtitle, instanceIDForAction, CLRnormal))
     specifiedInstance = ec2R.Instance(instanceIDForAction)
     return (index, specifiedInstance)
+
+
+def performAction(actionType, filterType, filterType2, filters, OutputText,
+                  nopem, loginuser):
+    global numInstances
+    if actionType == "list":
+        if numInstances > 0:
+            displayInstanceList(OutputText)
+        else:
+            print("No instance '%s' found." % (filters))
+    else:
+        (index, specifiedInstance) = determineTargetIntance(filterType2,
+                                                            filters, OutputText,
+                                                            actionType)
+        if actionType == "start" or actionType == "stop":
+            performToggleAction(specifiedInstance, actionType)
+        else:
+            performSSHAction(specifiedInstance, loginuser, index, nopem)
 
 
 def main():
@@ -424,19 +499,14 @@ def main():
     global debug
     global ec2C
     global ec2R
-    global numInstances
-    global instanceID
-    global instanceState
-    global instanceAMI
-    global instanceName
-    global instanceAMIName
 
     # Setup AWS EC2 connections
     ec2C = boto3.client('ec2')
     ec2R = boto3.resource('ec2')
 
     (options) = getArguments()
-    (actionType, filterType, filterType2, filters, OutputText, nopem, loginuser, debug) = decodeArguments(options)
+    (actionType, filterType, filterType2, filters, OutputText, nopem,
+     loginuser, debug) = decodeArguments(options)
 
     setupColor()
 
@@ -449,51 +519,15 @@ def main():
     debugPrint("loginuser =", loginuser)
 
     if actionType != "list" and filterType == "":
-        print("%sError%s - instance identifier not specified" % (CLRerror, CLRnormal))
+        print("%sError%s - instance identifier not specified" %
+              (CLRerror, CLRnormal))
         sys.exit()
 
     getInstanceIDs(filterType, filters)
     getInstanceDetails()
 
-    if actionType == "list":
-        if numInstances > 0:
-            displayInstanceList(OutputText)
-        else:
-            print("No instance '%s' found." % (filters))
-        sys.exit()
-
-    (index, specifiedInstance) = determineTargetIntance(filterType2, filters, OutputText, actionType)
-
-    # perform instance specific actions
-    if actionType == "start":
-        thecmd = getattr(specifiedInstance, actionType)
-        response = thecmd()
-        currentState = response['StartingInstances'][0]['CurrentState']['Name']
-        prevState = response['StartingInstances'][0]['PreviousState']['Name']
-        print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s" % (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
-    elif actionType == "stop":
-        thecmd = getattr(specifiedInstance, actionType)
-        response = thecmd()
-        currentState = response['StoppingInstances'][0]['CurrentState']['Name']
-        prevState = response['StoppingInstances'][0]['PreviousState']['Name']
-        print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s" % (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
-    else:
-        instanceIP = specifiedInstance.public_ip_address
-        instanceKey = specifiedInstance.key_name
-        homeDir = os.environ['HOME']
-        debugPrint("target IP =", instanceIP)
-        debugPrint("target key =", instanceKey)
-        if loginuser == "":
-            loginuser = DetermineLoginUser(index)
-        else:
-            debugPrint("LoginUser set by user:", loginuser)
-        if (nopem):
-            debugPrint("Connect string:", "ssh %s@%s" % (loginuser, instanceIP))
-            print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading, CLRnormal))
-            subprocess.call(["ssh {0}@{1}".format(loginuser, instanceIP)], shell=True)
-        else:
-            debugPrint("Connect string:", "ssh -i %s/.aws/%s.pem %s@%s\n" % (homeDir, instanceKey, loginuser, instanceIP))
-            subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".format(homeDir, instanceKey, loginuser, instanceIP)], shell=True)
+    performAction(actionType, filterType, filterType2, filters, OutputText,
+                  nopem, loginuser)
 
     sys.exit()
 
