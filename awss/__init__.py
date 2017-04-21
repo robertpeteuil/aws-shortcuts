@@ -4,7 +4,7 @@
 #
 #       https://github.com/robertpeteuil/aws-shortcuts
 #
-#   Build: 0.9.3.4    Date 2017-04-20
+#   Build: 0.9.3.5    Date 2017-04-21
 #
 #  Author: Robert Peteuil   @RobertPeteuil
 
@@ -63,6 +63,7 @@ def setupColor():
     global CLRsuccess
     global CLRwarning
     global CLRerror
+    global statCLR
     CLRnormal = ""
     CLRheading = ""
     CLRheading2 = ""
@@ -88,18 +89,9 @@ def setupColor():
             CLRsuccess = green
             CLRwarning = yellow
             CLRerror = red
-
-
-def colorInstanceStatus(state):
-    if state == "running" or state == "start":
-        CLRstatus = CLRsuccess
-    elif state == "stopped" or state == "stop":
-        CLRstatus = CLRerror
-    elif state == "stopping" or state == "pending" or state == "starting":
-        CLRstatus = CLRwarning
-    else:
-        CLRstatus = CLRnormal
-    return CLRstatus
+    statCLR = {"running": CLRsuccess, "start": CLRsuccess, "ssh": CLRsuccess,
+               "stopped": CLRerror, "stop": CLRerror, "stopping": CLRwarning,
+               "pending": CLRwarning, "starting": CLRwarning}
 
 
 def runBash(cmd):
@@ -330,10 +322,9 @@ def displayInstanceList(title, numbered="no"):
     for i in range(numInstances):
         if numbered == "yes":
             print("Instance %s#%s%s" % (CLRwarning, i + 1, CLRnormal))
-        CLRstatus = colorInstanceStatus(instanceState[i])
         print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" %
               (CLRtitle, instanceName[i], CLRnormal, CLRtitle, instanceID[i],
-               CLRnormal, CLRstatus, instanceState[i], CLRnormal))
+               CLRnormal, statCLR[instanceState[i]], instanceState[i], CLRnormal))
         print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" %
               (CLRtitle, instanceAMI[i], CLRnormal, CLRtitle,
                instanceAMIName[i], CLRnormal))
@@ -376,30 +367,13 @@ def validateKeyEntry(RawkeyEntered, actionType):
     return (instanceForAction, selectionValid)
 
 
-def DetermineLoginUser(ID):
-    selImgDesc = instanceAMIName[ID]
-    if selImgDesc.startswith('ubuntu'):
-        loginuser = "ubuntu"
-    elif selImgDesc.startswith('debian'):
-        loginuser = "admin"
-    elif selImgDesc.startswith('fedora'):
-        loginuser = "fedora"
-    elif selImgDesc.startswith('centos'):
-        loginuser = "centos"
-    elif selImgDesc.startswith('openBSD'):
-        loginuser = "root"
-    else:
-        loginuser = "ec2-user"
-    return (loginuser)
-
-
-def debugPrint(item1, item2=""):
+def debugPrint(item1, item2=""):  # pragma: no cover
     global debug
     if (debug):
         print(item1, "%s%s%s" % (CLRtitle, item2, CLRnormal))
 
 
-def debugPrintList(listname, displayname):   # pragma: no cover
+def debugPrintList(listname, displayname):  # pragma: no cover
     print("%sListing %s %s" % (CLRheading, displayname, CLRnormal))
     for x, y in list(listname.items()):
         print("\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal,
@@ -407,7 +381,7 @@ def debugPrintList(listname, displayname):   # pragma: no cover
                                              CLRnormal))
 
 
-def debugPrintAllLists():   # pragma: no cover
+def debugPrintAllLists():  # pragma: no cover
     print("%sDebug Listing of Info by Type%s\n" % (CLRheading2, CLRnormal))
     debugPrintList(instanceID, "instanceID")
     debugPrintList(instanceState, "instanceState")
@@ -417,13 +391,17 @@ def debugPrintAllLists():   # pragma: no cover
 
 
 def performSSHAction(specifiedInstance, loginuser, index, nopem):
+    # only first 5 chars of AMI-name used to avoid version numbers
+    lu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "fedora",
+          "cento": "centos", "openB": "root"}
     instanceIP = specifiedInstance.public_ip_address
     instanceKey = specifiedInstance.key_name
     homeDir = os.environ['HOME']
     debugPrint("target IP =", instanceIP)
     debugPrint("target key =", instanceKey)
     if loginuser == "":
-        loginuser = DetermineLoginUser(index)
+        loginuser = lu.get(instanceAMIName[index][:5], "ec2-user")
+        debugPrint("loginuser Calculated =", loginuser)
     else:
         debugPrint("LoginUser set by user:", loginuser)
     if (nopem):
@@ -450,8 +428,8 @@ def performToggleAction(specifiedInstance, actionType):
     currentState = response["{0}".format(filterS)][0]['CurrentState']['Name']
     prevState = response["{0}".format(filterS)][0]['PreviousState']['Name']
     print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s" %
-          (colorInstanceStatus(currentState), currentState, CLRnormal,
-           colorInstanceStatus(prevState), prevState, CLRnormal))
+          (statCLR[currentState], currentState, CLRnormal,
+           statCLR[prevState], prevState, CLRnormal))
 
 
 def detTargetInstance(filterType2, filters, OutputText, actionType):
@@ -470,7 +448,7 @@ def detTargetInstance(filterType2, filters, OutputText, actionType):
         debugPrintAllLists()
     (index, instanceIDForAction) = instanceID.items()[instanceForAction]
     print("\n%s%sing%s instance: %s%s%s with id: %s%s%s" %
-          (colorInstanceStatus(actionType), actionType, CLRnormal, CLRtitle,
+          (statCLR[actionType], actionType, CLRnormal, CLRtitle,
            filters, CLRnormal, CLRtitle, instanceIDForAction, CLRnormal))
     specifiedInstance = ec2R.Instance(instanceIDForAction)
     return (index, specifiedInstance)
