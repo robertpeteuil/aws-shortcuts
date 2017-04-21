@@ -20,10 +20,6 @@ from awss.getchar import _Getch
 __version__ = '0.9.4'
 
 
-def printNoCR(value):
-    sys.stdout.write(value)
-
-
 def getArguments():
     parser = argparse.ArgumentParser(description="Control AWS instances from"
                                      " the command line with: list, start,"
@@ -267,6 +263,10 @@ def selectFromList(OutputText, actionType):
                                                                actionType)
     print()
     return (instanceForAction)
+
+
+def printNoCR(value):
+    sys.stdout.write(value)
 
 
 def validateKeyEntry(RawkeyEntered, actionType):
