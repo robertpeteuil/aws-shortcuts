@@ -111,7 +111,7 @@ def runBash(cmd):
     return (output.rstrip())
 
 
-def printWithoutCR(value):
+def printNoCR(value):
     sys.stdout.write(value)
 
 
@@ -175,9 +175,9 @@ def getArguments():
                              help=argparse.SUPPRESS)
 
     # Parser for SSH command
-    parser_ssh = subparsers.add_parser('ssh', description="Connect to an AWS "
-                                       "instance via ssh.", usage="\tawss ssh "
-                                       "( 'NAME' | '-i ID' ) [ -u USER -p -h ]")
+    parser_ssh = subparsers.add_parser('ssh', description="Connect to an AWS i"
+                                       "nstance via ssh.", usage="\tawss ssh ("
+                                       " 'NAME' | '-i ID' ) [ -u USER -p -h ]")
     parser_ssh.add_argument('instname', nargs='?', metavar='NAME',
                             help='specify instance by name')
     parser_ssh.add_argument('-i', '--id', action="store",
@@ -344,13 +344,12 @@ def selectFromList(OutputText, actionType):
     selectionValid = "False"
     displayInstanceList(OutputText, "yes")
     while selectionValid != "True":
-        printWithoutCR("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0 "
-                       "aborts%s]: " % (CLRwarning, CLRnormal, actionType,
-                                        CLRwarning, CLRnormal, CLRwarning,
-                                        numInstances, CLRnormal, CLRtitle,
-                                        CLRnormal))
+        printNoCR("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0 aborts%s"
+                  "]: " % (CLRwarning, CLRnormal, actionType, CLRwarning,
+                           CLRnormal, CLRwarning, numInstances, CLRnormal,
+                           CLRtitle, CLRnormal))
         RawkeyEntered = getch()
-        printWithoutCR(RawkeyEntered)
+        printNoCR(RawkeyEntered)
         (instanceForAction, selectionValid) = validateKeyEntry(RawkeyEntered,
                                                                actionType)
     print()
@@ -371,8 +370,8 @@ def validateKeyEntry(RawkeyEntered, actionType):
         instanceForAction = KeyEntered - 1
         selectionValid = "True"
     else:
-        printWithoutCR("\n%sInvalid entry:%s enter a number between 1 and %s.\n"
-                       % (CLRerror, CLRnormal, numInstances))
+        printNoCR("\n%sInvalid entry:%s enter a number between 1 and %s.\n"
+                  % (CLRerror, CLRnormal, numInstances))
         instanceForAction = KeyEntered
     return (instanceForAction, selectionValid)
 
@@ -451,10 +450,11 @@ def performToggleAction(specifiedInstance, actionType):
     currentState = response["{0}".format(filterS)][0]['CurrentState']['Name']
     prevState = response["{0}".format(filterS)][0]['PreviousState']['Name']
     print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s" %
-          (colorInstanceStatus(currentState), currentState, CLRnormal, colorInstanceStatus(prevState), prevState, CLRnormal))
+          (colorInstanceStatus(currentState), currentState, CLRnormal,
+           colorInstanceStatus(prevState), prevState, CLRnormal))
 
 
-def determineTargetIntance(filterType2, filters, OutputText, actionType):
+def detTargetInstance(filterType2, filters, OutputText, actionType):
     global numInstances
     global debug
     refineInstanceList(filterType2)
@@ -485,9 +485,9 @@ def performAction(actionType, filterType, filterType2, filters, OutputText,
         else:
             print("No instance '%s' found." % (filters))
     else:
-        (index, specifiedInstance) = determineTargetIntance(filterType2,
-                                                            filters, OutputText,
-                                                            actionType)
+        (index, specifiedInstance) = detTargetInstance(filterType2,
+                                                       filters, OutputText,
+                                                       actionType)
         if actionType == "start" or actionType == "stop":
             performToggleAction(specifiedInstance, actionType)
         else:

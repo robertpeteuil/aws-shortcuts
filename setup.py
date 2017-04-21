@@ -25,7 +25,7 @@ setup(
     url='https://github.com/robertpeteuil/aws-shortcuts',
     description='AWS Shortcuts for Command-Line Instance Control',
     keywords='AWS EC2 instance control ssh',
-    license='The MIT License: http://www.opensource.org/licenses/mit-license.php',
+    license='MIT License: http://www.opensource.org/licenses/mit-license.php',
     install_requires=['boto3>=1.4',
                       'future>=0.14'],
     classifiers=[
@@ -37,10 +37,13 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Operating System :: MacOS :: MacOS X',
-        'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: System :: Distributed Computing',
         'Topic :: System :: Systems Administration'],
     long_description=long_description
