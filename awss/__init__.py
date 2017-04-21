@@ -17,7 +17,7 @@ from awss.colors import CLRnormal, CLRheading, CLRheading2, CLRtitle,\
     CLRwarning, CLRerror, statCLR
 from awss.getchar import _Getch
 
-__version__ = '0.9.4'
+__version__ = '0.9.4.1'
 
 
 def getArguments():
@@ -200,11 +200,9 @@ def getInstanceDetails():
     global instanceState
     global instanceAMI
     global instanceName
-    global instanceAMIName
     instanceState = {}
     instanceAMI = {}
     instanceName = {}
-    instanceAMIName = {}
     for i in range(numInstances):
         instanceData = ec2R.Instance(instanceID[i])
         instanceState[i] = instanceData.state['Name']
@@ -214,7 +212,7 @@ def getInstanceDetails():
             if instanceTag[j]['Key'] == 'Name':
                 instanceName[i] = instanceTag[j]['Value']
                 break
-        instanceAMIName[i] = getAMIname(instanceAMI[i])
+        # instanceAMIName[i] = getAMIname(instanceAMI[i])
     return
 
 
@@ -227,18 +225,23 @@ def refineInstanceList(filterType2):
             del instanceID[i]
             del instanceState[i]
             del instanceAMI[i]
-            del instanceAMIName[i]
+            try:
+                del instanceAMIName[i]
+            except KeyError:
+                pass
             newQty -= 1
     numInstances = newQty
     return
 
 
 def displayInstanceList(title, numbered="no"):
+    global instanceAMIName
     if numbered == "no":
         print("\n%s%s%s\n" % (CLRheading2, title, CLRnormal))
     for i in range(numInstances):
         if numbered == "yes":
             print("Instance %s#%s%s" % (CLRwarning, i + 1, CLRnormal))
+        instanceAMIName[i] = ec2R.Image(instanceAMI[i]).name
         print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" %
               (CLRtitle, instanceName[i], CLRnormal, CLRtitle, instanceID[i],
                CLRnormal, statCLR[instanceState[i]], instanceState[i],
@@ -299,6 +302,7 @@ def performSSHAction(specifiedInstance, loginuser, index, nopem):
     debugPrint("target IP =", instanceIP)
     debugPrint("target key =", instanceKey)
     if loginuser == "":
+        instanceAMIName[index] = ec2R.Image(instanceAMI[index]).name
         loginuser = lu.get(instanceAMIName[index][:5], "ec2-user")
         debugPrint("loginuser Calculated =", loginuser)
     else:
@@ -411,6 +415,8 @@ def main():
     global debug
     global ec2C
     global ec2R
+    global instanceAMIName
+    instanceAMIName = {}
 
     # Setup AWS EC2 connections
     ec2C = boto3.client('ec2')
