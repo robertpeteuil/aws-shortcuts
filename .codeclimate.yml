@@ -11,9 +11,17 @@ engines:
         enabled: false
       F401:
         enabled: false
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - python
+  radon:
+    enabled: true
 ratings:
   paths:
   - "awss/*"
+  - "setup.py"
 exclude_paths:
   - ".tox/*"
   - "build/*"
