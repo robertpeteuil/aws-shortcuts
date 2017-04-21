@@ -4,7 +4,7 @@
 #
 #       https://github.com/robertpeteuil/aws-shortcuts
 #
-#   Build: 0.9.3.5    Date 2017-04-21
+#   Build: 0.9.3.6    Date 2017-04-21
 #
 #  Author: Robert Peteuil   @RobertPeteuil
 
@@ -16,6 +16,8 @@ import boto3
 import sys
 import subprocess
 import os
+from colors import CLRnormal, CLRheading, CLRheading2, CLRtitle,\
+    CLRsuccess, CLRwarning, CLRerror, statCLR
 
 
 class _Getch(object):
@@ -57,40 +59,40 @@ class _GetchWindows(object):  # pragma: no cover
         return msvcrt.getch()
 
 
-def setupColor():
-    global CLRnormal
-    global CLRheading
-    global CLRheading2
-    global CLRtitle
-    global CLRtitle2
-    global CLRsuccess
-    global CLRwarning
-    global CLRerror
-    global statCLR
-    try:
-        import colorama
-        colorama.init(strip=(not sys.stdout.isatty()))
-        GREEN, YELLOW, RED = (colorama.Fore.GREEN, colorama.Fore.YELLOW,
-                              colorama.Fore.RED)
-        BLUE, CYAN, WHITE = (colorama.Fore.BLUE, colorama.Fore.CYAN,
-                             colorama.Fore.WHITE)
-        # BRIGHT, RESET = colorama.Style.BRIGHT, colorama.Style.RESET_ALL
-    except ImportError:  # pragma: no cover
-        # No colorama, so let's fallback to no-color mode
-        GREEN = YELLOW = RED = BLUE = CYAN = WHITE = ''
-
-    CLRnormal = WHITE
-    CLRheading = GREEN
-    CLRheading2 = BLUE
-    CLRtitle = CYAN
-    CLRtitle2 = YELLOW
-    CLRsuccess = GREEN
-    CLRwarning = YELLOW
-    CLRerror = RED
-
-    statCLR = {"running": CLRsuccess, "start": CLRsuccess, "ssh": CLRsuccess,
-               "stopped": CLRerror, "stop": CLRerror, "stopping": CLRwarning,
-               "pending": CLRwarning, "starting": CLRwarning}
+# def setupColor():
+#     global CLRnormal
+#     global CLRheading
+#     global CLRheading2
+#     global CLRtitle
+#     global CLRtitle2
+#     global CLRsuccess
+#     global CLRwarning
+#     global CLRerror
+#     global statCLR
+#     try:
+#         import colorama
+#         colorama.init(strip=(not sys.stdout.isatty()))
+#         GREEN, YELLOW, RED = (colorama.Fore.GREEN, colorama.Fore.YELLOW,
+#                               colorama.Fore.RED)
+#         BLUE, CYAN, WHITE = (colorama.Fore.BLUE, colorama.Fore.CYAN,
+#                              colorama.Fore.WHITE)
+#         # BRIGHT, RESET = colorama.Style.BRIGHT, colorama.Style.RESET_ALL
+#     except ImportError:  # pragma: no cover
+#         # No colorama, so let's fallback to no-color mode
+#         GREEN = YELLOW = RED = BLUE = CYAN = WHITE = ''
+#
+#     CLRnormal = WHITE
+#     CLRheading = GREEN
+#     CLRheading2 = BLUE
+#     CLRtitle = CYAN
+#     CLRtitle2 = YELLOW
+#     CLRsuccess = GREEN
+#     CLRwarning = YELLOW
+#     CLRerror = RED
+#
+#     statCLR = {"running": CLRsuccess, "start": CLRsuccess, "ssh": CLRsuccess,
+#                "stopped": CLRerror, "stop": CLRerror, "stopping": CLRwarning,
+#                "pending": CLRwarning, "starting": CLRwarning}
 
 
 def printNoCR(value):
@@ -194,14 +196,14 @@ def decodeArguments(options):
     elif options.command == "ssh":
         filterType2 = "running"
         (nopem, loginuser) = decodeSSH(options)
-    else:       # must be stop or start left
+    else:  # must be stop or start
         (filterType2) = decodeToggle(options)
     return (options.command, filterType, filterType2, filters, OutputText,
             nopem, loginuser, options.debug)
 
 
 def decodeLIST(options, filterType, filters):
-    if filterType == "":        # only call if NAME or ID not specified
+    if filterType == "":  # only call if NAME or ID not specified
         if options.running:
             filterType = "running"
             filters = "running"
@@ -435,7 +437,7 @@ def detTargetInstance(filterType2, filters, OutputText, actionType):
         instanceForAction = selectFromList(OutputText, actionType)
     else:
         instanceForAction = 0
-    if (debug):             # pragma: no cover
+    if (debug):  # pragma: no cover
         debugPrintAllLists()
     (index, instanceIDForAction) = instanceID.items()[instanceForAction]
     print("\n%s%sing%s instance: %s%s%s with id: %s%s%s" %
@@ -477,7 +479,7 @@ def main():
     (actionType, filterType, filterType2, filters, OutputText, nopem,
      loginuser, debug) = decodeArguments(options)
 
-    setupColor()
+    # setupColor()
 
     debugPrint("actionType =", actionType)
     debugPrint("filterType =", filterType)
