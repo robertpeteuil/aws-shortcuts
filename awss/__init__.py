@@ -4,7 +4,7 @@
 #
 #       https://github.com/robertpeteuil/aws-shortcuts
 #
-#   Build: 0.9.3.6    Date 2017-04-21
+#   Build: 0.9.3.7    Date 2017-04-21
 #
 #  Author: Robert Peteuil   @RobertPeteuil
 
@@ -17,7 +17,7 @@ import sys
 import subprocess
 import os
 from colors import CLRnormal, CLRheading, CLRheading2, CLRtitle,\
-    CLRsuccess, CLRwarning, CLRerror, statCLR
+    CLRwarning, CLRerror, statCLR
 
 
 class _Getch(object):
@@ -241,22 +241,26 @@ def decodeToggle(options):
     return (filterType2)
 
 
-def getInstanceIDs(filtype, filter):
-    global instanceID
-    global numInstances
-    instanceID = {}
+def getSummaryData(filtype, filters):
     if filtype == "id":
         instanceSummaryData = ec2C.describe_instances(
-            InstanceIds=["{0}".format(filter)])
+            InstanceIds=["{0}".format(filters)])
     elif filtype == "running" or filtype == "stopped":
         instanceSummaryData = ec2C.describe_instances(
             Filters=[{'Name': 'instance-state-name',
-                      'Values': ["{0}".format(filter)]}])
+                      'Values': ["{0}".format(filters)]}])
     elif filtype == "name":
         instanceSummaryData = ec2C.describe_instances(
-            Filters=[{'Name': 'tag:Name', 'Values': ["{0}".format(filter)]}])
+            Filters=[{'Name': 'tag:Name', 'Values': ["{0}".format(filters)]}])
     else:
         instanceSummaryData = ec2C.describe_instances()
+    return (instanceSummaryData)
+
+
+def getInstanceIDs(instanceSummaryData):
+    global instanceID
+    global numInstances
+    instanceID = {}
     for i, v in enumerate(instanceSummaryData['Reservations']):
         ID = v['Instances'][0]['InstanceId']
         instanceID[i] = ID
@@ -479,8 +483,6 @@ def main():
     (actionType, filterType, filterType2, filters, OutputText, nopem,
      loginuser, debug) = decodeArguments(options)
 
-    # setupColor()
-
     debugPrint("actionType =", actionType)
     debugPrint("filterType =", filterType)
     debugPrint("filterType2 =", filterType2)
@@ -494,7 +496,8 @@ def main():
               (CLRerror, CLRnormal))
         sys.exit()
 
-    getInstanceIDs(filterType, filters)
+    instanceSummaryData = getSummaryData(filterType, filters)
+    getInstanceIDs(instanceSummaryData)
     getInstanceDetails()
 
     performAction(actionType, filterType, filterType2, filters, OutputText,

@@ -19,11 +19,11 @@ engines:
     config:
       languages:
         python:
-          mass_threshold: 40
+          mass_threshold: 36
   radon:
     enabled: true
     config:
-      threshold: "C"
+      threshold: "B"
 ratings:
   paths:
   - "awss/*"
