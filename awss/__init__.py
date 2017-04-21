@@ -4,8 +4,6 @@
 #
 #       https://github.com/robertpeteuil/aws-shortcuts
 #
-#   Build: 0.9.3.7    Date 2017-04-21
-#
 #  Author: Robert Peteuil   @RobertPeteuil
 
 from __future__ import print_function
@@ -16,83 +14,11 @@ import boto3
 import sys
 import subprocess
 import os
-from colors import CLRnormal, CLRheading, CLRheading2, CLRtitle,\
+from awss.colors import CLRnormal, CLRheading, CLRheading2, CLRtitle,\
     CLRwarning, CLRerror, statCLR
+from awss.getchar import _Getch
 
-
-class _Getch(object):
-    def __init__(self):
-        try:
-            self.impl = _GetchWindows()
-        except ImportError:
-            self.impl = _GetchUnix()
-
-    def __call__(self):
-        return self.impl()
-
-
-class _GetchUnix(object):
-    def __init__(self):
-        import tty  # noqa: F401
-        import sys  # noqa: F401
-
-    def __call__(self):
-        import sys  # noqa: F401
-        import tty  # noqa: F401
-        import termios  # noqa: F401
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setraw(sys.stdin.fileno())
-            ch = sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return ch
-
-
-class _GetchWindows(object):  # pragma: no cover
-    def __init__(self):
-        import msvcrt  # noqa: F401
-
-    def __call__(self):
-        import msvcrt
-        return msvcrt.getch()
-
-
-# def setupColor():
-#     global CLRnormal
-#     global CLRheading
-#     global CLRheading2
-#     global CLRtitle
-#     global CLRtitle2
-#     global CLRsuccess
-#     global CLRwarning
-#     global CLRerror
-#     global statCLR
-#     try:
-#         import colorama
-#         colorama.init(strip=(not sys.stdout.isatty()))
-#         GREEN, YELLOW, RED = (colorama.Fore.GREEN, colorama.Fore.YELLOW,
-#                               colorama.Fore.RED)
-#         BLUE, CYAN, WHITE = (colorama.Fore.BLUE, colorama.Fore.CYAN,
-#                              colorama.Fore.WHITE)
-#         # BRIGHT, RESET = colorama.Style.BRIGHT, colorama.Style.RESET_ALL
-#     except ImportError:  # pragma: no cover
-#         # No colorama, so let's fallback to no-color mode
-#         GREEN = YELLOW = RED = BLUE = CYAN = WHITE = ''
-#
-#     CLRnormal = WHITE
-#     CLRheading = GREEN
-#     CLRheading2 = BLUE
-#     CLRtitle = CYAN
-#     CLRtitle2 = YELLOW
-#     CLRsuccess = GREEN
-#     CLRwarning = YELLOW
-#     CLRerror = RED
-#
-#     statCLR = {"running": CLRsuccess, "start": CLRsuccess, "ssh": CLRsuccess,
-#                "stopped": CLRerror, "stop": CLRerror, "stopping": CLRwarning,
-#                "pending": CLRwarning, "starting": CLRwarning}
+__version__ = '0.9.4'
 
 
 def printNoCR(value):
@@ -107,7 +33,7 @@ def getArguments():
                                      " '-i ID' ) [ OPTIONS ]\n\t{command} ="
                                      " list | start | stop | ssh")
     parser.add_argument('-v', '--version', action="version",
-                        version='awss 0.9.3.4')
+                        version="awss {0}".format(__version__))
 
     subparsers = parser.add_subparsers(title="For additional help on"
                                        " command parameters", dest='command',
@@ -241,15 +167,15 @@ def decodeToggle(options):
     return (filterType2)
 
 
-def getSummaryData(filtype, filters):
-    if filtype == "id":
+def getSummaryData(filterType, filters):
+    if filterType == "id":
         instanceSummaryData = ec2C.describe_instances(
             InstanceIds=["{0}".format(filters)])
-    elif filtype == "running" or filtype == "stopped":
+    elif filterType == "running" or filterType == "stopped":
         instanceSummaryData = ec2C.describe_instances(
             Filters=[{'Name': 'instance-state-name',
                       'Values': ["{0}".format(filters)]}])
-    elif filtype == "name":
+    elif filterType == "name":
         instanceSummaryData = ec2C.describe_instances(
             Filters=[{'Name': 'tag:Name', 'Values': ["{0}".format(filters)]}])
     else:
@@ -364,29 +290,6 @@ def validateKeyEntry(RawkeyEntered, actionType):
     return (instanceForAction, selectionValid)
 
 
-def debugPrint(item1, item2=""):  # pragma: no cover
-    global debug
-    if (debug):
-        print(item1, "%s%s%s" % (CLRtitle, item2, CLRnormal))
-
-
-def debugPrintList(listname, displayname):  # pragma: no cover
-    print("%sListing %s %s" % (CLRheading, displayname, CLRnormal))
-    for x, y in list(listname.items()):
-        print("\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal,
-                                             displayname, CLRtitle, y,
-                                             CLRnormal))
-
-
-def debugPrintAllLists():  # pragma: no cover
-    print("%sDebug Listing of Info by Type%s\n" % (CLRheading2, CLRnormal))
-    debugPrintList(instanceID, "instanceID")
-    debugPrintList(instanceState, "instanceState")
-    debugPrintList(instanceAMI, "instanceAMI")
-    debugPrintList(instanceName, "instanceName")
-    debugPrintList(instanceAMIName, "instanceAMIName")
-
-
 def performSSHAction(specifiedInstance, loginuser, index, nopem):
     # only first 5 chars of AMI-name used to avoid version numbers
     lu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "fedora",
@@ -469,6 +372,41 @@ def performAction(actionType, filterType, filterType2, filters, OutputText,
             performSSHAction(specifiedInstance, loginuser, index, nopem)
 
 
+def debugPrint(item1, item2=""):  # pragma: no cover
+    global debug
+    if (debug):
+        print(item1, "%s%s%s" % (CLRtitle, item2, CLRnormal))
+
+
+def debugPrintOptions(actionType, filterType, filterType2, filters,
+                      OutputText, nopem, loginuser):
+    if (debug):
+        print("actionType =", actionType)
+        print("filterType =", filterType)
+        print("filterType2 =", filterType2)
+        print("filters =", filters)
+        print("OutputText =", OutputText)
+        print("nopem =", nopem)
+        print("loginuser =", loginuser)
+
+
+def debugPrintList(listname, displayname):  # pragma: no cover
+    print("%sListing %s %s" % (CLRheading, displayname, CLRnormal))
+    for x, y in list(listname.items()):
+        print("\ti = %s%s%s, %s = %s%s%s" % (CLRtitle, x, CLRnormal,
+                                             displayname, CLRtitle, y,
+                                             CLRnormal))
+
+
+def debugPrintAllLists():  # pragma: no cover
+    print("%sDebug Listing of Info by Type%s\n" % (CLRheading2, CLRnormal))
+    debugPrintList(instanceID, "instanceID")
+    debugPrintList(instanceState, "instanceState")
+    debugPrintList(instanceAMI, "instanceAMI")
+    debugPrintList(instanceName, "instanceName")
+    debugPrintList(instanceAMIName, "instanceAMIName")
+
+
 def main():
 
     global debug
@@ -483,13 +421,8 @@ def main():
     (actionType, filterType, filterType2, filters, OutputText, nopem,
      loginuser, debug) = decodeArguments(options)
 
-    debugPrint("actionType =", actionType)
-    debugPrint("filterType =", filterType)
-    debugPrint("filterType2 =", filterType2)
-    debugPrint("filters =", filters)
-    debugPrint("OutputText =", OutputText)
-    debugPrint("nopem =", nopem)
-    debugPrint("loginuser =", loginuser)
+    debugPrintOptions(actionType, filterType, filterType2, filters,
+                      OutputText, nopem, loginuser)
 
     if actionType != "list" and filterType == "":
         print("%sError%s - instance identifier not specified" %
