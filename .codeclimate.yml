@@ -13,11 +13,17 @@ engines:
         enabled: false
   duplication:
     enabled: true
+    checks:
+      Similar Code:
+        enabled: false
     config:
       languages:
-      - python
+        python:
+          mass_threshold: 40
   radon:
     enabled: true
+    config:
+      threshold: "C"
 ratings:
   paths:
   - "awss/*"
