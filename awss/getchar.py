@@ -2,6 +2,8 @@
 without requiring the enter key.
 '''
 
+from builtins import object
+
 
 class _Getch(object):
     def __init__(self):
