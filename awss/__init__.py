@@ -31,10 +31,13 @@ class _Getch(object):
 
 class _GetchUnix(object):
     def __init__(self):
-        import tty, sys     # noqa: F401, E401
+        import tty  # noqa: F401
+        import sys  # noqa: F401
 
     def __call__(self):
-        import sys, tty, termios    # noqa: E401
+        import sys  # noqa: F401
+        import tty  # noqa: F401
+        import termios  # noqa: F401
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
         try:
@@ -45,9 +48,9 @@ class _GetchUnix(object):
         return ch
 
 
-class _GetchWindows(object):    # pragma: no cover
+class _GetchWindows(object):  # pragma: no cover
     def __init__(self):
-        import msvcrt       # noqa: F401
+        import msvcrt  # noqa: F401
 
     def __call__(self):
         import msvcrt
@@ -64,43 +67,30 @@ def setupColor():
     global CLRwarning
     global CLRerror
     global statCLR
-    CLRnormal = ""
-    CLRheading = ""
-    CLRheading2 = ""
-    CLRtitle = ""
-    CLRtitle2 = ""
-    CLRsuccess = ""
-    CLRwarning = ""
-    CLRerror = ""
-    if sys.stdout.isatty():
-        ncolors = int(runBash("tput colors 2> /dev/null"))
-        if ncolors != "" and ncolors >= 8:
-            blue = "\033[1;34m"
-            white = "\033[1;37m"
-            green = "\033[1;32m"
-            red = "\033[1;31m"
-            yellow = "\033[1;33m"
-            cyan = "\033[1;36m"
-            CLRnormal = white
-            CLRheading = green
-            CLRheading2 = blue
-            CLRtitle = cyan
-            CLRtitle2 = yellow
-            CLRsuccess = green
-            CLRwarning = yellow
-            CLRerror = red
+    try:
+        import colorama
+        colorama.init(strip=(not sys.stdout.isatty()))
+        GREEN, YELLOW, RED = (colorama.Fore.GREEN, colorama.Fore.YELLOW,
+                              colorama.Fore.RED)
+        BLUE, CYAN, WHITE = (colorama.Fore.BLUE, colorama.Fore.CYAN,
+                             colorama.Fore.WHITE)
+        # BRIGHT, RESET = colorama.Style.BRIGHT, colorama.Style.RESET_ALL
+    except ImportError:  # pragma: no cover
+        # No colorama, so let's fallback to no-color mode
+        GREEN = YELLOW = RED = BLUE = CYAN = WHITE = ''
+
+    CLRnormal = WHITE
+    CLRheading = GREEN
+    CLRheading2 = BLUE
+    CLRtitle = CYAN
+    CLRtitle2 = YELLOW
+    CLRsuccess = GREEN
+    CLRwarning = YELLOW
+    CLRerror = RED
+
     statCLR = {"running": CLRsuccess, "start": CLRsuccess, "ssh": CLRsuccess,
                "stopped": CLRerror, "stop": CLRerror, "stopping": CLRwarning,
                "pending": CLRwarning, "starting": CLRwarning}
-
-
-def runBash(cmd):
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    (output, err) = p.communicate()
-    if err:     # pragma: no cover
-        p_status = p.wait()
-        print("Command exit status / return code : ", p_status)
-    return (output.rstrip())
 
 
 def printNoCR(value):
@@ -318,7 +308,7 @@ def refineInstanceList(filterType2):
 
 def displayInstanceList(title, numbered="no"):
     if numbered == "no":
-        print("\n%s%s%s\n" % (CLRheading, title, CLRnormal))
+        print("\n%s%s%s\n" % (CLRheading2, title, CLRnormal))
     for i in range(numInstances):
         if numbered == "yes":
             print("Instance %s#%s%s" % (CLRwarning, i + 1, CLRnormal))

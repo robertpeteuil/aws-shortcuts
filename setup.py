@@ -27,7 +27,8 @@ setup(
     keywords='AWS EC2 instance control ssh',
     license='MIT License: http://www.opensource.org/licenses/mit-license.php',
     install_requires=['boto3>=1.4',
-                      'future>=0.14'],
+                      'future>=0.14',
+                      'colorama'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
