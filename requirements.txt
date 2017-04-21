@@ -1,0 +1,5 @@
+readme_renderer
+doctools
+flake8
+mccabe
+codeclimate-test-reporter

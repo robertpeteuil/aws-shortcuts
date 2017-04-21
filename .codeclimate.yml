@@ -11,7 +11,25 @@ engines:
         enabled: false
       F401:
         enabled: false
+  duplication:
+    enabled: true
+    checks:
+      Similar Code:
+        enabled: true
+    config:
+      languages:
+        python:
+          mass_threshold: 36
+  radon:
+    enabled: true
+    config:
+      threshold: "B"
 ratings:
   paths:
   - "awss/*"
-exclude_paths: []
+  - "setup.py"
+exclude_paths:
+  - ".tox/*"
+  - "build/*"
+  - "dist/*"
+  - "*.egg-info/*"
