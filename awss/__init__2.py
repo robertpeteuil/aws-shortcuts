@@ -15,7 +15,7 @@ import sys
 # import os
 from awss.colors import CLRnormal, CLRheading, CLRheading2, CLRtitle,\
     CLRwarning, CLRerror, statCLR
-# from awss.getchar import _Getch
+from awss.getchar import _Getch
 from pprint import pprint
 
 __version__ = '0.9.4.5'
@@ -161,16 +161,28 @@ def commandList(options):
 
 def commandToggle(options):
     iscalc = {"start": "stopped", "stop": "running"}
+    recalc = {"start": "StartingInstances", "stop": "StoppingInstances"}
     options.inState = iscalc[options.command]
-    print("toggle set state = %s" % (options.inState))
+    # print("toggle set state = %s" % (options.inState))
     (QueryString, outputTitle) = calculateQuery(options)
     if QueryString == "ec2C.describe_instances(":
         print("%sError%s - instance identifier not specified" %
               (CLRerror, CLRnormal))
-        sys.exit()
+        sys.exit(1)
     iInfo = getInstList(QueryString)
-    print("\nFull Report:\n")
-    debugPrint(iInfo)
+    (tarIndex, tarInstance) = determineTarget(options, iInfo, outputTitle)
+    thecmd = getattr(tarInstance, options.command)
+    response = thecmd()
+    qryStates = ('CurrentState', 'PreviousState')
+    filterS = recalc[options.command]
+    resp = {}
+    for i, j in enumerate(qryStates):
+        resp[i] = response["{0}".format(filterS)][0]["{0}".format(j)]['Name']
+    print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s" %
+          (statCLR[resp[0]], resp[0], CLRnormal,
+           statCLR[resp[1]], resp[1], CLRnormal))
+    # print("\nFull Report:\n")
+    # debugPrint(iInfo)
 
 
 def commandSSH(options):
@@ -267,7 +279,6 @@ def getInstDetails(iInfo):
 
 
 def displayInstanceList(outputTitle, iInfo, numbered="no"):
-    global instanceAMIName
     if numbered == "no":
         print("\n%s%s%s\n" % (CLRheading2, outputTitle, CLRnormal))
     for i in range(numInstances):
@@ -281,6 +292,64 @@ def displayInstanceList(outputTitle, iInfo, numbered="no"):
         print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" %
               (CLRtitle, iInfo[i]['ami'], CLRnormal, CLRtitle,
                iInfo[i]['aminame'], CLRnormal))
+
+
+def determineTarget(options, iInfo, outputTitle):
+    if numInstances == 0:
+        print("No instances found with parameters: %s" % (outputTitle))
+        sys.exit()
+    else:
+        iInfo = getInstDetails(iInfo)
+    if numInstances > 1:
+        print("\n%s instances match these parameters:\n" % (numInstances))
+        tarIndex = selectFromList(outputTitle, iInfo, options.command)
+    else:
+        tarIndex = 0
+    # if (debug):  # pragma: no cover
+    #     debugPrintAllLists()
+    tarID = iInfo[tarIndex]['id']
+    print("\n%s%sing%s instance with id %s%s%s" % (statCLR[options.command],
+                                                   options.command, CLRnormal,
+                                                   CLRtitle, tarID, CLRnormal))
+    specifiedInstance = ec2R.Instance(tarID)
+    return (tarIndex, specifiedInstance)
+
+
+def selectFromList(outputTitle, iInfo, actionType):
+    getch = _Getch()
+    selectionValid = "False"
+    displayInstanceList(outputTitle, iInfo, "yes")
+    while selectionValid != "True":
+        sys.stdout.write("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0"
+                         " aborts%s]: " % (CLRwarning, CLRnormal, actionType,
+                                           CLRwarning, CLRnormal, CLRwarning,
+                                           numInstances, CLRnormal, CLRtitle,
+                                           CLRnormal))
+        RawkeyEntered = getch()
+        sys.stdout.write(RawkeyEntered)
+        (tarIndex, selectionValid) = validateKeyEntry(RawkeyEntered, actionType)
+    print()
+    return (tarIndex)
+
+
+def validateKeyEntry(RawkeyEntered, actionType):
+    selectionValid = "False"
+    try:
+        KeyEntered = int(RawkeyEntered)
+    except ValueError:
+        KeyEntered = RawkeyEntered
+    if KeyEntered == 0:
+        print("\n\n%saborting%s - %s instance\n" %
+              (CLRerror, CLRnormal, actionType))
+        sys.exit()
+    elif KeyEntered >= 1 and KeyEntered <= numInstances:
+        instanceForAction = KeyEntered - 1
+        selectionValid = "True"
+    else:
+        sys.stdout.write("\n%sInvalid entry:%s enter a number between 1"
+                         " and %s.\n" % (CLRerror, CLRnormal, numInstances))
+        instanceForAction = KeyEntered
+    return (instanceForAction, selectionValid)
 
 
 def debugPrint(passeditem):
