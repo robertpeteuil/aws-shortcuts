@@ -11,18 +11,21 @@ from builtins import range
 import argparse
 import boto3
 import sys
-import subprocess
-import os
+# import subprocess
+# import os
 from awss.colors import CLRnormal, CLRheading, CLRheading2, CLRtitle,\
     CLRwarning, CLRerror, statCLR
-from awss.getchar import _Getch
+# from awss.getchar import _Getch
+from pprint import pprint
 
-__version__ = '0.9.4.2'
+__version__ = '0.9.4.5'
 
 
 def main():
 
     getArguments()
+
+    sys.exit()
 
 # OLD MAIN BELOW HERE
 
@@ -87,7 +90,7 @@ def getArguments():
     parser_list.add_argument('-i', '--id', action="store",
                              help='specify instance by id')
     parser_list.add_argument('-s', '--stopped', action='store_const',
-                             dest="inState", const="running",
+                             dest="inState", const="stopped",
                              help='list stopped instances')
     parser_list.add_argument('-r', '--running', action='store_const',
                              dest="inState", const="running",
@@ -107,7 +110,7 @@ def getArguments():
                               help='specify instance-id')
     parser_start.add_argument('-d', '--debug', action="store_true",
                               default=False, help=argparse.SUPPRESS)
-    parser_start.set_defaults(func=commandStart)
+    parser_start.set_defaults(func=commandToggle)
 
     # Parser for STOP command
     parser_stop = subparsers.add_parser('stop', usage="\tawss stop ( 'NAME' |"
@@ -120,7 +123,7 @@ def getArguments():
                              help='specify instance-id')
     parser_stop.add_argument('-d', '--debug', action="store_true",
                              default=False, help=argparse.SUPPRESS)
-    parser_start.set_defaults(func=commandStop)
+    parser_stop.set_defaults(func=commandToggle)
 
     # Parser for SSH command
     parser_ssh = subparsers.add_parser('ssh', description="Connect to an AWS i"
@@ -136,10 +139,152 @@ def getArguments():
                             help='connect without PEM key')
     parser_ssh.add_argument('-d', '--debug', action="store_true",
                             default=False, help=argparse.SUPPRESS)
-    parser_start.set_defaults(func=commandSSH)
+    parser_ssh.set_defaults(func=commandSSH)
 
     options = parser.parse_args()
     options.func(options)
+
+
+def commandList(options):
+    (QueryString, outputTitle) = calculateQuery(options)
+    iInfo = getInstList(QueryString)
+    # get full details
+    if numInstances > 0:
+        iInfo = getInstDetails(iInfo)
+        outputTitle = "Instance List - " + outputTitle
+        displayInstanceList(outputTitle, iInfo)
+    else:
+        print("No instances found with parameters: %s" % (outputTitle))
+    # print(outputTitle)
+    # debugPrint(iInfo)
+
+
+def commandToggle(options):
+    iscalc = {"start": "stopped", "stop": "running"}
+    options.inState = iscalc[options.command]
+    print("toggle set state = %s" % (options.inState))
+    (QueryString, outputTitle) = calculateQuery(options)
+    if QueryString == "ec2C.describe_instances(":
+        print("%sError%s - instance identifier not specified" %
+              (CLRerror, CLRnormal))
+        sys.exit()
+    iInfo = getInstList(QueryString)
+    print("\nFull Report:\n")
+    debugPrint(iInfo)
+
+
+def commandSSH(options):
+    options.inState = "running"
+    (QueryString, outputTitle) = calculateQuery(options)
+    if QueryString == "ec2C.describe_instances(":
+        print("%sError%s - instance identifier not specified" %
+              (CLRerror, CLRnormal))
+        sys.exit()
+    iInfo = getInstList(QueryString)
+    print("\nFull Report:\n")
+    debugPrint(iInfo)
+
+
+def calculateQuery(options):
+    qryStr = "ec2C.describe_instances("
+    FiltStart = "Filters=["
+    FiltEnd = ""
+    outputTitle = ""
+    outputEnd = "All"
+    i = False
+    n = False
+    if options.id:
+        qryStr = qryStr + "InstanceIds=['%s']" % (options.id)
+        outputTitle = outputTitle + "id: '%s'" % (options.id)
+        i = True
+        outputEnd = ""
+    if options.instname:
+        # if i:
+        #     qryStr = qryStr + ", "
+        #     outputTitle = outputTitle + ", "
+        (qryStr, outputTitle) = appendQuery(i, qryStr, outputTitle)
+        n = True
+        FiltEnd = "]"
+        outputEnd = ""
+        qryStr = qryStr + FiltStart + ("{'Name': 'tag:Name', 'Values': ['%s']}"
+                                       % (options.instname))
+
+        outputTitle = outputTitle + "name: '%s'" % (options.instname)
+    if options.inState:
+        # if n:
+        #     qryStr = qryStr + ", "
+        #     outputTitle = outputTitle + ", "
+        # else:
+        #     qryStr = qryStr + FiltStart
+        (qryStr, outputTitle) = appendQuery(n, qryStr, outputTitle, i,
+                                            FiltStart)
+        qryStr = qryStr + "{'Name': 'instance-state-name','Values': ['%s']}" % (options.inState)
+        outputTitle = outputTitle + "state: '%s'" % (options.inState)
+        FiltEnd = "]"
+        outputEnd = ""
+    qryStr = qryStr + FiltEnd + ")"
+    outputTitle = outputTitle + outputEnd
+    return(qryStr, outputTitle)
+
+
+def appendQuery(n, qryStr, outputTitle, i=False, FiltStart=""):
+    if i or n:
+        qryStr = qryStr + ", "
+        outputTitle = outputTitle + ", "
+    if not n:
+            qryStr = qryStr + FiltStart
+    return (qryStr, outputTitle)
+
+
+def getInstList(QueryString):
+    global numInstances
+    global ec2C
+    ec2C = boto3.client('ec2')
+    instanceSummaryData = eval(QueryString)
+    iInfo = {}
+    for i, v in enumerate(instanceSummaryData['Reservations']):
+        inID = v['Instances'][0]['InstanceId']
+        iInfo[i] = {'id': inID}
+    numInstances = len(iInfo)
+    # print("numInstances:", numInstances)
+    # debugPrint(iInfo)
+    return (iInfo)
+
+
+def getInstDetails(iInfo):
+    global ec2R
+    ec2R = boto3.resource('ec2')
+    for i in range(numInstances):
+        instanceData = ec2R.Instance(iInfo[i]['id'])
+        iInfo[i]['state'] = instanceData.state['Name']
+        iInfo[i]['ami'] = instanceData.image_id
+        instanceTag = instanceData.tags
+        for j in range(len(instanceTag)):
+            if instanceTag[j]['Key'] == 'Name':
+                iInfo[i]['name'] = instanceTag[j]['Value']
+                break
+    return (iInfo)
+
+
+def displayInstanceList(outputTitle, iInfo, numbered="no"):
+    global instanceAMIName
+    if numbered == "no":
+        print("\n%s%s%s\n" % (CLRheading2, outputTitle, CLRnormal))
+    for i in range(numInstances):
+        if numbered == "yes":
+            print("Instance %s#%s%s" % (CLRwarning, i + 1, CLRnormal))
+        iInfo[i]['aminame'] = ec2R.Image(iInfo[i]['ami']).name
+        print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" %
+              (CLRtitle, iInfo[i]['name'], CLRnormal, CLRtitle, iInfo[i]['id'],
+               CLRnormal, statCLR[iInfo[i]['state']], iInfo[i]['state'],
+               CLRnormal))
+        print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" %
+              (CLRtitle, iInfo[i]['ami'], CLRnormal, CLRtitle,
+               iInfo[i]['aminame'], CLRnormal))
+
+
+def debugPrint(passeditem):
+    pprint(passeditem)
 
 
 if __name__ == '__main__':
