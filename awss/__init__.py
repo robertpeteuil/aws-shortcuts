@@ -17,7 +17,7 @@ from awss.colors import CLRnormal, CLRheading, CLRheading2, CLRtitle,\
     CLRwarning, CLRerror, statCLR
 from awss.getchar import _Getch
 
-__version__ = '0.9.4.1'
+__version__ = '0.9.4.2'
 
 
 def getArguments():
@@ -53,7 +53,7 @@ def getArguments():
     parser_list.add_argument('-s', '--stopped', action="store_true",
                              help='list stopped instances')
     parser_list.add_argument('-d', '--debug', action="store_true",
-                             help=argparse.SUPPRESS)
+                             default=False, help=argparse.SUPPRESS)
 
     # Parser for START command
     parser_start = subparsers.add_parser('start', usage="\tawss start ( 'NAME'"
@@ -65,7 +65,7 @@ def getArguments():
     parser_start.add_argument('-i', '--id', action="store",
                               help='specify instance-id')
     parser_start.add_argument('-d', '--debug', action="store_true",
-                              help=argparse.SUPPRESS)
+                              default=False, help=argparse.SUPPRESS)
 
     # Parser for STOP command
     parser_stop = subparsers.add_parser('stop', usage="\tawss stop ( 'NAME' |"
@@ -77,7 +77,7 @@ def getArguments():
     parser_stop.add_argument('-i', '--id', action="store",
                              help='specify instance-id')
     parser_stop.add_argument('-d', '--debug', action="store_true",
-                             help=argparse.SUPPRESS)
+                             default=False, help=argparse.SUPPRESS)
 
     # Parser for SSH command
     parser_ssh = subparsers.add_parser('ssh', description="Connect to an AWS i"
@@ -89,10 +89,10 @@ def getArguments():
                             help='specify instance-id')
     parser_ssh.add_argument('-u', '--user', action="store",
                             help='specify username to use for ssh')
-    parser_ssh.add_argument('-p', '--nopem', action="store_true",
+    parser_ssh.add_argument('-p', '--nopem', action="store_true", default=False,
                             help='connect without PEM key')
     parser_ssh.add_argument('-d', '--debug', action="store_true",
-                            help=argparse.SUPPRESS)
+                            default=False, help=argparse.SUPPRESS)
 
     options = parser.parse_args()
     return(options)
@@ -189,11 +189,6 @@ def getInstanceIDs(instanceSummaryData):
     return
 
 
-def getAMIname(ID):
-    instanceImage = ec2R.Image(ID).name
-    return (instanceImage)
-
-
 def getInstanceDetails():
     global numInstances
     global instanceID
@@ -256,20 +251,17 @@ def selectFromList(OutputText, actionType):
     selectionValid = "False"
     displayInstanceList(OutputText, "yes")
     while selectionValid != "True":
-        printNoCR("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0 aborts%s"
-                  "]: " % (CLRwarning, CLRnormal, actionType, CLRwarning,
-                           CLRnormal, CLRwarning, numInstances, CLRnormal,
-                           CLRtitle, CLRnormal))
+        sys.stdout.write("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0 ab"
+                         "orts%s]: " % (CLRwarning, CLRnormal, actionType,
+                                        CLRwarning, CLRnormal, CLRwarning,
+                                        numInstances, CLRnormal, CLRtitle,
+                                        CLRnormal))
         RawkeyEntered = getch()
-        printNoCR(RawkeyEntered)
+        sys.stdout.write(RawkeyEntered)
         (instanceForAction, selectionValid) = validateKeyEntry(RawkeyEntered,
                                                                actionType)
     print()
     return (instanceForAction)
-
-
-def printNoCR(value):
-    sys.stdout.write(value)
 
 
 def validateKeyEntry(RawkeyEntered, actionType):
@@ -286,8 +278,8 @@ def validateKeyEntry(RawkeyEntered, actionType):
         instanceForAction = KeyEntered - 1
         selectionValid = "True"
     else:
-        printNoCR("\n%sInvalid entry:%s enter a number between 1 and %s.\n"
-                  % (CLRerror, CLRnormal, numInstances))
+        sys.stdout.write("\n%sInvalid entry:%s enter a number between 1"
+                         " and %s.\n" % (CLRerror, CLRnormal, numInstances))
         instanceForAction = KeyEntered
     return (instanceForAction, selectionValid)
 
