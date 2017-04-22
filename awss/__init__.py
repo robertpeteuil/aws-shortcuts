@@ -89,8 +89,8 @@ def getArguments():
                             help='specify instance-id')
     parser_ssh.add_argument('-u', '--user', action="store",
                             help='specify username to use for ssh')
-    parser_ssh.add_argument('-p', '--nopem', action="store_true", default=False,
-                            help='connect without PEM key')
+    parser_ssh.add_argument('-p', '--nopem', action="store_true",
+                            default=False, help='connect without PEM key')
     parser_ssh.add_argument('-d', '--debug', action="store_true",
                             default=False, help=argparse.SUPPRESS)
 
