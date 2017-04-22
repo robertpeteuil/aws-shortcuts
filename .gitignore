@@ -9,6 +9,7 @@ __pycache__/
 *~
 
 # due to using tox and pytest
+test.py
 tox.ini
 .tox
 .cache
