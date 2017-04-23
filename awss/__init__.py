@@ -13,14 +13,14 @@ import sys
 from awss.colors import CLRnormal, CLRheading, CLRtitle, CLRwarning, \
     CLRerror, statCLR
 from awss.getchar import _Getch
-from pprint import pprint
+from awss.awsfunct import awsInit, awsGetList, awsGetDetails, awsGetAmiName, \
+    awsGetSsh, awsDoToggle
+from awss.debug import debugInit, debugPrint, debugPrintAll
 
-__version__ = '0.9.5.1'
+__version__ = '0.9.5.2'
 
 
 def main():
-    global debug
-    global debugall
 
     parser = setupParser()
     options = parser.parse_args()
@@ -33,6 +33,9 @@ def main():
         debugall = True
     else:
         debugall = False
+
+    awsInit()
+    debugInit(debug, debugall)
 
     options.func(options)
 
@@ -131,7 +134,7 @@ def setupParser():
 def cmdList(options):
     (QueryString, outputTitle) = queryCreate(options)
     iInfo = awsGetList(QueryString)
-    if numInstances > 0:
+    if len(iInfo) > 0:
         iInfo = awsGetDetails(iInfo)
         outputTitle = "Instance List - " + outputTitle
         displayList(outputTitle, iInfo)
@@ -246,69 +249,10 @@ def queryAdd(n, qryStr, outputTitle, i=False, FiltStart=""):
     return (qryStr, outputTitle)
 
 
-def awsInit():
-    global boto3
-    import boto3
-    global ec2C
-    global ec2R
-    ec2C = boto3.client('ec2')
-    ec2R = boto3.resource('ec2')
-
-
-def awsGetList(QueryString):
-    global numInstances
-    awsInit()
-    instanceSummaryData = eval(QueryString)
-    iInfo = {}
-    for i, v in enumerate(instanceSummaryData['Reservations']):
-        inID = v['Instances'][0]['InstanceId']
-        iInfo[i] = {'id': inID}
-    numInstances = len(iInfo)
-    debugPrint("numInstances: ", numInstances)
-    debugPrintAll("InstanceIds Only")
-    debugPrintAll(iInfo, True)
-    return (iInfo)
-
-
-def awsGetDetails(iInfo):
-    for i in range(numInstances):
-        instanceData = ec2R.Instance(iInfo[i]['id'])
-        iInfo[i]['state'] = instanceData.state['Name']
-        iInfo[i]['ami'] = instanceData.image_id
-        instanceTag = instanceData.tags
-        for j in range(len(instanceTag)):
-            if instanceTag[j]['Key'] == 'Name':
-                iInfo[i]['name'] = instanceTag[j]['Value']
-                break
-    debugPrintAll("Details except AMI-name")
-    debugPrintAll(iInfo, True)
-    return (iInfo)
-
-
-def awsGetAmiName(instanceImgID):
-    aminame = ec2R.Image(instanceImgID).name
-    return (aminame)
-
-
-def awsGetSsh(tarID):
-    tarInstance = ec2R.Instance(tarID)
-    instanceIP = tarInstance.public_ip_address
-    instanceKey = tarInstance.key_name
-    instanceImgID = tarInstance.image_id
-    return (instanceIP, instanceKey, instanceImgID)
-
-
-def awsDoToggle(tarID, cmdtodo):
-    tarInstance = ec2R.Instance(tarID)
-    thecmd = getattr(tarInstance, cmdtodo)
-    response = thecmd()
-    return (response)
-
-
 def displayList(outputTitle, iInfo, numbered="no"):
     if numbered == "no":
         print("\n%s\n" % (outputTitle))
-    for i in range(numInstances):
+    for i in range(len(iInfo)):
         if numbered == "yes":
             print("Instance %s#%s%s" % (CLRwarning, i + 1, CLRnormal))
         iInfo[i]['aminame'] = awsGetAmiName(iInfo[i]['ami'])
@@ -324,12 +268,12 @@ def displayList(outputTitle, iInfo, numbered="no"):
 
 
 def determineTarget(command, iInfo, outputTitle):
-    if numInstances == 0:
+    if len(iInfo) == 0:
         print("No instances found with parameters: %s" % (outputTitle))
         sys.exit()
-    if numInstances > 1:
+    if len(iInfo) > 1:
         iInfo = awsGetDetails(iInfo)
-        print("\n%s instances match these parameters:\n" % (numInstances))
+        print("\n%s instances match these parameters:\n" % (len(iInfo)))
         tarIndex = userPicklist(outputTitle, iInfo, command)
     else:
         tarIndex = 0
@@ -348,16 +292,16 @@ def userPicklist(outputTitle, iInfo, command):
         sys.stdout.write("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0"
                          " aborts%s]: " % (CLRwarning, CLRnormal, command,
                                            CLRwarning, CLRnormal, CLRwarning,
-                                           numInstances, CLRnormal, CLRtitle,
+                                           len(iInfo), CLRnormal, CLRtitle,
                                            CLRnormal))
         RawkeyEntered = getch()
         sys.stdout.write(RawkeyEntered)
-        (tarIndex, selValid) = userKeyEntry(RawkeyEntered, command)
+        (tarIndex, selValid) = userKeyEntry(RawkeyEntered, command, len(iInfo))
     print()
     return (tarIndex)
 
 
-def userKeyEntry(RawkeyEntered, command):
+def userKeyEntry(RawkeyEntered, command, maxqty):
     selValid = "False"
     try:
         KeyEntered = int(RawkeyEntered)
@@ -367,27 +311,14 @@ def userKeyEntry(RawkeyEntered, command):
         print("\n\n%saborting%s - %s instance\n" %
               (CLRerror, CLRnormal, command))
         sys.exit()
-    elif KeyEntered >= 1 and KeyEntered <= numInstances:
+    elif KeyEntered >= 1 and KeyEntered <= maxqty:
         instanceForAction = KeyEntered - 1
         selValid = "True"
     else:
         sys.stdout.write("\n%sInvalid entry:%s enter a number between 1"
-                         " and %s.\n" % (CLRerror, CLRnormal, numInstances))
+                         " and %s.\n" % (CLRerror, CLRnormal, maxqty))
         instanceForAction = KeyEntered
     return (instanceForAction, selValid)
-
-
-def debugPrint(item1, item2=""):  # pragma: no cover
-    if debug:
-        print(item1, "%s%s%s" % (CLRtitle, item2, CLRnormal))
-
-
-def debugPrintAll(passeditem, special=False):  # pragma: no cover
-    if debugall:
-        if special:
-            pprint(passeditem)
-        else:
-            print("%s%s%s" % (CLRtitle, passeditem, CLRnormal))
 
 
 if __name__ == '__main__':
