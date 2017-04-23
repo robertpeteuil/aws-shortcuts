@@ -5,7 +5,7 @@ List, start, stop and ssh to AWS instances using Name or Instance-ID
 ---------------------------------------------------------------------------------
 
 
-|TRAVIS| |Code Climate| |GitHub issues| |PyPi release| |lang| |license| 
+|TRAVIS| |Code Climate| |GitHub issues| |PyPi release| |lang| |license|
 
 
 --------------
@@ -48,6 +48,10 @@ Details
   - list stopped instances ``-s`` or ``--stopped``
   - list instances with specified name ``awss list NAME``
   - list instance with specified instance-id ``awss list -i ID``
+  - state, NAME, and instance-id may be combined in queries
+
+    - ex: list instances with NAME currently running: ``awss list NAME -r``
+
   - command specific help ``awss list -h``
 
 - Start Instance: ``awss start NAME`` or ``awss start -i ID``
@@ -70,7 +74,7 @@ The ``start``, ``stop``, and ``ssh`` commands verify that their action will appl
   - the instance-specification given (name or ID)
   - the running-state appropriate for the command
 
-- If multiple instances match these conditions, they are listed and the user is asked to select the intended target.
+- If multiple instances match these conditions, they are listed and the user selects the intended target.
 
 The **running-state** appropriate for each command is as follows:
 
@@ -115,4 +119,3 @@ This utility can be installed with ``pip``:
    :target: https://pypi.python.org/pypi/awss
 .. |Travis| image:: https://travis-ci.org/robertpeteuil/aws-shortcuts.svg?branch=master
    :target: https://travis-ci.org/robertpeteuil/aws-shortcuts
-   
