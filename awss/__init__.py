@@ -9,7 +9,6 @@
 from __future__ import print_function
 from builtins import range
 import argparse
-import boto3
 import sys
 from awss.colors import CLRnormal, CLRheading, CLRtitle, CLRwarning, \
     CLRerror, statCLR
@@ -143,6 +142,7 @@ def cmdList(options):
 def cmdToggle(options):
     iscalc = {"start": "stopped", "stop": "running"}
     recalc = {"start": "StartingInstances", "stop": "StoppingInstances"}
+    qryStates = ('CurrentState', 'PreviousState')
     options.inState = iscalc[options.command]
     debugPrint("toggle set state: ", options.inState)
     (QueryString, outputTitle) = queryCreate(options)
@@ -151,16 +151,8 @@ def cmdToggle(options):
               (CLRerror, CLRnormal))
         sys.exit(1)
     iInfo = awsGetList(QueryString)
-    # call detTar that returns tarID, and tarIndex
-    (tarID, tarIndex) = determineTarget(options, iInfo, outputTitle)
-    # call AWStoggle with tarID, command
-    #   it gets instances, performs command, returns results
+    (tarID, tarIndex) = determineTarget(options.command, iInfo, outputTitle)
     response = awsDoToggle(tarID, options.command)
-    # OLD METHOD:
-    # (tarIndex, tarInstance) = determineTarget(options, iInfo, outputTitle)
-    # thecmd = getattr(tarInstance, options.command)
-    # response = thecmd()
-    qryStates = ('CurrentState', 'PreviousState')
     filterS = recalc[options.command]
     resp = {}
     for i, j in enumerate(qryStates):
@@ -180,23 +172,11 @@ def cmdSsh(options):
               (CLRerror, CLRnormal))
         sys.exit(1)
     iInfo = awsGetList(QueryString)
-    # call detTar that returns tarID, and tarIndex
-    (tarID, tarIndex) = determineTarget(options, iInfo, outputTitle)
-    # call AWSsshinfo with tarID, tarIndex
+    (tarID, tarIndex) = determineTarget(options.command, iInfo, outputTitle)
     (instanceIP, instanceKey, instanceImgID) = awsGetSsh(tarID)
-    #   it gets instance, then gets IP, Key, ImgID
-    # OLD METHOD
-    # (tarIndex, tarInstance) = determineTarget(options, iInfo, outputTitle)
-    # instanceIP = tarInstance.public_ip_address
-    # instanceKey = tarInstance.key_name
-    # instanceImgID = tarInstance.image_id
-    # this funct resumes here
     homeDir = os.environ['HOME']
     if options.user is None:
-        # call awsGetAmiName funct with instanceImgID
         iInfo[tarIndex]['aminame'] = awsGetAmiName(instanceImgID)
-        # OLD METHOD
-        # iInfo[tarIndex]['aminame'] = ec2R.Image(instanceImgID).name
         # use dict as lookup table to calculate ssh user based on AMI-name
         # only first 5 chars of AMI-name used to avoid version numbers
         lu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "fedora",
@@ -266,12 +246,18 @@ def queryAdd(n, qryStr, outputTitle, i=False, FiltStart=""):
     return (qryStr, outputTitle)
 
 
-def awsGetList(QueryString):
-    global numInstances
+def awsInit():
+    global boto3
+    import boto3
     global ec2C
     global ec2R
     ec2C = boto3.client('ec2')
     ec2R = boto3.resource('ec2')
+
+
+def awsGetList(QueryString):
+    global numInstances
+    awsInit()
     instanceSummaryData = eval(QueryString)
     iInfo = {}
     for i, v in enumerate(instanceSummaryData['Reservations']):
@@ -326,8 +312,6 @@ def displayList(outputTitle, iInfo, numbered="no"):
         if numbered == "yes":
             print("Instance %s#%s%s" % (CLRwarning, i + 1, CLRnormal))
         iInfo[i]['aminame'] = awsGetAmiName(iInfo[i]['ami'])
-        # OLD METHOD
-        # iInfo[i]['aminame'] = ec2R.Image(iInfo[i]['ami']).name
         print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" %
               (CLRtitle, iInfo[i]['name'], CLRnormal, CLRtitle, iInfo[i]['id'],
                CLRnormal, statCLR[iInfo[i]['state']], iInfo[i]['state'],
@@ -339,25 +323,20 @@ def displayList(outputTitle, iInfo, numbered="no"):
     debugPrintAll(iInfo, True)
 
 
-def determineTarget(options, iInfo, outputTitle):
+def determineTarget(command, iInfo, outputTitle):
     if numInstances == 0:
         print("No instances found with parameters: %s" % (outputTitle))
         sys.exit()
     if numInstances > 1:
         iInfo = awsGetDetails(iInfo)
         print("\n%s instances match these parameters:\n" % (numInstances))
-        tarIndex = userPicklist(outputTitle, iInfo, options.command)
+        tarIndex = userPicklist(outputTitle, iInfo, command)
     else:
-        # global ec2R
-        # ec2R = boto3.resource('ec2')
         tarIndex = 0
     tarID = iInfo[tarIndex]['id']
-    # debugPrint('Target Instance: ', tarID)
-    print("\n%s%sing%s instance id %s%s%s" % (statCLR[options.command],
-                                              options.command, CLRnormal,
+    print("\n%s%sing%s instance id %s%s%s" % (statCLR[command],
+                                              command, CLRnormal,
                                               CLRtitle, tarID, CLRnormal))
-    # dont get instance here, return tarID and tarIndex
-    # specifiedInstance = ec2R.Instance(tarID)
     return (tarID, tarIndex)
 
 
