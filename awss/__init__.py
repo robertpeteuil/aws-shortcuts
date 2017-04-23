@@ -143,8 +143,6 @@ def cmdList(options):
 
 def cmdToggle(options):
     statelu = {"start": "stopped", "stop": "running"}
-    responselu = {"start": "StartingInstances", "stop": "StoppingInstances"}
-    qryStates = ('CurrentState', 'PreviousState')
     options.inState = statelu[options.command]
     debg.dprint("toggle set state: ", options.inState)
     (QueryString, outputTitle) = queryCreate(options)
@@ -155,8 +153,10 @@ def cmdToggle(options):
     iInfo = awsc.getids(QueryString)
     (tarID, tarIndex) = determineTarget(options.command, iInfo, outputTitle)
     response = awsc.startstop(tarID, options.command)
+    responselu = {"start": "StartingInstances", "stop": "StoppingInstances"}
     filterS = responselu[options.command]
     resp = {}
+    qryStates = ('CurrentState', 'PreviousState')
     for i, j in enumerate(qryStates):
         resp[i] = response["{0}".format(filterS)][0]["{0}".format(j)]['Name']
     print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s\n" %
