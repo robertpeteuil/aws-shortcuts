@@ -15,6 +15,13 @@ class _Getch(object):
     def __call__(self):
         return self.impl()
 
+    def int(self):
+        try:
+            value = int(self.impl())
+        except ValueError:
+            value = "999"
+        return value
+
 
 class _GetchUnix(object):
     def __init__(self):

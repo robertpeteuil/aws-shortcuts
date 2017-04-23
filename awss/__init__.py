@@ -13,11 +13,10 @@ import sys
 from awss.colors import CLRnormal, CLRheading, CLRtitle, CLRwarning, \
     CLRerror, statCLR
 from awss.getchar import _Getch
-from awss.awsfunct import awsInit, awsGetList, awsGetDetails, awsGetAmiName, \
-    awsGetSsh, awsDoToggle
-from awss.debug import debugInit, debugPrint, debugPrintAll
+import awss.awsc as awsc
+import awss.debg as debg
 
-__version__ = '0.9.5.2'
+__version__ = '0.9.5.3'
 
 
 def main():
@@ -34,8 +33,8 @@ def main():
     else:
         debugall = False
 
-    awsInit()
-    debugInit(debug, debugall)
+    awsc.init()
+    debg.init(debug, debugall)
 
     options.func(options)
 
@@ -133,9 +132,9 @@ def setupParser():
 
 def cmdList(options):
     (QueryString, outputTitle) = queryCreate(options)
-    iInfo = awsGetList(QueryString)
+    iInfo = awsc.getids(QueryString)
     if len(iInfo) > 0:
-        iInfo = awsGetDetails(iInfo)
+        iInfo = awsc.getdetails(iInfo)
         outputTitle = "Instance List - " + outputTitle
         displayList(outputTitle, iInfo)
     else:
@@ -143,20 +142,20 @@ def cmdList(options):
 
 
 def cmdToggle(options):
-    iscalc = {"start": "stopped", "stop": "running"}
-    recalc = {"start": "StartingInstances", "stop": "StoppingInstances"}
+    statelu = {"start": "stopped", "stop": "running"}
+    responselu = {"start": "StartingInstances", "stop": "StoppingInstances"}
     qryStates = ('CurrentState', 'PreviousState')
-    options.inState = iscalc[options.command]
-    debugPrint("toggle set state: ", options.inState)
+    options.inState = statelu[options.command]
+    debg.dprint("toggle set state: ", options.inState)
     (QueryString, outputTitle) = queryCreate(options)
     if QueryString == "ec2C.describe_instances(":
         print("%sError%s - instance identifier not specified" %
               (CLRerror, CLRnormal))
         sys.exit(1)
-    iInfo = awsGetList(QueryString)
+    iInfo = awsc.getids(QueryString)
     (tarID, tarIndex) = determineTarget(options.command, iInfo, outputTitle)
-    response = awsDoToggle(tarID, options.command)
-    filterS = recalc[options.command]
+    response = awsc.startstop(tarID, options.command)
+    filterS = responselu[options.command]
     resp = {}
     for i, j in enumerate(qryStates):
         resp[i] = response["{0}".format(filterS)][0]["{0}".format(j)]['Name']
@@ -174,30 +173,30 @@ def cmdSsh(options):
         print("%sError%s - instance identifier not specified" %
               (CLRerror, CLRnormal))
         sys.exit(1)
-    iInfo = awsGetList(QueryString)
+    iInfo = awsc.getids(QueryString)
     (tarID, tarIndex) = determineTarget(options.command, iInfo, outputTitle)
-    (instanceIP, instanceKey, instanceImgID) = awsGetSsh(tarID)
+    (instanceIP, instanceKey, instanceImgID) = awsc.getsshinfo(tarID)
     homeDir = os.environ['HOME']
     if options.user is None:
-        iInfo[tarIndex]['aminame'] = awsGetAmiName(instanceImgID)
+        iInfo[tarIndex]['aminame'] = awsc.getaminame(instanceImgID)
         # use dict as lookup table to calculate ssh user based on AMI-name
         # only first 5 chars of AMI-name used to avoid version numbers
-        lu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "fedora",
-              "cento": "centos", "openB": "root"}
-        options.user = lu.get(iInfo[tarIndex]['aminame'][:5], "ec2-user")
-        debugPrint("loginuser Calculated: ", options.user)
+        userlu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "fedora",
+                  "cento": "centos", "openB": "root"}
+        options.user = userlu.get(iInfo[tarIndex]['aminame'][:5], "ec2-user")
+        debg.dprint("loginuser Calculated: ", options.user)
     else:
-        debugPrint("LoginUser set by user: ", options.user)
+        debg.dprint("LoginUser set by user: ", options.user)
     if options.nopem:
-        debugPrint("Connect string: ", "ssh %s@%s" %
-                   (options.user, instanceIP))
+        debg.dprint("Connect string: ", "ssh %s@%s" %
+                    (options.user, instanceIP))
         print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading,
                                                                   CLRnormal))
         subprocess.call(["ssh {0}@{1}".format(options.user, instanceIP)],
                         shell=True)
     else:
-        debugPrint("Connect string: ", "ssh -i %s/.aws/%s.pem %s@%s" %
-                   (homeDir, instanceKey, options.user, instanceIP))
+        debg.dprint("Connect string: ", "ssh -i %s/.aws/%s.pem %s@%s" %
+                    (homeDir, instanceKey, options.user, instanceIP))
         print("")
         subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".
                          format(homeDir, instanceKey, options.user,
@@ -218,7 +217,7 @@ def queryCreate(options):
         i = True
         outputEnd = ""
     if options.instname:
-        (qryStr, outputTitle) = queryAdd(i, qryStr, outputTitle)
+        (qryStr, outputTitle) = queryHelper(i, qryStr, outputTitle)
         n = True
         FiltEnd = "]"
         outputEnd = ""
@@ -226,8 +225,8 @@ def queryCreate(options):
                                        % (options.instname))
         outputTitle = outputTitle + "name: '%s'" % (options.instname)
     if options.inState:
-        (qryStr, outputTitle) = queryAdd(n, qryStr, outputTitle, i,
-                                         FiltStart)
+        (qryStr, outputTitle) = queryHelper(n, qryStr, outputTitle, i,
+                                            FiltStart)
         qryStr = (qryStr + "{'Name': 'instance-state-name','Values': ['%s']}"
                   % (options.inState))
         outputTitle = outputTitle + "state: '%s'" % (options.inState)
@@ -235,12 +234,12 @@ def queryCreate(options):
         outputEnd = ""
     qryStr = qryStr + FiltEnd + ")"
     outputTitle = outputTitle + outputEnd
-    debugPrintAll(qryStr, True)
-    debugPrint("outputTitle: ", outputTitle)
+    debg.dprintx(qryStr, True)
+    debg.dprint("outputTitle: ", outputTitle)
     return(qryStr, outputTitle)
 
 
-def queryAdd(n, qryStr, outputTitle, i=False, FiltStart=""):
+def queryHelper(n, qryStr, outputTitle, i=False, FiltStart=""):
     if i or n:
         qryStr = qryStr + ", "
         outputTitle = outputTitle + ", "
@@ -255,7 +254,7 @@ def displayList(outputTitle, iInfo, numbered="no"):
     for i in range(len(iInfo)):
         if numbered == "yes":
             print("Instance %s#%s%s" % (CLRwarning, i + 1, CLRnormal))
-        iInfo[i]['aminame'] = awsGetAmiName(iInfo[i]['ami'])
+        iInfo[i]['aminame'] = awsc.getaminame(iInfo[i]['ami'])
         print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" %
               (CLRtitle, iInfo[i]['name'], CLRnormal, CLRtitle, iInfo[i]['id'],
                CLRnormal, statCLR[iInfo[i]['state']], iInfo[i]['state'],
@@ -263,8 +262,8 @@ def displayList(outputTitle, iInfo, numbered="no"):
         print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" %
               (CLRtitle, iInfo[i]['ami'], CLRnormal, CLRtitle,
                iInfo[i]['aminame'], CLRnormal))
-    debugPrintAll("All Data")
-    debugPrintAll(iInfo, True)
+    debg.dprintx("All Data")
+    debg.dprintx(iInfo, True)
 
 
 def determineTarget(command, iInfo, outputTitle):
@@ -272,7 +271,6 @@ def determineTarget(command, iInfo, outputTitle):
         print("No instances found with parameters: %s" % (outputTitle))
         sys.exit()
     if len(iInfo) > 1:
-        iInfo = awsGetDetails(iInfo)
         print("\n%s instances match these parameters:\n" % (len(iInfo)))
         tarIndex = userPicklist(outputTitle, iInfo, command)
     else:
@@ -287,6 +285,7 @@ def determineTarget(command, iInfo, outputTitle):
 def userPicklist(outputTitle, iInfo, command):
     getch = _Getch()
     selValid = "False"
+    iInfo = awsc.getdetails(iInfo)
     displayList(outputTitle, iInfo, "yes")
     while selValid != "True":
         sys.stdout.write("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0"
@@ -294,8 +293,10 @@ def userPicklist(outputTitle, iInfo, command):
                                            CLRwarning, CLRnormal, CLRwarning,
                                            len(iInfo), CLRnormal, CLRtitle,
                                            CLRnormal))
-        RawkeyEntered = getch()
-        sys.stdout.write(RawkeyEntered)
+        RawkeyEntered = getch.int()
+        keyconvert = {"999": "invalid entry"}
+        displayKey = keyconvert.get(str(RawkeyEntered), RawkeyEntered)
+        sys.stdout.write(str(displayKey))
         (tarIndex, selValid) = userKeyEntry(RawkeyEntered, command, len(iInfo))
     print()
     return (tarIndex)
@@ -303,10 +304,7 @@ def userPicklist(outputTitle, iInfo, command):
 
 def userKeyEntry(RawkeyEntered, command, maxqty):
     selValid = "False"
-    try:
-        KeyEntered = int(RawkeyEntered)
-    except ValueError:
-        KeyEntered = RawkeyEntered
+    KeyEntered = int(RawkeyEntered)
     if KeyEntered == 0:
         print("\n\n%saborting%s - %s instance\n" %
               (CLRerror, CLRnormal, command))
