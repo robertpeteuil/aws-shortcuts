@@ -169,7 +169,7 @@ def cmdSsh(options):
     import subprocess
     options.inState = "running"
     (QueryString, outputTitle) = queryCreate(options)
-    if QueryString == "ec2C.describe_instances(":
+    if QueryString == "ec2C.describe_instances()":
         print("%sError%s - instance identifier not specified" %
               (CLRerror, CLRnormal))
         sys.exit(1)
