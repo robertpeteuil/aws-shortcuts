@@ -12,10 +12,10 @@ class _Getch(object):
         except ImportError:
             self.impl = _GetchUnix()
 
-    def __call__(self):
+    def __call__(self):  # pragma: no cover
         return self.impl()
 
-    def int(self):
+    def int(self):  # pragma: no cover
         try:
             value = int(self.impl())
         except ValueError:
@@ -28,7 +28,7 @@ class _GetchUnix(object):
         import tty  # noqa: F401
         import sys  # noqa: F401
 
-    def __call__(self):
+    def __call__(self):  # pragma: no cover
         import sys  # noqa: F401
         import tty  # noqa: F401
         import termios  # noqa: F401
