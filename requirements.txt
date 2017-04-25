@@ -2,5 +2,5 @@ readme_renderer
 doctools
 flake8
 mccabe
-pytest
+pytest-cov
 codeclimate-test-reporter

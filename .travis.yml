@@ -26,7 +26,7 @@ script:
   - python setup.py --long-description | rst2html.py > /dev/null
   - python setup.py check -m -r -s
   - flake8 awss --max-complexity=6
-  - py.test -s test
+  - py.test --cov awss test
 after_success:
   - echo Test Success
   - codeclimate-test-reporter
