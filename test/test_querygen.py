@@ -5,7 +5,7 @@ import pytest
 from awss import queryCreate
 import awss.debg as debg
 
-debg.init()
+debg.init(True, True)
 
 
 @pytest.fixture(params=["-i 123456", ""])

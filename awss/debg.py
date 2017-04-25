@@ -10,12 +10,12 @@ def init(deb1=False, deb2=False):
     debugall = deb2
 
 
-def dprint(item1, item2=""):  # pragma: no cover
+def dprint(item1, item2=""):
     if debug:
         print(item1, "%s%s%s" % (CLRtitle, item2, CLRnormal))
 
 
-def dprintx(passeditem, special=False):  # pragma: no cover
+def dprintx(passeditem, special=False):
     if debugall:
         if special:
             from pprint import pprint
