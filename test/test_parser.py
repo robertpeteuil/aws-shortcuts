@@ -48,7 +48,8 @@ def username(request):
 
 
 def test_list_parse_valid(inname, innum, instate, debugstate):
-    print("test - list_parse_valid for:   name: %s, id: %s, state: %s, debug: %s" % (inname[0], innum[0], instate[0], debugstate[0]))
+    print("test - list_parse_valid for:   name: %s, id: %s, state: %s,"
+          " debug: %s" % (inname[0], innum[0], instate[0], debugstate[0]))
     args = "list " + inname[0] + innum[0] + instate[0] + debugstate[0]
     options = awsparse(args.split())
     assert options.command == 'list'
@@ -59,7 +60,8 @@ def test_list_parse_valid(inname, innum, instate, debugstate):
 
 
 def test_startstop_parse_valid(cmdname, inname, innum, debugstate):
-    print("test - start/stop_parse_valid for:   command: %s, name: %s, id: %s, debug: %s" % (cmdname, inname[0], innum[0], debugstate[0]))
+    print("test - start/stop_parse_valid for:   command: %s, name: %s, id: %s,"
+          " debug: %s" % (cmdname, inname[0], innum[0], debugstate[0]))
     args = cmdname + inname[0] + innum[0] + debugstate[0]
     options = awsparse(args.split())
     assert options.command == cmdname[:-1]
@@ -69,7 +71,8 @@ def test_startstop_parse_valid(cmdname, inname, innum, debugstate):
 
 
 def test_ssh_parse_valid(inname, innum, debugstate):
-    print("test - ssh_parse_valid for:   name: %s, id: %s, debug: %s" % (inname[0], innum[0], debugstate[0]))
+    print("test - ssh_parse_valid for:   name: %s, id: %s, debug: %s" %
+          (inname[0], innum[0], debugstate[0]))
     args = "ssh " + inname[0] + innum[0] + debugstate[0]
     options = awsparse(args.split())
     assert options.command == "ssh"

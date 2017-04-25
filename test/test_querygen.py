@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import pytest
-from awss import queryCreate, queryHelper
+from awss import queryCreate
 import awss.debg as debg
 
 debg.init()
