@@ -42,10 +42,10 @@ class _GetchUnix(object):
         return ch
 
 
-class _GetchWindows(object):  # pragma: no cover
+class _GetchWindows(object):
     def __init__(self):
         import msvcrt  # noqa: F401
 
-    def __call__(self):
+    def __call__(self):  # pragma: no cover
         import msvcrt
         return msvcrt.getch()
