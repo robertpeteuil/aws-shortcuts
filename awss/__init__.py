@@ -234,6 +234,7 @@ def queryCreate(options):
         outputEnd = ""
     qryStr = qryStr + FiltEnd + ")"
     outputTitle = outputTitle + outputEnd
+    debg.dprintx("\nQuery String")
     debg.dprintx(qryStr, True)
     debg.dprint("outputTitle: ", outputTitle)
     return(qryStr, outputTitle)
