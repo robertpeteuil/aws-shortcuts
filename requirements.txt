@@ -3,4 +3,5 @@ doctools
 flake8
 mccabe
 pytest-cov
+mock
 codeclimate-test-reporter
