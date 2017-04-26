@@ -16,7 +16,7 @@ from awss.getchar import _Getch
 import awss.awsc as awsc
 import awss.debg as debg
 
-__version__ = '0.9.5.4'
+__version__ = '0.9.5.5'
 
 
 def main():
@@ -146,10 +146,11 @@ def cmdToggle(options):
     options.inState = statelu[options.command]
     debg.dprint("toggle set state: ", options.inState)
     (QueryString, outputTitle) = queryCreate(options)
-    if QueryString == "ec2C.describe_instances()":
-        print("%sError%s - instance identifier not specified" %
-              (CLRerror, CLRnormal))
-        sys.exit(1)
+    checkNumId(QueryString)
+    # if QueryString == "ec2C.describe_instances()":
+    #       print("%sError%s - instance identifier not specified" %
+    #            (CLRerror, CLRnormal))
+    #       sys.exit(1)
     iInfo = awsc.getids(QueryString)
     (tarID, tarIndex) = determineTarget(options.command, iInfo, outputTitle)
     response = awsc.startstop(tarID, options.command)
@@ -169,10 +170,11 @@ def cmdSsh(options):
     import subprocess
     options.inState = "running"
     (QueryString, outputTitle) = queryCreate(options)
-    if QueryString == "ec2C.describe_instances()":
-        print("%sError%s - instance identifier not specified" %
-              (CLRerror, CLRnormal))
-        sys.exit(1)
+    checkNumId(QueryString)
+    # if QueryString == "ec2C.describe_instances()":
+    #       print("%sError%s - instance identifier not specified" %
+    #            (CLRerror, CLRnormal))
+    #       sys.exit(1)
     iInfo = awsc.getids(QueryString)
     (tarID, tarIndex) = determineTarget(options.command, iInfo, outputTitle)
     (instanceIP, instanceKey, instanceImgID) = awsc.getsshinfo(tarID)
@@ -200,6 +202,15 @@ def cmdSsh(options):
         subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".
                          format(homeDir, instanceKey, options.user,
                                 instanceIP)], shell=True)
+
+
+def checkNumId(QueryString):
+    if QueryString == "ec2C.describe_instances()":
+        print("%sError%s - instance identifier not specified" %
+              (CLRerror, CLRnormal))
+        sys.exit(1)
+    else:
+        return
 
 
 def queryCreate(options):
