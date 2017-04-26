@@ -97,5 +97,5 @@ def test_list_parse_help(inhelp):
     args = inhelp[0] + inhelp[1]
     parser = setupParser()
     with pytest.raises(SystemExit):
-        options = parser.parse_args(args.split())
+        options = parser.parse_args(args.split())  # noqa: F841
         pass
