@@ -22,7 +22,7 @@ engines:
   radon:
     enabled: true
     config:
-      threshold: "B"
+      threshold: "A"
 ratings:
   paths:
   - "awss/*"
