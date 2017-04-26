@@ -19,7 +19,6 @@ engines:
     config:
       languages:
         python:
-          mass_threshold: 36
   radon:
     enabled: true
     config:
@@ -29,7 +28,9 @@ ratings:
   - "awss/*"
   - "setup.py"
 exclude_paths:
+  - "test/*"
   - ".tox/*"
   - "build/*"
   - "dist/*"
   - "*.egg-info/*"
+  - "zref/*"
