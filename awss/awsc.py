@@ -17,8 +17,10 @@ def getids(QueryString=None):
     instanceSummaryData = eval(QueryString)
     iInfo = {}
     for i, v in enumerate(instanceSummaryData['Reservations']):
-        instID = v['Instances'][0]['InstanceId']
-        iInfo[i] = {'id': instID}
+        # instID = v['Instances'][0]['InstanceId']
+        iInfo[i] = {'id': v['Instances'][0]['InstanceId']}
+        # instID = v['Instances'][0]['InstanceId']
+        # iInfo[i] = {'id': instID}
     debg.dprint("numInstances: ", len(iInfo))
     debg.dprintx("InstanceIds Only")
     debg.dprintx(iInfo, True)
@@ -44,8 +46,10 @@ def getdetails(iInfo=None):
 
 
 def gettagvalue(instID, Tag="Name"):
-    instanceData = ec2R.Instance(instID)
-    instanceTag = instanceData.tags
+    # instanceData = ec2R.Instance(instID)
+    instanceTag = ec2R.Instance(instID).tags
+    # instanceData = ec2R.Instance(instID)
+    # instanceTag = instanceData.tags
     if len(instanceTag) > 0:
         for j in range(len(instanceTag)):
             if instanceTag[j]['Key'] == Tag:
@@ -53,7 +57,7 @@ def gettagvalue(instID, Tag="Name"):
                 break
     else:
         tagvalue = ""
-    return tagvalue
+    return (tagvalue)
 
 
 def getaminame(instanceImgID):
