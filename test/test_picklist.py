@@ -11,6 +11,8 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss import determineTarget, userPicklist, displayList, userKeyEntry
 
+# flake8: noqa
+
 debg.init()  # turn off debug-print messages
 
 
