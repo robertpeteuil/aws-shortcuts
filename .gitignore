@@ -10,6 +10,7 @@ __pycache__/
 
 # due to using testing tools
 test.py
+testdata.py
 tox.ini
 .tox
 .cache
