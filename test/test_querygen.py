@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import pytest
-from awss import queryCreate
+from awss import qry_create
 import awss.debg as debg
 
 debg.init(True, True)
@@ -79,7 +79,7 @@ def test_query_generation(genid, genname, genstate):
     print("TEST - Query_Parser  -   id: %s, name: %s, state: %s" %
           (genid, genname, genstate))
     qryoptions = holdOptions(genid, genname, genstate)
-    (genQuery, genTitle) = queryCreate(qryoptions)
+    (genQuery, genTitle) = qry_create(qryoptions)
 
     resultIndex = idlu[genid] + namelu[genname] + statelu[genstate]
     expectedTitle = expected_results[resultIndex]['title']

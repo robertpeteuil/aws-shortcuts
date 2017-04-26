@@ -3,8 +3,7 @@
 from __future__ import print_function
 import pytest
 
-from awss import setupParser
-parser = setupParser()
+from awss import parser_setup
 
 
 @pytest.fixture(params=["start ", "stop "])
@@ -53,7 +52,7 @@ def test_list_parse_valid(inname, innum, instate, debugstate):
           " debug: %s" % (inname[0], innum[0], instate[0], debugstate[0]))
 
     args = "list " + inname[0] + innum[0] + instate[0] + debugstate[0]
-    parser = setupParser()
+    parser = parser_setup()
     options = parser.parse_args(args.split())
 
     assert options.command == 'list'
@@ -68,7 +67,7 @@ def test_startstop_parse_valid(cmdname, inname, innum, debugstate):
           " debug: %s" % (cmdname, inname[0], innum[0], debugstate[0]))
 
     args = cmdname + inname[0] + innum[0] + debugstate[0]
-    parser = setupParser()
+    parser = parser_setup()
     options = parser.parse_args(args.split())
 
     assert options.command == cmdname[:-1]
@@ -82,7 +81,7 @@ def test_ssh_parse_valid(inname, innum, debugstate):
           (inname[0], innum[0], debugstate[0]))
 
     args = "ssh " + inname[0] + innum[0] + debugstate[0]
-    parser = setupParser()
+    parser = parser_setup()
     options = parser.parse_args(args.split())
 
     assert options.command == "ssh"
@@ -95,7 +94,7 @@ def test_list_parse_help(inhelp):
     print("test - list_parse_help for:   command: %s" % (inhelp[0]))
 
     args = inhelp[0] + inhelp[1]
-    parser = setupParser()
+    parser = parser_setup()
     with pytest.raises(SystemExit):
         options = parser.parse_args(args.split())  # noqa: F841
         pass

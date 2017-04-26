@@ -9,7 +9,7 @@ from awss.colors import CLRnormal, CLRheading, CLRtitle, CLRwarning, \
     CLRerror, statCLR
 import awss.awsc as awsc
 import awss.debg as debg
-from awss import determineTarget, userPicklist, displayList, userKeyEntry
+from awss import det_instance, user_picklist, list_instances, user_entry
 
 # flake8: noqa
 
@@ -73,12 +73,12 @@ def test_det_target(ids, kys, anames, ilist, ide, idx):
         with mock.patch('awss.awsc.getaminame', getlocalaminame, create=True):
             with mock.patch('awss.getchar._Getch.int', RetKey, create=True):
                 if ide != '0':
-                    (tarID, tarIndex) = determineTarget("ssh", ids,
-                                                        "TEST")
+                    (tarID, tarIndex) = det_instance("ssh", ids,
+                                                     "TEST")
                     assert tarID == ide
                     assert tarIndex == idx
                 else:
                     with pytest.raises(SystemExit):
-                        (tarID, tarIndex) = determineTarget("ssh", ids,
-                                                            "TEST")
+                        (tarID, tarIndex) = det_instance("ssh", ids,
+                                                         "TEST")
                         pass

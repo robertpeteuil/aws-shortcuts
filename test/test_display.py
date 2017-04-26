@@ -1,19 +1,13 @@
 #!/usr/bin/env python
 
 '''
-This runs the display list function using sample data.  But there's no return_valueway to verify that it's displayed correctly.
-The Display LIst module is used by user-picklist, so it's important to
-get the function substitution working .
+This runs the display list function using sample data.
 '''
 
 from __future__ import print_function
-from builtins import range
-import pytest
 import mock
 
 from awss import list_instances
-import awss.awsc as awsc
-from awss.colors import CLRnormal, CLRtitle, CLRwarning, statCLR
 import awss.debg as debg
 
 debg.init(True, True)
