@@ -1,8 +1,7 @@
 readme_renderer
 doctools
 flake8
-mccabe
 radon
-pytest-cov
+coverage
 mock
 codeclimate-test-reporter
