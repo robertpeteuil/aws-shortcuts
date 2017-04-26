@@ -16,7 +16,7 @@ from awss.getchar import _Getch
 import awss.awsc as awsc
 import awss.debg as debg
 
-__version__ = '0.9.5.3'
+__version__ = '0.9.5.4'
 
 
 def main():
@@ -146,7 +146,7 @@ def cmdToggle(options):
     options.inState = statelu[options.command]
     debg.dprint("toggle set state: ", options.inState)
     (QueryString, outputTitle) = queryCreate(options)
-    if QueryString == "ec2C.describe_instances(":
+    if QueryString == "ec2C.describe_instances()":
         print("%sError%s - instance identifier not specified" %
               (CLRerror, CLRnormal))
         sys.exit(1)
@@ -179,7 +179,6 @@ def cmdSsh(options):
     homeDir = os.environ['HOME']
     if options.user is None:
         iInfo[tarIndex]['aminame'] = awsc.getaminame(instanceImgID)
-        # use dict as lookup table to calculate ssh user based on AMI-name
         # only first 5 chars of AMI-name used to avoid version numbers
         userlu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "fedora",
                   "cento": "centos", "openB": "root"}
