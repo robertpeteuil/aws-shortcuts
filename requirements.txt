@@ -2,6 +2,7 @@ readme_renderer
 doctools
 flake8
 mccabe
+radon
 pytest-cov
 mock
 codeclimate-test-reporter
