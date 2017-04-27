@@ -4,6 +4,5 @@ flake8
 radon
 coverage
 mock
-unittest
 pytest
 codeclimate-test-reporter
