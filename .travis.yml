@@ -4,10 +4,10 @@ branches:
 language: python
 before_install:
 - if [[ $BREW_PYTHON == 'python3' ]]; then brew update; brew install $BREW_PYTHON; fi
+install:
+- pip install --upgrade six
 before_script:
 - pip install tox
-- pip uninstall six
-- pip install six
 - pip install coverage
 
 # test script
