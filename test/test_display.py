@@ -10,8 +10,6 @@ import mock
 from awss import list_instances
 import awss.debg as debg
 
-debg.init(True, True)
-
 
 amiNameList = {
     'ami-16efb076': 'ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64',
@@ -49,8 +47,8 @@ infoNoAmiName = {
 
 @mock.patch('awss.awsc.getaminame', getlocalaminame, create=True)
 def test_display_list(capsys):
-    with capsys.disabled():
-        print("TEST - Display_List")
+
+    debg.init(False, False)
     outputTitle = "Test Report"
     list_instances(outputTitle, infoNoAmiName)
     out, err = capsys.readouterr()
