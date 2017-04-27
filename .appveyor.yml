@@ -17,9 +17,9 @@ environment:
   - TOXENV: py34
   - TOXENV: py35
   - TOXENV: py36
-    allow_failures:
-      - TOXENV: flake8
-      - TOXENV: readme
+  - TOXENV: flake8
+  - TOXENV: readme
+cache: .tox
 build_script:
 - cmd: pip install -e .
 test_script:
