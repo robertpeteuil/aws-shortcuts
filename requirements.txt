@@ -5,4 +5,5 @@ radon
 coverage
 mock
 pytest
+mando
 codeclimate-test-reporter
