@@ -27,8 +27,6 @@ deploy_script:
 - cmd: >-
     echo Test Success
 
-    coverage combine && exit 0
+    if exist .coverage coverage combine & coverage xml & exit 0
 
-    coverage xml && exit 0
-
-    python-codacy-coverage -r coverage.xml && exit 0
+    python-codacy-coverage -r coverage.xml & exit 0
