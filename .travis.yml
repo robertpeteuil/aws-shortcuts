@@ -10,6 +10,7 @@ install:
 before_script:
 - pip install tox
 - pip install coverage
+- pip install codacy-coverage
 
 # test script
 script:  tox
@@ -48,4 +49,6 @@ matrix:
 after_success:
   - echo Test Success
   - coverage combine
+  - coverage xml
+  - python-codacy-coverage -r coverage.xml
   - codeclimate-test-reporter
