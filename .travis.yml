@@ -1,6 +1,7 @@
 branches:
   only:
   - master
+  - develop
 language: python
 before_install:
 - if [[ $BREW_PYTHON == 'python3' ]]; then brew update; brew install $BREW_PYTHON; fi
