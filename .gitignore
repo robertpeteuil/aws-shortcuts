@@ -14,5 +14,5 @@ testdata.py
 tox.ini
 .tox
 .cache
-.coverage*
+.coverage
 htmlcov/
