@@ -1,10 +1,13 @@
 version: 0.9.6.{build}
 init:
-- cmd:
-  - pip install --upgrade six
-  - pip install tox
-  - pip install coverage
-  - pip install codacy-coverage
+- cmd: >-
+    pip install --upgrade six
+
+    pip install tox
+
+    pip install coverage
+
+    pip install codacy-coverage
 environment:
   CODACY_PROJECT_TOKEN:
     secure: JiPmBi3x+D1RDWbWXFLtigq3OJ3sdrOisDjdw4718q8VOlC/oF6Or8i6DPr9SrGs
@@ -16,15 +19,16 @@ environment:
   - TOXENV: py36
   - TOXENV: flake8
   - TOXENV: readme
-install:
-- cmd: pip install tox
 build_script:
 - cmd: pip install -e .
 test_script:
 - cmd: tox
 deploy_script:
-- cmd:
-  - echo Test Success
-  - coverage combine
-  - coverage xml
-  - python-codacy-coverage -r coverage.xml
+- cmd: >-
+    echo Test Success
+
+    coverage combine
+
+    coverage xml
+
+    python-codacy-coverage -r coverage.xml
