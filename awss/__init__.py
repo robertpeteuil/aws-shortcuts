@@ -1,48 +1,53 @@
 #!/usr/bin/env python
 
-# awss - Control AWS instances from command line: list, start, stop or ssh
-#
-#       https://github.com/robertpeteuil/aws-shortcuts
-#
-#  Author: Robert Peteuil   @RobertPeteuil
+"""
+    awss - Control AWS instances from command line: list, start, stop or ssh
+        https://github.com/robertpeteuil/aws-shortcuts
+
+    Author: Robert Peteuil   @RobertPeteuil
+
+"""
 
 from __future__ import print_function
 from builtins import range
 import argparse
-import boto3
 import sys
-import subprocess
-import os
-from awss.colors import CLRnormal, CLRheading, CLRtitle, CLRwarning, \
-    CLRerror, statCLR
-from awss.getchar import _Getch
-from pprint import pprint
+from awss.colors import C_NORM, C_HEAD, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.5'
+from awss.getchar import _Getch
+import awss.awsc as awsc
+import awss.debg as debg
+
+__version__ = '0.9.5.6'
 
 
 def main():
-    global debug
-    global debugall
+    """
+    Main sets up the parser, retreives user options, sets debug modes,
+    initializes external debug and awsc modules, then calls the module
+    for the specified comamnd.
+    """
 
-    parser = setupParser()
+    parser = parser_setup()
     options = parser.parse_args()
 
-    if options.debug > 0:
-        debug = True
-    else:
-        debug = False
-    if options.debug > 1:
-        debugall = True
-    else:
-        debugall = False
+    debug = bool(options.debug > 0)
+    debugall = bool(options.debug > 1)
+
+    awsc.init()
+    debg.init(debug, debugall)
 
     options.func(options)
 
     sys.exit()
 
 
-def setupParser():
+def parser_setup():
+    """
+    Sets up the command line parser and four subparsers, one for each command:
+    list, start, stop and ssh.
+    """
+
     parser = argparse.ArgumentParser(description="Control AWS instances from"
                                      " the command line with: list, start,"
                                      " stop or ssh.", prog='awss',
@@ -81,7 +86,7 @@ def setupParser():
                              help='list running instances')
     parser_list.add_argument('-d', '--debug', action="count",
                              default=0, help=argparse.SUPPRESS)
-    parser_list.set_defaults(func=cmdList)
+    parser_list.set_defaults(func=cmd_list)
 
     # Parser for START command
     parser_start = subparsers.add_parser('start', usage="\tawss start ( [NAME]"
@@ -95,7 +100,7 @@ def setupParser():
                               help='specify instance-id')
     parser_start.add_argument('-d', '--debug', action="count",
                               default=0, help=argparse.SUPPRESS)
-    parser_start.set_defaults(func=cmdToggle)
+    parser_start.set_defaults(func=cmd_startstop)
 
     # Parser for STOP command
     parser_stop = subparsers.add_parser('stop', usage="\tawss stop ( [NAME]"
@@ -109,7 +114,7 @@ def setupParser():
                              help='specify instance-id')
     parser_stop.add_argument('-d', '--debug', action="count",
                              default=0, help=argparse.SUPPRESS)
-    parser_stop.set_defaults(func=cmdToggle)
+    parser_stop.set_defaults(func=cmd_startstop)
 
     # Parser for SSH command
     parser_ssh = subparsers.add_parser('ssh', usage="\tawss ssh ( [NAME]"
@@ -127,249 +132,311 @@ def setupParser():
                             default=False, help='connect without PEM key')
     parser_ssh.add_argument('-d', '--debug', action="count",
                             default=0, help=argparse.SUPPRESS)
-    parser_ssh.set_defaults(func=cmdSsh)
+    parser_ssh.set_defaults(func=cmd_ssh)
     return parser
 
 
-def cmdList(options):
-    (QueryString, outputTitle) = queryCreate(options)
-    iInfo = awsGetList(QueryString)
-    if numInstances > 0:
-        iInfo = awsGetDetails(iInfo)
-        outputTitle = "Instance List - " + outputTitle
-        displayList(outputTitle, iInfo)
+def cmd_list(options):
+    """
+    'list' executer: input: object - created by the parser
+
+    Finds instances that match the user specified args and displays them.
+    """
+
+    (qry_string, title_out) = qry_create(options)
+    i_info = awsc.getids(qry_string)
+    items = len(i_info)
+    if items:
+        i_info = awsc.getdetails(i_info)
+        title_out = "Instance List - " + title_out
+        list_instances(title_out, i_info)
     else:
-        print("No instances found with parameters: %s" % (outputTitle))
+        print("No instances found with parameters: %s" % (title_out))
 
 
-def cmdToggle(options):
-    iscalc = {"start": "stopped", "stop": "running"}
-    recalc = {"start": "StartingInstances", "stop": "StoppingInstances"}
-    options.inState = iscalc[options.command]
-    debugPrint("toggle set state: ", options.inState)
-    (QueryString, outputTitle) = queryCreate(options)
-    if QueryString == "ec2C.describe_instances(":
-        print("%sError%s - instance identifier not specified" %
-              (CLRerror, CLRnormal))
-        sys.exit(1)
-    iInfo = awsGetList(QueryString)
-    (tarIndex, tarInstance) = determineTarget(options, iInfo, outputTitle)
-    thecmd = getattr(tarInstance, options.command)
-    response = thecmd()
-    qryStates = ('CurrentState', 'PreviousState')
-    filterS = recalc[options.command]
+def cmd_startstop(options):
+    """
+    'start' and 'stop' executer: input: object - created by the parser
+
+    Finds instances that match the user specified args plus the command
+    specific args.  The target instance is determined and the specified
+    action is applied to the instance. The action return information is
+    retreived and displayed.
+    """
+
+    statelu = {"start": "stopped", "stop": "running"}
+    options.inState = statelu[options.command]
+    debg.dprint("toggle set state: ", options.inState)
+    (qry_string, title_out) = qry_create(options)
+    qry_check(qry_string)
+    i_info = awsc.getids(qry_string)
+    tar_inst = det_instance(options.command, i_info, title_out)
+    response = awsc.startstop(tar_inst, options.command)
+    responselu = {"start": "StartingInstances", "stop": "StoppingInstances"}
+    filt = responselu[options.command]
     resp = {}
-    for i, j in enumerate(qryStates):
-        resp[i] = response["{0}".format(filterS)][0]["{0}".format(j)]['Name']
+    state_term = ('CurrentState', 'PreviousState')
+    for i, j in enumerate(state_term):
+        resp[i] = response["{0}".format(filt)][0]["{0}".format(j)]['Name']
     print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s\n" %
-          (statCLR[resp[0]], resp[0], CLRnormal,
-           statCLR[resp[1]], resp[1], CLRnormal))
+          (C_STAT[resp[0]], resp[0], C_NORM,
+           C_STAT[resp[1]], resp[1], C_NORM))
 
 
-def cmdSsh(options):
+def cmd_ssh(options):
+    """
+    'ssh' executer: input: object - created by the parser
+
+    Finds instances that match the user specified args that are also
+    in the 'running' state.  The target instance is determined, the
+    required connection information is retreived (IP, key used, ssh
+    user-name), and an 'ssh' connection is made to the instance.
+    """
+
+    import os
+    import subprocess
     options.inState = "running"
-    (QueryString, outputTitle) = queryCreate(options)
-    if QueryString == "ec2C.describe_instances(":
-        print("%sError%s - instance identifier not specified" %
-              (CLRerror, CLRnormal))
-        sys.exit(1)
-    iInfo = awsGetList(QueryString)
-    (tarIndex, tarInstance) = determineTarget(options, iInfo, outputTitle)
-    instanceIP = tarInstance.public_ip_address
-    instanceKey = tarInstance.key_name
-    instanceImgID = tarInstance.image_id
-    homeDir = os.environ['HOME']
+    (qry_string, title_out) = qry_create(options)
+    qry_check(qry_string)
+    i_info = awsc.getids(qry_string)
+    tar_inst = det_instance(options.command, i_info, title_out)
+    (inst_ip, inst_key, inst_img_id) = awsc.getsshinfo(tar_inst)
+    home_dir = os.environ['HOME']
     if options.user is None:
-        iInfo[tarIndex]['aminame'] = ec2R.Image(instanceImgID).name
-        # use dict as lookup table to calculate ssh user based on AMI-name
+        tar_aminame = awsc.getaminame(inst_img_id)
         # only first 5 chars of AMI-name used to avoid version numbers
-        lu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "fedora",
-              "cento": "centos", "openB": "root"}
-        options.user = lu.get(iInfo[tarIndex]['aminame'][:5], "ec2-user")
-        debugPrint("loginuser Calculated: ", options.user)
+        userlu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "fedora",
+                  "cento": "centos", "openB": "root"}
+        options.user = userlu.get(tar_aminame[:5], "ec2-user")
+        debg.dprint("loginuser Calculated: ", options.user)
     else:
-        debugPrint("LoginUser set by user: ", options.user)
+        debg.dprint("LoginUser set by user: ", options.user)
     if options.nopem:
-        debugPrint("Connect string: ", "ssh %s@%s" %
-                   (options.user, instanceIP))
-        print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading,
-                                                                  CLRnormal))
-        subprocess.call(["ssh {0}@{1}".format(options.user, instanceIP)],
+        debg.dprint("Connect string: ", "ssh %s@%s" %
+                    (options.user, inst_ip))
+        print("%sNo PEM mode%s - connecting without PEM key\n" % (C_HEAD,
+                                                                  C_NORM))
+        subprocess.call(["ssh {0}@{1}".format(options.user, inst_ip)],
                         shell=True)
     else:
-        debugPrint("Connect string: ", "ssh -i %s/.aws/%s.pem %s@%s" %
-                   (homeDir, instanceKey, options.user, instanceIP))
+        debg.dprint("Connect string: ", "ssh -i %s/.aws/%s.pem %s@%s" %
+                    (home_dir, inst_key, options.user, inst_ip))
         print("")
         subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".
-                         format(homeDir, instanceKey, options.user,
-                                instanceIP)], shell=True)
+                         format(home_dir, inst_key, options.user,
+                                inst_ip)], shell=True)
 
 
-def queryCreate(options):
-    qryStr = "ec2C.describe_instances("
-    FiltStart = "Filters=["
-    FiltEnd = ""
-    outputTitle = ""
-    outputEnd = "All"
-    i = False
-    n = False
-    if options.id:
-        qryStr = qryStr + "InstanceIds=['%s']" % (options.id)
-        outputTitle = outputTitle + "id: '%s'" % (options.id)
-        i = True
-        outputEnd = ""
-    if options.instname:
-        (qryStr, outputTitle) = queryAdd(i, qryStr, outputTitle)
-        n = True
-        FiltEnd = "]"
-        outputEnd = ""
-        qryStr = qryStr + FiltStart + ("{'Name': 'tag:Name', 'Values': ['%s']}"
-                                       % (options.instname))
-        outputTitle = outputTitle + "name: '%s'" % (options.instname)
-    if options.inState:
-        (qryStr, outputTitle) = queryAdd(n, qryStr, outputTitle, i,
-                                         FiltStart)
-        qryStr = (qryStr + "{'Name': 'instance-state-name','Values': ['%s']}"
-                  % (options.inState))
-        outputTitle = outputTitle + "state: '%s'" % (options.inState)
-        FiltEnd = "]"
-        outputEnd = ""
-    qryStr = qryStr + FiltEnd + ")"
-    outputTitle = outputTitle + outputEnd
-    debugPrintAll(qryStr, True)
-    debugPrint("outputTitle: ", outputTitle)
-    return(qryStr, outputTitle)
+def qry_check(qry_string):
+    """
+    Query String Validator:  input: query string - in aws ec2 format
 
+    Check if the generated query string is empty, and if so exits.
+    This is executed by the 'start', 'stop', and 'ssh' command as they must
+    target a specific instance.
+    """
 
-def queryAdd(n, qryStr, outputTitle, i=False, FiltStart=""):
-    if i or n:
-        qryStr = qryStr + ", "
-        outputTitle = outputTitle + ", "
-    if not n:
-            qryStr = qryStr + FiltStart
-    return (qryStr, outputTitle)
-
-
-def awsGetList(QueryString):
-    global numInstances
-    global ec2C
-    ec2C = boto3.client('ec2')
-    instanceSummaryData = eval(QueryString)
-    iInfo = {}
-    for i, v in enumerate(instanceSummaryData['Reservations']):
-        inID = v['Instances'][0]['InstanceId']
-        iInfo[i] = {'id': inID}
-    numInstances = len(iInfo)
-    debugPrint("numInstances: ", numInstances)
-    debugPrintAll("InstanceIds Only")
-    debugPrintAll(iInfo, True)
-    return (iInfo)
-
-
-def awsGetDetails(iInfo):
-    global ec2R
-    ec2R = boto3.resource('ec2')
-    for i in range(numInstances):
-        instanceData = ec2R.Instance(iInfo[i]['id'])
-        iInfo[i]['state'] = instanceData.state['Name']
-        iInfo[i]['ami'] = instanceData.image_id
-        instanceTag = instanceData.tags
-        for j in range(len(instanceTag)):
-            if instanceTag[j]['Key'] == 'Name':
-                iInfo[i]['name'] = instanceTag[j]['Value']
-                break
-    debugPrintAll("Details except AMI-name")
-    debugPrintAll(iInfo, True)
-    return (iInfo)
-
-
-def displayList(outputTitle, iInfo, numbered="no"):
-    if numbered == "no":
-        print("\n%s\n" % (outputTitle))
-    for i in range(numInstances):
-        if numbered == "yes":
-            print("Instance %s#%s%s" % (CLRwarning, i + 1, CLRnormal))
-        iInfo[i]['aminame'] = ec2R.Image(iInfo[i]['ami']).name
-        print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" %
-              (CLRtitle, iInfo[i]['name'], CLRnormal, CLRtitle, iInfo[i]['id'],
-               CLRnormal, statCLR[iInfo[i]['state']], iInfo[i]['state'],
-               CLRnormal))
-        print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" %
-              (CLRtitle, iInfo[i]['ami'], CLRnormal, CLRtitle,
-               iInfo[i]['aminame'], CLRnormal))
-    debugPrintAll("All Data")
-    debugPrintAll(iInfo, True)
-
-
-def determineTarget(options, iInfo, outputTitle):
-    if numInstances == 0:
-        print("No instances found with parameters: %s" % (outputTitle))
-        sys.exit()
-    if numInstances > 1:
-        iInfo = awsGetDetails(iInfo)
-        print("\n%s instances match these parameters:\n" % (numInstances))
-        tarIndex = userPicklist(outputTitle, iInfo, options.command)
+    if qry_string == "ec2C.describe_instances()":
+        print("%sError%s - instance identifier not specified" %
+              (C_ERR, C_NORM))
+        sys.exit(1)
     else:
-        global ec2R
-        ec2R = boto3.resource('ec2')
-        tarIndex = 0
-    tarID = iInfo[tarIndex]['id']
-    debugPrint('Target Instance: ', tarID)
-    print("\n%s%sing%s instance id %s%s%s" % (statCLR[options.command],
-                                              options.command, CLRnormal,
-                                              CLRtitle, tarID, CLRnormal))
-    specifiedInstance = ec2R.Instance(tarID)
-    return (tarIndex, specifiedInstance)
+        return
 
 
-def userPicklist(outputTitle, iInfo, command):
-    getch = _Getch()
-    selValid = "False"
-    displayList(outputTitle, iInfo, "yes")
-    while selValid != "True":
-        sys.stdout.write("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0"
-                         " aborts%s]: " % (CLRwarning, CLRnormal, command,
-                                           CLRwarning, CLRnormal, CLRwarning,
-                                           numInstances, CLRnormal, CLRtitle,
-                                           CLRnormal))
-        RawkeyEntered = getch()
-        sys.stdout.write(RawkeyEntered)
-        (tarIndex, selValid) = userKeyEntry(RawkeyEntered, command)
-    print()
-    return (tarIndex)
+def qry_create(options):
+    """
+    Query Creator: input: object - created by the parser
+                   returns: Query_String, Report_Title
+
+    Creates aws ec2 formatted query string that incorporates the args in the
+    options object.  Generation of this query on the fly allows for queries
+    that search and/or filter on multiple properties in the same query.
+
+    This function also generates the report output title for the 'list'
+    function as the creation of it uses the exact same algoruthm as creating
+    the query.
+    """
+
+    qry_string = "EC2C.describe_instances("
+    filt_st = "Filters=["
+    filt_end = ""
+    title_out = ""
+    out_end = "All"
+    flag_id = False
+    flag_filt = False
+    if options.id:
+        qry_string += "InstanceIds=['%s']" % (options.id)
+        title_out += "id: '%s'" % (options.id)
+        flag_id = True
+        out_end = ""
+    if options.instname:
+        (qry_string, title_out) = qry_helper(flag_id, qry_string, title_out)
+        flag_filt = True
+        filt_end = "]"
+        out_end = ""
+        qry_string += filt_st + ("{'Name': 'tag:Name', 'Values': ['%s']}"
+                                 % (options.instname))
+        title_out += "name: '%s'" % (options.instname)
+    if options.inState:
+        (qry_string, title_out) = qry_helper(flag_filt, qry_string,
+                                             title_out, flag_id, filt_st)
+        qry_string = (qry_string + "{'Name': 'instance-state-name',"
+                      "'Values': ['%s']}" % (options.inState))
+        title_out += "state: '%s'" % (options.inState)
+        filt_end = "]"
+        out_end = ""
+    qry_string += filt_end + ")"
+    title_out += out_end
+    debg.dprintx("\nQuery String")
+    debg.dprintx(qry_string, True)
+    debg.dprint("title_out: ", title_out)
+    return(qry_string, title_out)
 
 
-def userKeyEntry(RawkeyEntered, command):
-    selValid = "False"
-    try:
-        KeyEntered = int(RawkeyEntered)
-    except ValueError:
-        KeyEntered = RawkeyEntered
-    if KeyEntered == 0:
-        print("\n\n%saborting%s - %s instance\n" %
-              (CLRerror, CLRnormal, command))
+def qry_helper(flag_filt, qry_string, title_out, flag_id=False, filt_st=""):
+    """
+    Query helper: input: filter_set_flag, query_string, report_title,
+                         id_set_flag (optional), string_flag (option)
+                  returns: query_string, report_title
+
+    This functions adds syntactical elements to the query string, and
+    report title, based on the types and number of items added thus far.
+    It is broken-out into a seperate function to eliminate duplication.
+    """
+
+    if flag_id or flag_filt:
+        qry_string += ", "
+        title_out += ", "
+    if not flag_filt:
+        qry_string += filt_st
+    return (qry_string, title_out)
+
+
+def list_instances(title_out, i_info, numbered="no"):
+    """
+    Displays Instance Information:
+        input: report_title, dict of inst_info, and
+            special_case_flag(optional)
+
+    This function iterates through all the instances contained in the
+    i_info dict, displayed the information contained, and also obtained
+    the name of the EC2 image that was used to create the instance.  The
+    image name is not retreived until it is certain it is needed because
+    retrieving it is relatively slow.
+
+    If the special_case flag is set, it means this function is being called
+    to display a list for a user to select from.  In this case, a colored
+    number is displayed before each instances data.
+    """
+
+    if numbered == "no":
+        print("\n%s\n" % (title_out))
+    for i in range(len(i_info)):
+        if numbered == "yes":
+            print("Instance %s#%s%s" % (C_WARN, i + 1, C_NORM))
+        i_info[i]['aminame'] = awsc.getaminame(i_info[i]['ami'])
+        print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" %
+              (C_TI, i_info[i]['name'], C_NORM, C_TI,
+               i_info[i]['id'], C_NORM, C_STAT[i_info[i]['state']],
+               i_info[i]['state'], C_NORM))
+        print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" %
+              (C_TI, i_info[i]['ami'], C_NORM, C_TI,
+               i_info[i]['aminame'], C_NORM))
+    debg.dprintx("All Data")
+    debg.dprintx(i_info, True)
+
+
+def det_instance(command, i_info, title_out):
+    """
+    Determine Target Instance ID:
+            input: command, dict of instance info, report_title
+            returns: instance-id-of-target-instance, dict-index-of-target
+
+    This functions inspects the dict of instance-ids:
+    if it is empty, it displays a message that no instances were found that
+    matched the query conditions specified, then exits.
+    If it contains one item, then the instance-id of that item is returned.
+    If it contains more than one item, then the picklist function is called.
+    note: command, and report_title are only used for user display purposes.
+    """
+
+    qty_instances = len(i_info)
+    if qty_instances == 0:
+        print("No instances found with parameters: %s" % (title_out))
         sys.exit()
-    elif KeyEntered >= 1 and KeyEntered <= numInstances:
-        instanceForAction = KeyEntered - 1
-        selValid = "True"
+    if qty_instances > 1:
+        print("\n%s instances match these parameters:\n" % (qty_instances))
+        tar_idx = user_picklist(title_out, i_info, command)
+    else:
+        tar_idx = 0
+    tar_inst = i_info[tar_idx]['id']
+    print("\n%s%sing%s instance id %s%s%s" % (C_STAT[command],
+                                              command, C_NORM,
+                                              C_TI, tar_inst, C_NORM))
+    return tar_inst
+
+
+def user_picklist(title_out, i_info, command):
+    """
+    Picklist Function:
+            input: report_title, dict of instance info, command
+            returns: dictionary-index-of-target
+
+    Display Matching Instances and askd user t0 select target.  The list is
+    displayed by calling the list_instances func with the special_flag set.
+    Once the list is displayed, the user will be requires to enter a number
+    between 1 and the number of matchign instances (or a '0' to abort).
+    Entering a number outside of this range generates an invalid selection
+    error message, and the user is asked again.
+    """
+
+    getch = _Getch()
+    entry_valid = "False"
+    i_info = awsc.getdetails(i_info)
+    list_instances(title_out, i_info, "yes")
+    while entry_valid != "True":
+        sys.stdout.write("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0"
+                         " aborts%s]: " % (C_WARN, C_NORM, command,
+                                           C_WARN, C_NORM, C_WARN,
+                                           len(i_info), C_NORM, C_TI,
+                                           C_NORM))
+        entry_raw = getch.int()
+        keyconvert = {"999": "invalid entry"}
+        entry_display = keyconvert.get(str(entry_raw), entry_raw)
+        sys.stdout.write(str(entry_display))
+        (tar_idx, entry_valid) = user_entry(entry_raw, command, len(i_info))
+    print()
+    return tar_idx
+
+
+def user_entry(entry_raw, command, maxqty):
+    """
+    User Entry Validation: input: user_entry, command, max_valid_entry
+
+    This function validates the user entry:
+    If it is 0, an abort message is diaplyed and the program exits.
+    If the entry is between 1 and max_valid_entry, then one is subtracted
+    (because its a zero based index) and it is set as the dict-index-of-
+    target and the entry_valid flag is set.
+    Otherwise the entry is invlid, and the functions returns the invalid_
+    value and the entry_valid flag remains False.
+    """
+
+    entry_valid = "False"
+    entry_int = int(entry_raw)
+    if entry_int == 0:
+        print("\n\n%saborting%s - %s instance\n" %
+              (C_ERR, C_NORM, command))
+        sys.exit()
+    elif entry_int >= 1 and entry_int <= maxqty:
+        entry_idx = entry_int - 1
+        entry_valid = "True"
     else:
         sys.stdout.write("\n%sInvalid entry:%s enter a number between 1"
-                         " and %s.\n" % (CLRerror, CLRnormal, numInstances))
-        instanceForAction = KeyEntered
-    return (instanceForAction, selValid)
-
-
-def debugPrint(item1, item2=""):  # pragma: no cover
-    if debug:
-        print(item1, "%s%s%s" % (CLRtitle, item2, CLRnormal))
-
-
-def debugPrintAll(passeditem, special=False):  # pragma: no cover
-    if debugall:
-        if special:
-            pprint(passeditem)
-        else:
-            print("%s%s%s" % (CLRtitle, passeditem, CLRnormal))
+                         " and %s.\n" % (C_ERR, C_NORM, maxqty))
+        entry_idx = entry_int
+    return (entry_idx, entry_valid)
 
 
 if __name__ == '__main__':

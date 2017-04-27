@@ -1,5 +1,7 @@
 readme_renderer
 doctools
 flake8
-mccabe
+radon
+coverage
+mock
 codeclimate-test-reporter

@@ -12,8 +12,15 @@ class _Getch(object):
         except ImportError:
             self.impl = _GetchUnix()
 
-    def __call__(self):
+    def __call__(self):  # pragma: no cover
         return self.impl()
+
+    def int(self):  # pragma: no cover
+        try:
+            value = int(self.impl())
+        except ValueError:
+            value = "999"
+        return value
 
 
 class _GetchUnix(object):
@@ -21,7 +28,7 @@ class _GetchUnix(object):
         import tty  # noqa: F401
         import sys  # noqa: F401
 
-    def __call__(self):
+    def __call__(self):  # pragma: no cover
         import sys  # noqa: F401
         import tty  # noqa: F401
         import termios  # noqa: F401
@@ -35,10 +42,10 @@ class _GetchUnix(object):
         return ch
 
 
-class _GetchWindows(object):  # pragma: no cover
+class _GetchWindows(object):
     def __init__(self):
         import msvcrt  # noqa: F401
 
-    def __call__(self):
+    def __call__(self):  # pragma: no cover
         import msvcrt
         return msvcrt.getch()
