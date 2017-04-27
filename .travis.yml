@@ -36,7 +36,7 @@ matrix:
     - BREW_PYTHON='python3'
     - CACHE_NAME=JOB7
 before_install:
-- if [[ $BREW_PYTHON == 'python3' ]]; then brew update; brew install $BREW_PYTHON; python3 -m venv venv; source venv/bin/activate; fi
+- if [[ $BREW_PYTHON == 'python3' ]]; then brew update; brew install $BREW_PYTHON; python3 -m venv venv; source venv/bin/activate; echo $PYTHONPATH; PYTHONPATH="./venv/lib/python3.6/site-packages"; fi
 - python -V
 install:
 - pip install --upgrade pip
