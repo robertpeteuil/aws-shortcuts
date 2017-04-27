@@ -5,7 +5,7 @@ import pytest
 from awss import qry_create
 import awss.debg as debg
 
-debg.init(True, True)
+debg.init(False, False)
 
 
 @pytest.fixture(params=["-i 123456", ""])
@@ -36,41 +36,41 @@ statelu = {"running": 0b1000, "stopped": 0b0100, "": 0b0000}
 
 expected_results = {
     0: {'title': "All",
-        'query': "ec2C.describe_instances()"},
+        'query': "EC2C.describe_instances()"},
     1: {'title': "id: '-i 123456'",
-        'query': "ec2C.describe_instances(InstanceIds=['-i 123456'])"},
+        'query': "EC2C.describe_instances(InstanceIds=['-i 123456'])"},
     2: {'title': "name: 'server'",
-        'query': "ec2C.describe_instances(Filters=[{'Name': 'tag:Name',"
+        'query': "EC2C.describe_instances(Filters=[{'Name': 'tag:Name',"
                  " 'Values': ['server']}])"},
     3: {'title': "id: '-i 123456', name: 'server'",
-        'query': "ec2C.describe_instances(InstanceIds=['-i 123456'],"
+        'query': "EC2C.describe_instances(InstanceIds=['-i 123456'],"
                  " Filters=[{'Name': 'tag:Name', 'Values': ['server']}])"},
     4: {'title': "state: 'stopped'",
-        'query': "ec2C.describe_instances(Filters=[{'Name':"
+        'query': "EC2C.describe_instances(Filters=[{'Name':"
                  " 'instance-state-name','Values': ['stopped']}])"},
     5: {'title': "id: '-i 123456', state: 'stopped'",
-        'query': "ec2C.describe_instances(InstanceIds=['-i 123456'], Filters"
+        'query': "EC2C.describe_instances(InstanceIds=['-i 123456'], Filters"
                  "=[{'Name': 'instance-state-name','Values': ['stopped']}])"},
     6: {'title': "name: 'server', state: 'stopped'",
-        'query': "ec2C.describe_instances(Filters=[{'Name': 'tag:Name',"
+        'query': "EC2C.describe_instances(Filters=[{'Name': 'tag:Name',"
                  " 'Values': ['server']}, {'Name': 'instance-state-name',"
                  "'Values': ['stopped']}])"},
     7: {'title': "id: '-i 123456', name: 'server', state: 'stopped'",
-        'query': "ec2C.describe_instances(InstanceIds=['-i 123456'], Filters"
+        'query': "EC2C.describe_instances(InstanceIds=['-i 123456'], Filters"
                  "=[{'Name': 'tag:Name', 'Values': ['server']}, {'Name':"
                  " 'instance-state-name','Values': ['stopped']}])"},
     8: {'title': "state: 'running'",
-        'query': "ec2C.describe_instances(Filters=[{'Name':"
+        'query': "EC2C.describe_instances(Filters=[{'Name':"
                  " 'instance-state-name','Values': ['running']}])"},
     9: {'title': "id: '-i 123456', state: 'running'",
-        'query': "ec2C.describe_instances(InstanceIds=['-i 123456'], Filters"
+        'query': "EC2C.describe_instances(InstanceIds=['-i 123456'], Filters"
                  "=[{'Name': 'instance-state-name','Values': ['running']}])"},
     10: {'title': "name: 'server', state: 'running'",
-         'query': "ec2C.describe_instances(Filters=[{'Name': 'tag:Name',"
+         'query': "EC2C.describe_instances(Filters=[{'Name': 'tag:Name',"
                   " 'Values': ['server']}, {'Name': 'instance-state-name',"
                   "'Values': ['running']}])"},
     11: {'title': "id: '-i 123456', name: 'server', state: 'running'",
-         'query': "ec2C.describe_instances(InstanceIds=['-i 123456'], Filters"
+         'query': "EC2C.describe_instances(InstanceIds=['-i 123456'], Filters"
                   "=[{'Name': 'tag:Name', 'Values': ['server']}, {'Name':"
                   " 'instance-state-name','Values': ['running']}])"}}
 
@@ -78,7 +78,9 @@ expected_results = {
 def test_query_generation(genid, genname, genstate):
     print("TEST - Query_Parser  -   id: %s, name: %s, state: %s" %
           (genid, genname, genstate))
+
     qryoptions = holdOptions(genid, genname, genstate)
+    debg.init(True, False)
     (genQuery, genTitle) = qry_create(qryoptions)
 
     resultIndex = idlu[genid] + namelu[genname] + statelu[genstate]
