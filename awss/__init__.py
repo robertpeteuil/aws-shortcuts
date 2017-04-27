@@ -12,13 +12,13 @@ from __future__ import print_function
 from builtins import range
 import argparse
 import sys
-from awss.colors import CLRnormal, CLRheading, CLRtitle, CLRwarning, \
-    CLRerror, statCLR
+from awss.colors import C_NORM, C_HEAD, C_TI, C_WARN, C_ERR, C_STAT
+
 from awss.getchar import _Getch
 import awss.awsc as awsc
 import awss.debg as debg
 
-__version__ = '0.9.5.5'
+__version__ = '0.9.5.6'
 
 
 def main():
@@ -146,7 +146,7 @@ def cmd_list(options):
     (qry_string, title_out) = qry_create(options)
     i_info = awsc.getids(qry_string)
     items = len(i_info)
-    if items > 0:
+    if items:
         i_info = awsc.getdetails(i_info)
         title_out = "Instance List - " + title_out
         list_instances(title_out, i_info)
@@ -170,7 +170,7 @@ def cmd_startstop(options):
     (qry_string, title_out) = qry_create(options)
     qry_check(qry_string)
     i_info = awsc.getids(qry_string)
-    (tar_inst, tar_idx) = det_instance(options.command, i_info, title_out)
+    tar_inst = det_instance(options.command, i_info, title_out)
     response = awsc.startstop(tar_inst, options.command)
     responselu = {"start": "StartingInstances", "stop": "StoppingInstances"}
     filt = responselu[options.command]
@@ -179,8 +179,8 @@ def cmd_startstop(options):
     for i, j in enumerate(state_term):
         resp[i] = response["{0}".format(filt)][0]["{0}".format(j)]['Name']
     print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s\n" %
-          (statCLR[resp[0]], resp[0], CLRnormal,
-           statCLR[resp[1]], resp[1], CLRnormal))
+          (C_STAT[resp[0]], resp[0], C_NORM,
+           C_STAT[resp[1]], resp[1], C_NORM))
 
 
 def cmd_ssh(options):
@@ -199,23 +199,23 @@ def cmd_ssh(options):
     (qry_string, title_out) = qry_create(options)
     qry_check(qry_string)
     i_info = awsc.getids(qry_string)
-    (tar_inst, tar_idx) = det_instance(options.command, i_info, title_out)
+    tar_inst = det_instance(options.command, i_info, title_out)
     (inst_ip, inst_key, inst_img_id) = awsc.getsshinfo(tar_inst)
     home_dir = os.environ['HOME']
     if options.user is None:
-        i_info[tar_idx]['aminame'] = awsc.getaminame(inst_img_id)
+        tar_aminame = awsc.getaminame(inst_img_id)
         # only first 5 chars of AMI-name used to avoid version numbers
         userlu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "fedora",
                   "cento": "centos", "openB": "root"}
-        options.user = userlu.get(i_info[tar_idx]['aminame'][:5], "ec2-user")
+        options.user = userlu.get(tar_aminame[:5], "ec2-user")
         debg.dprint("loginuser Calculated: ", options.user)
     else:
         debg.dprint("LoginUser set by user: ", options.user)
     if options.nopem:
         debg.dprint("Connect string: ", "ssh %s@%s" %
                     (options.user, inst_ip))
-        print("%sNo PEM mode%s - connecting without PEM key\n" % (CLRheading,
-                                                                  CLRnormal))
+        print("%sNo PEM mode%s - connecting without PEM key\n" % (C_HEAD,
+                                                                  C_NORM))
         subprocess.call(["ssh {0}@{1}".format(options.user, inst_ip)],
                         shell=True)
     else:
@@ -238,7 +238,7 @@ def qry_check(qry_string):
 
     if qry_string == "ec2C.describe_instances()":
         print("%sError%s - instance identifier not specified" %
-              (CLRerror, CLRnormal))
+              (C_ERR, C_NORM))
         sys.exit(1)
     else:
         return
@@ -258,44 +258,43 @@ def qry_create(options):
     the query.
     """
 
-    qry_string = "ec2C.describe_instances("
-    filt_start = "Filters=["
+    qry_string = "EC2C.describe_instances("
+    filt_st = "Filters=["
     filt_end = ""
     title_out = ""
     out_end = "All"
-    i = False
-    n = False
+    flag_id = False
+    flag_filt = False
     if options.id:
-        qry_string = qry_string + "InstanceIds=['%s']" % (options.id)
-        title_out = title_out + "id: '%s'" % (options.id)
-        i = True
+        qry_string += "InstanceIds=['%s']" % (options.id)
+        title_out += "id: '%s'" % (options.id)
+        flag_id = True
         out_end = ""
     if options.instname:
-        (qry_string, title_out) = qry_helper(i, qry_string, title_out)
-        n = True
+        (qry_string, title_out) = qry_helper(flag_id, qry_string, title_out)
+        flag_filt = True
         filt_end = "]"
         out_end = ""
-        qry_string = qry_string + filt_start + ("{'Name': 'tag:Name',"
-                                                " 'Values': ['%s']}"
-                                                % (options.instname))
-        title_out = title_out + "name: '%s'" % (options.instname)
+        qry_string += filt_st + ("{'Name': 'tag:Name', 'Values': ['%s']}"
+                                 % (options.instname))
+        title_out += "name: '%s'" % (options.instname)
     if options.inState:
-        (qry_string, title_out) = qry_helper(n, qry_string, title_out, i,
-                                             filt_start)
+        (qry_string, title_out) = qry_helper(flag_filt, qry_string,
+                                             title_out, flag_id, filt_st)
         qry_string = (qry_string + "{'Name': 'instance-state-name',"
                       "'Values': ['%s']}" % (options.inState))
-        title_out = title_out + "state: '%s'" % (options.inState)
+        title_out += "state: '%s'" % (options.inState)
         filt_end = "]"
         out_end = ""
-    qry_string = qry_string + filt_end + ")"
-    title_out = title_out + out_end
+    qry_string += filt_end + ")"
+    title_out += out_end
     debg.dprintx("\nQuery String")
     debg.dprintx(qry_string, True)
     debg.dprint("title_out: ", title_out)
     return(qry_string, title_out)
 
 
-def qry_helper(n, qry_string, title_out, i=False, filt_start=""):
+def qry_helper(flag_filt, qry_string, title_out, flag_id=False, filt_st=""):
     """
     Query helper: input: filter_set_flag, query_string, report_title,
                          id_set_flag (optional), string_flag (option)
@@ -306,11 +305,11 @@ def qry_helper(n, qry_string, title_out, i=False, filt_start=""):
     It is broken-out into a seperate function to eliminate duplication.
     """
 
-    if i or n:
-        qry_string = qry_string + ", "
-        title_out = title_out + ", "
-    if not n:
-        qry_string = qry_string + filt_start
+    if flag_id or flag_filt:
+        qry_string += ", "
+        title_out += ", "
+    if not flag_filt:
+        qry_string += filt_st
     return (qry_string, title_out)
 
 
@@ -335,15 +334,15 @@ def list_instances(title_out, i_info, numbered="no"):
         print("\n%s\n" % (title_out))
     for i in range(len(i_info)):
         if numbered == "yes":
-            print("Instance %s#%s%s" % (CLRwarning, i + 1, CLRnormal))
+            print("Instance %s#%s%s" % (C_WARN, i + 1, C_NORM))
         i_info[i]['aminame'] = awsc.getaminame(i_info[i]['ami'])
         print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" %
-              (CLRtitle, i_info[i]['name'], CLRnormal, CLRtitle,
-               i_info[i]['id'], CLRnormal, statCLR[i_info[i]['state']],
-               i_info[i]['state'], CLRnormal))
+              (C_TI, i_info[i]['name'], C_NORM, C_TI,
+               i_info[i]['id'], C_NORM, C_STAT[i_info[i]['state']],
+               i_info[i]['state'], C_NORM))
         print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" %
-              (CLRtitle, i_info[i]['ami'], CLRnormal, CLRtitle,
-               i_info[i]['aminame'], CLRnormal))
+              (C_TI, i_info[i]['ami'], C_NORM, C_TI,
+               i_info[i]['aminame'], C_NORM))
     debg.dprintx("All Data")
     debg.dprintx(i_info, True)
 
@@ -362,19 +361,20 @@ def det_instance(command, i_info, title_out):
     note: command, and report_title are only used for user display purposes.
     """
 
-    if len(i_info) == 0:
+    qty_instances = len(i_info)
+    if qty_instances == 0:
         print("No instances found with parameters: %s" % (title_out))
         sys.exit()
-    if len(i_info) > 1:
-        print("\n%s instances match these parameters:\n" % (len(i_info)))
+    if qty_instances > 1:
+        print("\n%s instances match these parameters:\n" % (qty_instances))
         tar_idx = user_picklist(title_out, i_info, command)
     else:
         tar_idx = 0
     tar_inst = i_info[tar_idx]['id']
-    print("\n%s%sing%s instance id %s%s%s" % (statCLR[command],
-                                              command, CLRnormal,
-                                              CLRtitle, tar_inst, CLRnormal))
-    return (tar_inst, tar_idx)
+    print("\n%s%sing%s instance id %s%s%s" % (C_STAT[command],
+                                              command, C_NORM,
+                                              C_TI, tar_inst, C_NORM))
+    return tar_inst
 
 
 def user_picklist(title_out, i_info, command):
@@ -397,10 +397,10 @@ def user_picklist(title_out, i_info, command):
     list_instances(title_out, i_info, "yes")
     while entry_valid != "True":
         sys.stdout.write("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0"
-                         " aborts%s]: " % (CLRwarning, CLRnormal, command,
-                                           CLRwarning, CLRnormal, CLRwarning,
-                                           len(i_info), CLRnormal, CLRtitle,
-                                           CLRnormal))
+                         " aborts%s]: " % (C_WARN, C_NORM, command,
+                                           C_WARN, C_NORM, C_WARN,
+                                           len(i_info), C_NORM, C_TI,
+                                           C_NORM))
         entry_raw = getch.int()
         keyconvert = {"999": "invalid entry"}
         entry_display = keyconvert.get(str(entry_raw), entry_raw)
@@ -427,14 +427,14 @@ def user_entry(entry_raw, command, maxqty):
     entry_int = int(entry_raw)
     if entry_int == 0:
         print("\n\n%saborting%s - %s instance\n" %
-              (CLRerror, CLRnormal, command))
+              (C_ERR, C_NORM, command))
         sys.exit()
     elif entry_int >= 1 and entry_int <= maxqty:
         entry_idx = entry_int - 1
         entry_valid = "True"
     else:
         sys.stdout.write("\n%sInvalid entry:%s enter a number between 1"
-                         " and %s.\n" % (CLRerror, CLRnormal, maxqty))
+                         " and %s.\n" % (C_ERR, C_NORM, maxqty))
         entry_idx = entry_int
     return (entry_idx, entry_valid)
 

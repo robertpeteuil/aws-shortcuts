@@ -10,20 +10,19 @@ try:
                           colorama.Fore.RED)
     BLUE, CYAN, WHITE = (colorama.Fore.BLUE, colorama.Fore.CYAN,
                          colorama.Fore.WHITE)
-    # BRIGHT, RESET = colorama.Style.BRIGHT, colorama.Style.RESET_ALL
 except ImportError:  # pragma: no cover
     # No colorama, so let's fallback to no-color mode
     GREEN = YELLOW = RED = BLUE = CYAN = WHITE = ''
 
-CLRnormal = WHITE
-CLRheading = GREEN
-CLRheading2 = BLUE
-CLRtitle = CYAN
-CLRtitle2 = YELLOW
-CLRsuccess = GREEN
-CLRwarning = YELLOW
-CLRerror = RED
+C_NORM = WHITE
+C_HEAD = GREEN
+C_HEAD2 = BLUE
+C_TI = CYAN
+C_TI2 = YELLOW
+C_GOOD = GREEN
+C_WARN = YELLOW
+C_ERR = RED
 
-statCLR = {"running": CLRsuccess, "start": CLRsuccess, "ssh": CLRsuccess,
-           "stopped": CLRerror, "stop": CLRerror, "stopping": CLRwarning,
-           "pending": CLRwarning, "starting": CLRwarning}
+C_STAT = {"running": C_GOOD, "start": C_GOOD, "ssh": C_GOOD,
+          "stopped": C_ERR, "stop": C_ERR, "stopping": C_WARN,
+          "pending": C_WARN, "starting": C_WARN}
