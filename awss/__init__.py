@@ -1,13 +1,21 @@
-#!/usr/bin/env python
+"""Control AWS instances from command line: list, start, stop or ssh.
 
+The AWS Shortcuts (awss) package is a utility that allows listing,
+starting, stopping and connecting to instances by Name or ID.
+
+The modules in this package are:
+
+__init__ - Main module providing entry point and core algorythms.
+awsc     - AWS Connectivity module that performs all communications
+           to the AWS service
+colors   - Determines color capabilities and defined color vars.
+debg     - Debug module that performs two debug print functions.
+getchar  - Module holding cross-platform class for reading keys
+           from the keyboard, without requiring the enter key.
+
+URL:       https://github.com/robertpeteuil/aws-shortcuts
+Author:    Robert Peteuil   @RobertPeteuil
 """
-    awss - Control AWS instances from command line: list, start, stop or ssh
-        https://github.com/robertpeteuil/aws-shortcuts
-
-    Author: Robert Peteuil   @RobertPeteuil
-
-"""
-
 from __future__ import print_function
 from builtins import range
 import argparse
@@ -18,16 +26,16 @@ from awss.getchar import _Getch
 import awss.awsc as awsc
 import awss.debg as debg
 
-__version__ = '0.9.5.6'
+__version__ = '0.9.6'
 
 
 def main():
-    """
-    Main sets up the parser, retreives user options, sets debug modes,
-    initializes external debug and awsc modules, then calls the module
-    for the specified comamnd.
-    """
+    """Prepare environment, collect args and call command funct.
 
+    This functions sets up the environment, collects relevant
+    agrs and cals the function specific to the command the user
+    has specified.
+    """
     parser = parser_setup()
     options = parser.parse_args()
 
