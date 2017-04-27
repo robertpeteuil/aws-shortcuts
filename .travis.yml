@@ -45,7 +45,8 @@ install:
 script:
   - python setup.py --long-description | rst2html.py > /dev/null
   - python setup.py check -m -r -s
-  - flake8 awss --max-complexity=6
+  - flake8 awss --radon-max-cc=5
+  - coverage run --source awss -m py.test
 after_success:
   - echo Test Success
   - codeclimate-test-reporter
@@ -56,5 +57,4 @@ deploy:
     secure: H8hRA3NPFOkuvPMSJOv69zvSVownLcR8j1uYhKhULxWKLKnzHay1c+v14XJo2WQ1/oUUncjx6gi/UIQx8nYfxElmybVRYqjauabNW/HORtQcEBqWVpLPFWNrY+LJPcxYqijT1ifP73JHkBqz8qBV1tnph849iq3DNsm3PbLpndWWiTsxklUBuom00O6OirHJqhvwfroHwMWozDfzhG10qw5ABTl8xaAbkXeekqTZlLVMZCUbKzBipxBTj0mnAf1V2nwGmpXkckrxJls2yanwEfqaSE2AoZpktmOzsy4qNzX94lEXJ4fDBTZYVgN5hK+aQOemGSfUwhtXZlHJS90INE17tbyYrzec0kY1CRLWmzQyyMKiAo+IgHRL2d47gZwkPfZYBhH84BHaRKx8jX7rH8aCmy73MhzyqOpSjejZTRMJ1KchxtMWMtLomILTUkz5D+6cDp5moCySrj3Iu92VuknaDDZv/yvTjLwqoQYHcte+nAVQbLTGEEkuK0z7uB/LOU1U+PIZgXDkBESTzVWNua5HWVc/5+BBwbjy12Dec6OYqYcxjZWSie/LakMXb6hyCt7BIw9wiXpg85gAYFd78SItTE3aC4MqoUEjwEdrsI52uhq4240JWaYNmcORqJT5KXJeZBNCkzvYF5LAh5azPjNSJgmk3bc74koOTi/PuPc=
   distributions: "sdist bdist_wheel"
   on:
-    branch: master
     tags: true
