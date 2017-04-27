@@ -17,8 +17,9 @@ environment:
   - TOXENV: py34
   - TOXENV: py35
   - TOXENV: py36
-  - TOXENV: flake8
-  - TOXENV: readme
+    allow_failures:
+      - TOXENV: flake8
+      - TOXENV: readme
 build_script:
 - cmd: pip install -e .
 test_script:
@@ -27,6 +28,8 @@ deploy_script:
 - cmd: >-
     echo Test Success
 
-    if exist .coverage coverage combine & coverage xml & exit 0
+    coverage combine & exit 0
+
+    coverage xml & exit 0
 
     python-codacy-coverage -r coverage.xml & exit 0
