@@ -70,7 +70,7 @@ def getdetails(i_info=None):
 
     if i_info is None:
         i_info = getids()
-    for i in range(len(i_info)):
+    for i in i_info:
         instance_data = EC2R.Instance(i_info[i]['id'])
         i_info[i]['state'] = instance_data.state['Name']
         i_info[i]['ami'] = instance_data.image_id
