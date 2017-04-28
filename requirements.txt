@@ -1,9 +1,0 @@
-readme_renderer
-doctools
-flake8
-radon
-coverage
-mock
-pytest
-mando
-codeclimate-test-reporter
