@@ -5,14 +5,11 @@ List, start, stop and ssh to AWS instances using Name or Instance-ID
 ---------------------------------------------------------------------------------
 
 
-|TRAVIS| |Code Climate| |GitHub issues| |PyPi release| |lang| |license|
-
+|TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |lang| |license|
 
 --------------
 
-AWS Shortcuts (awss) allows listing, starting, stopping and connecting to instances by Name or ID.  Future versions will also allow referencing instances with any ``Tag`` :  ``Value`` combination.
-
-Note: This utility requires Python 2.7 or newer.  There is a similar utility written in Bash called `aws-quick-cli <https://github.com/robertpeteuil/aws-quick-cli>`_.
+AWS Shortcuts (awss) allows listing, starting, stopping and connecting to instances by name or instance-id.  Future versions will also allow referencing instances with any ``Tag`` :  ``Value`` combination.
 
 
 Overview
@@ -43,12 +40,12 @@ Details
 
 - List Instances: ``awss list``
 
-  - list all instances (default)
+  - list all instances (default).
   - list running instances ``-r`` or ``--running``
   - list stopped instances ``-s`` or ``--stopped``
   - list instances with specified name ``awss list NAME``
   - list instance with specified instance-id ``awss list -i ID``
-  - state, NAME, and instance-id may be combined in queries
+  - instance-state and NAME may be combined in queries.
 
     - ex: list instances with NAME currently running: ``awss list NAME -r``
 
@@ -67,25 +64,25 @@ Details
 Target Instance Verification
 ----------------------------
 
-The ``start``, ``stop``, and ``ssh`` commands verify that their action will apply to only one instance
+The ``start``, ``stop``, and ``ssh`` commands verify that their action will apply to only one instance.
 
 - This check is performed by looking for other instances that match:
 
-  - the instance-specification given (name or ID)
-  - the running-state appropriate for the command
+  - the instance-specification given (name or ID).
+  - the running-state appropriate for the command.
 
 - If multiple instances match these conditions, they are listed and the user selects the intended target.
 
 The **running-state** appropriate for each command is as follows:
 
-- The ``ssh`` command looks for **running** instances (it cannot connect to stopped instanced)
-- The ``stop`` command looks for **running** instances (it cannot stop instances that are already stopped)
-- The ``start`` command looks for **stopped** instances (it cannot start instances that are already started)
-- The ``list`` command looks at all instances, unless optional parameters have been specified to narrow its search to **running**, **stopped** or specific instances.
+- The ``ssh`` command looks for **running** instances (it cannot connect to stopped instanced).
+- The ``stop`` command looks for **running** instances (it cannot stop instances that are already stopped).
+- The ``start`` command looks for **stopped** instances (it cannot start instances that are already started).
+- The ``list`` command looks at all instances, unless optional parameters have been specified to narrow its search to **running**, **stopped** instances.
 
 
-Supported Versions & Platforms
-------------------------------
+Platforms & Python Versions Tested
+----------------------------------
 
 Python 2.7, 3.3, 3.4, 3.5, 3.6
 
@@ -105,17 +102,27 @@ This utility can be installed with ``pip``:
   pip install awss
 
 
-.. |Code Climate| image:: https://codeclimate.com/github/robertpeteuil/aws-shortcuts/badges/gpa.svg?style=flat-square
-   :target: https://codeclimate.com/github/robertpeteuil/aws-shortcuts
+.. |PyPi release| image:: https://img.shields.io/pypi/v/awss.svg
+   :target: https://pypi.python.org/pypi/awss
+
+.. |Travis| image:: https://travis-ci.org/robertpeteuil/aws-shortcuts.svg?branch=master
+   :target: https://travis-ci.org/robertpeteuil/aws-shortcuts
+
+.. |AppVeyor| image:: https://ci.appveyor.com/api/projects/status/1meclb632h49sik7/branch/master?svg=true
+   :target: https://ci.appveyor.com/project/robertpeteuil/aws-shortcuts/branch/master
+
+.. |Codacy Grade| image:: https://api.codacy.com/project/badge/Grade/477279a80d31407a99fb3c3551e066cb
+   :target: https://www.codacy.com/app/robertpeteuil/aws-shortcuts?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=robertpeteuil/aws-shortcuts&amp;utm_campaign=Badge_Grade
+.. |Codacy Cov| image:: https://api.codacy.com/project/badge/Coverage/477279a80d31407a99fb3c3551e066cb
+   :target: https://www.codacy.com/app/robertpeteuil/aws-shortcuts?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=robertpeteuil/aws-shortcuts&amp;utm_campaign=Badge_Coverage
+.. |license| image:: https://img.shields.io/github/license/robertpeteuil/aws-shortcuts.svg?colorB=1c64bf
+   :target: https://github.com/robertpeteuil/aws-shortcuts
+.. |lang| image:: https://img.shields.io/badge/language-python-3572A5.svg?style=flat-square
+   :target: https://github.com/robertpeteuil/aws-shortcuts
+
 .. |GitHub issues| image:: https://img.shields.io/github/issues/robertpeteuil/aws-shortcuts.svg
    :target: https://github.com/robertpeteuil/aws-shortcuts
 .. |GitHub release| image:: https://img.shields.io/github/release/robertpeteuil/aws-shortcuts.svg?colorB=1c64bf
    :target: https://github.com/robertpeteuil/aws-shortcuts
-.. |lang| image:: https://img.shields.io/badge/language-python-3572A5.svg?style=flat-square
-   :target: https://github.com/robertpeteuil/aws-shortcuts
-.. |license| image:: https://img.shields.io/github/license/robertpeteuil/aws-shortcuts.svg?colorB=1c64bf
-   :target: https://github.com/robertpeteuil/aws-shortcuts
-.. |PyPi release| image:: https://img.shields.io/pypi/v/awss.svg
-   :target: https://pypi.python.org/pypi/awss
-.. |Travis| image:: https://travis-ci.org/robertpeteuil/aws-shortcuts.svg?branch=master
-   :target: https://travis-ci.org/robertpeteuil/aws-shortcuts
+.. |Code Climate| image:: https://codeclimate.com/github/robertpeteuil/aws-shortcuts/badges/gpa.svg?style=flat-square
+   :target: https://codeclimate.com/github/robertpeteuil/aws-shortcuts
