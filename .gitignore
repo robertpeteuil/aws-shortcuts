@@ -14,4 +14,6 @@ testdata.py
 .tox
 .cache
 .coverage
+coverage.xml
+.coverage.*
 htmlcov/
