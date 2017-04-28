@@ -23,8 +23,8 @@ def init():
     any other function in this module, or they won't function.
     """
 
-    global EC2C
-    global EC2R
+    global EC2C         # pylint: disable=global-statement
+    global EC2R         # pylint: disable=global-statement
     EC2C = boto3.client('ec2')
     EC2R = boto3.resource('ec2')
 
@@ -46,7 +46,7 @@ def getids(qry_string=None):
 
     if qry_string is None:
         qry_string = 'EC2C.describe_instances()'
-    summary_data = eval(qry_string)
+    summary_data = eval(qry_string)     # pylint: disable=eval-used
     i_info = {}
     for i, j in enumerate(summary_data['Reservations']):
         i_info[i] = {'id': j['Instances'][0]['InstanceId']}

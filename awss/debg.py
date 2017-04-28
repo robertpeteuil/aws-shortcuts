@@ -25,8 +25,8 @@ def init(deb1=False, deb2=False):
         will not generate output.
     """
 
-    global DEBUG
-    global DEBUGALL
+    global DEBUG        # pylint: disable=global-statement
+    global DEBUGALL     # pylint: disable=global-statement
     DEBUG = deb1
     DEBUGALL = deb2
 
