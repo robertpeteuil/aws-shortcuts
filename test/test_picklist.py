@@ -69,7 +69,7 @@ def test_det_target(ids, kys, anames, ilist, ide):
         try:
             value = int(keye)
         except ValueError:
-            value = "999"
+            value = 999
         return value
 
     with mock.patch('awss.awsc.getdetails', getlocaldetails, create=True):

@@ -5,8 +5,8 @@ system in use (windows or linux/mac).
 
 Called directly - the object returns the key pressed.
 Called via the int method - the object coverted the key pressed into
-int and returns it.  If the key pressed cannot be converted to int,
-then the string "999" is returned.
+int and returns it.  If the key pressed cannot be converted to int
+then 999 is returned.
 """
 
 from builtins import object
@@ -27,7 +27,7 @@ class _Getch(object):
         try:
             value = int(self.impl())
         except ValueError:
-            value = "999"
+            value = 999
         return value
 
 

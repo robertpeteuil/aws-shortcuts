@@ -26,7 +26,7 @@ from awss.getchar import _Getch
 import awss.awsc as awsc
 import awss.debg as debg
 
-__version__ = '0.9.6'
+__version__ = '0.9.6.1'
 
 
 def main():
@@ -410,8 +410,8 @@ def user_picklist(title_out, i_info, command):
                                            len(i_info), C_NORM, C_TI,
                                            C_NORM))
         entry_raw = getch.int()
-        keyconvert = {"999": "invalid entry"}
-        entry_display = keyconvert.get(str(entry_raw), entry_raw)
+        keyconvert = {999: "invalid entry"}
+        entry_display = keyconvert.get(entry_raw, entry_raw)
         sys.stdout.write(str(entry_display))
         (tar_idx, entry_valid) = user_entry(entry_raw, command, len(i_info))
     print()
@@ -432,18 +432,17 @@ def user_entry(entry_raw, command, maxqty):
     """
 
     entry_valid = "False"
-    entry_int = int(entry_raw)
-    if entry_int == 0:
+    if entry_raw == 0:
         print("\n\n%saborting%s - %s instance\n" %
               (C_ERR, C_NORM, command))
         sys.exit()
-    elif entry_int >= 1 and entry_int <= maxqty:
-        entry_idx = entry_int - 1
+    elif entry_raw >= 1 and entry_raw <= maxqty:
+        entry_idx = entry_raw - 1
         entry_valid = "True"
     else:
         sys.stdout.write("\n%sInvalid entry:%s enter a number between 1"
                          " and %s.\n" % (C_ERR, C_NORM, maxqty))
-        entry_idx = entry_int
+        entry_idx = entry_raw
     return (entry_idx, entry_valid)
 
 
