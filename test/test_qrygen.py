@@ -42,43 +42,40 @@ statelu = {"running": 0b1000, "stopped": 0b0100, "": 0b0000}
 
 expected_results = {
     0: {'title': "All",
-        'query': "EC2C.describe_instances()"},
+        'query': ""},
     1: {'title': "id: '-i 123456'",
-        'query': "EC2C.describe_instances(InstanceIds=['-i 123456'])"},
+        'query': "InstanceIds=['-i 123456']"},
     2: {'title': "name: 'server'",
-        'query': "EC2C.describe_instances(Filters=[{'Name': 'tag:Name',"
-                 " 'Values': ['server']}])"},
+        'query': "Filters=[{'Name': 'tag:Name', 'Values': ['server']}]"},
     3: {'title': "id: '-i 123456', name: 'server'",
-        'query': "EC2C.describe_instances(InstanceIds=['-i 123456'],"
-                 " Filters=[{'Name': 'tag:Name', 'Values': ['server']}])"},
+        'query': "InstanceIds=['-i 123456'], Filters=[{'Name': 'tag:Name',"
+                 " 'Values': ['server']}]"},
     4: {'title': "state: 'stopped'",
-        'query': "EC2C.describe_instances(Filters=[{'Name':"
-                 " 'instance-state-name','Values': ['stopped']}])"},
+        'query': "Filters=[{'Name': 'instance-state-name',"
+                 "'Values': ['stopped']}]"},
     5: {'title': "id: '-i 123456', state: 'stopped'",
-        'query': "EC2C.describe_instances(InstanceIds=['-i 123456'], Filters"
-                 "=[{'Name': 'instance-state-name','Values': ['stopped']}])"},
+        'query': "InstanceIds=['-i 123456'], Filters=[{'Name':"
+                 " 'instance-state-name','Values': ['stopped']}]"},
     6: {'title': "name: 'server', state: 'stopped'",
-        'query': "EC2C.describe_instances(Filters=[{'Name': 'tag:Name',"
-                 " 'Values': ['server']}, {'Name': 'instance-state-name',"
-                 "'Values': ['stopped']}])"},
+        'query': "Filters=[{'Name': 'tag:Name', 'Values': ['server']},"
+                 " {'Name': 'instance-state-name','Values': ['stopped']}]"},
     7: {'title': "id: '-i 123456', name: 'server', state: 'stopped'",
-        'query': "EC2C.describe_instances(InstanceIds=['-i 123456'], Filters"
-                 "=[{'Name': 'tag:Name', 'Values': ['server']}, {'Name':"
-                 " 'instance-state-name','Values': ['stopped']}])"},
+        'query': "InstanceIds=['-i 123456'], Filters=[{'Name': 'tag:Name',"
+                 " 'Values': ['server']}, {'Name': 'instance-state-name',"
+                 "'Values': ['stopped']}]"},
     8: {'title': "state: 'running'",
-        'query': "EC2C.describe_instances(Filters=[{'Name':"
-                 " 'instance-state-name','Values': ['running']}])"},
+        'query': "Filters=[{'Name': 'instance-state-name',"
+                 "'Values': ['running']}]"},
     9: {'title': "id: '-i 123456', state: 'running'",
-        'query': "EC2C.describe_instances(InstanceIds=['-i 123456'], Filters"
-                 "=[{'Name': 'instance-state-name','Values': ['running']}])"},
+        'query': "InstanceIds=['-i 123456'], Filters=[{'Name':"
+                 " 'instance-state-name','Values': ['running']}]"},
     10: {'title': "name: 'server', state: 'running'",
-         'query': "EC2C.describe_instances(Filters=[{'Name': 'tag:Name',"
-                  " 'Values': ['server']}, {'Name': 'instance-state-name',"
-                  "'Values': ['running']}])"},
+         'query': "Filters=[{'Name': 'tag:Name', 'Values': ['server']},"
+                  " {'Name': 'instance-state-name','Values': ['running']}]"},
     11: {'title': "id: '-i 123456', name: 'server', state: 'running'",
-         'query': "EC2C.describe_instances(InstanceIds=['-i 123456'], Filters"
-                  "=[{'Name': 'tag:Name', 'Values': ['server']}, {'Name':"
-                  " 'instance-state-name','Values': ['running']}])"}}
+         'query': "InstanceIds=['-i 123456'], Filters=[{'Name': 'tag:Name',"
+                  " 'Values': ['server']}, {'Name': 'instance-state-name',"
+                  "'Values': ['running']}]"}}
 
 
 def test_query_generation(genid, genname, genstate):

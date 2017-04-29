@@ -4,9 +4,9 @@ Functions exist to to search for instances, gather certain
 information about instances, and start / stop instances.
 """
 
-from builtins import range
-import boto3
 import awss.debg as debg
+import boto3
+from builtins import range
 
 EC2C = ""
 EC2R = ""
@@ -25,27 +25,23 @@ def init():
     EC2R = boto3.resource('ec2')
 
 
-def getids(qry_string=None):
-    """Get All Instance-Ids that match the qry_string provided.
+def getids(qry_string):
+    """Get All Instance-Ids that match the qry_string.
 
-    the dict will contain one indexed line, in the format:
-    "0: {'id': <instance-id>}" for each instance-id that matched
-    the query parameters.
-
-    Note: If no qry_string is provided, it will default
-    to searching for all EC2 instances in the default-data-center
-    as defined in the user's AWS config file.
+    Execute a query against the AWS EC2 client object, that is
+    based on the contents of qry_string.  The raw qry_string
+    passed to this function is combined with the command prefix
+    and syntactical elements before the query executes.
 
     Args:
         qry_string (str): the query to be used against the aws ec2 client.
-
     Returns:
         i_info (dict): contains all instance-ids returned from query.
 
     """
-    if qry_string is None:
-        qry_string = 'EC2C.describe_instances()'
-    summary_data = eval(qry_string)     # pylint: disable=eval-used
+    qry_prefix = "EC2C.describe_instances("
+    qry_real = qry_prefix + qry_string + ")"
+    summary_data = eval(qry_real)     # pylint: disable=eval-used
     i_info = {}
     for i, j in enumerate(summary_data['Reservations']):
         i_info[i] = {'id': j['Instances'][0]['InstanceId']}
@@ -55,21 +51,15 @@ def getids(qry_string=None):
     return i_info
 
 
-def getdetails(i_info=None):
+def getdetails(i_info):
     """Get Details for Each Instance-Id in the dict provided.
-
-    Note: if no dict was provided, it calls the getids func
-    to create one, then proceeds with the dict returned.
 
     Args:
         i_info (dict): contains all instance-ids returned from query.
-
     Returns:
         i_info (dict): information on instances and details.
 
     """
-    if i_info is None:
-        i_info = getids()
     for i in i_info:
         instance_data = EC2R.Instance(i_info[i]['id'])
         i_info[i]['state'] = instance_data.state['Name']
@@ -87,7 +77,6 @@ def gettagvalue(inst_id, tag_title="Name"):
         inst_id (str): instance-id to get tag value from.
         tag_title (str): (optional) name of tag to get
                          value from. defaults to 'Name'.
-
     Returns:
         tagvalue (str): value of the tag and instance specified
 
@@ -112,7 +101,6 @@ def getaminame(inst_img_id):
 
     Args:
         inst_img_id (str): image_id to get name value from.
-
     Returns:
         aminame (str): name of the image.
 
@@ -126,7 +114,6 @@ def getsshinfo(inst_id):
 
     Args:
         inst_id (str): instance-id to get ssh info for
-
     Returns:
         inst_ip (str): public ip-address of specified instance.
         inst_key (str): keyname for specified instance.
@@ -146,7 +133,6 @@ def startstop(inst_id, cmdtodo):
     Args:
         inst_id (str): instance-id to perform command against
         cmdtodo (str): command to perform (start or stop)
-
     Returns:
         response (dict): reponse returned from AWS after
                          performing specified action.

@@ -18,25 +18,19 @@ from __future__ import print_function
 import argparse
 import sys
 
-from awss.colors import C_NORM, C_HEAD, C_TI, C_WARN, C_ERR, C_STAT
-from awss.getchar import _Getch
 import awss.awsc as awsc
 import awss.debg as debg
+from awss.getchar import _Getch
+from awss.colors import C_NORM, C_HEAD, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.6.5'
+__version__ = '0.9.6.6'
 
 
-def main():
+def main():                                             # pragma: no cover
     """Collect user args and call command funct.
 
-    Setup environment, collect relevant args then call function
-    specific to the command specified in args.
-
-    Args:
-        None
-
-    Returns:
-        None
+    Collect command line args and setup environment then call
+    function for command specified in args.
 
     """
     parser = parser_setup()
@@ -56,12 +50,8 @@ def main():
 def parser_setup():
     """Create ArgumentParser object to parse command line arguments.
 
-    Args:
-        None
-
     Returns:
         parser (object): containing ArgumentParser data and methods.
-
     Raises:
         SystemExit: if the user enters invalid args.
 
@@ -160,9 +150,6 @@ def cmd_list(options):
     Args:
         options (object): contains args and data from parser.
 
-    Returns:
-        None
-
     """
     (qry_string, title_out) = qry_create(options)
     i_info = awsc.getids(qry_string)
@@ -185,15 +172,11 @@ def cmd_startstop(options):
     Args:
         options (object): contains args and data from parser.
 
-    Returns:
-        None
-
     """
     statelu = {"start": "stopped", "stop": "running"}
     options.inState = statelu[options.command]
     debg.dprint("toggle set state: ", options.inState)
     (qry_string, title_out) = qry_create(options)
-    qry_check(qry_string)
     i_info = awsc.getids(qry_string)
     tar_inst = det_instance(options.command, i_info, title_out)
     response = awsc.startstop(tar_inst, options.command)
@@ -219,15 +202,11 @@ def cmd_ssh(options):
     Args:
         options (object): contains args and data from parser
 
-    Returns:
-        None
-
     """
     import os
     import subprocess
     options.inState = "running"
     (qry_string, title_out) = qry_create(options)
-    qry_check(qry_string)
     i_info = awsc.getids(qry_string)
     tar_inst = det_instance(options.command, i_info, title_out)
     (inst_ip, inst_key, inst_img_id) = awsc.getsshinfo(tar_inst)
@@ -258,31 +237,6 @@ def cmd_ssh(options):
                                 inst_ip)], shell=True)
 
 
-def qry_check(qry_string):
-    """Validate that the query string is functional.
-
-    Check if the generated query string is empty, and if so exits.
-    This is executed by the 'start', 'stop', and 'ssh' command as they must
-    target a specific instance.
-
-    Args:
-        qry_string (str): the query to be used against the aws ec2 client.
-
-    Returns:
-        None
-
-    Raises:
-        SystemExit: if the query string is empty.
-
-    """
-    if qry_string == "ec2C.describe_instances()":
-        print("%sError%s - instance identifier not specified" %
-              (C_ERR, C_NORM))
-        sys.exit(1)
-    else:
-        return
-
-
 def qry_create(options):
     """Create query from the args specified and command chosen.
 
@@ -296,16 +250,13 @@ def qry_create(options):
 
     Args:
         options (object): contains args and data from parser
-
     Returns:
         qry_string (str): the query to be used against the aws ec2 client.
         title_out (str): the title to display before the list.
 
     """
-    qry_string = "EC2C.describe_instances("
+    qry_string = filt_end = title_out = ""
     filt_st = "Filters=["
-    filt_end = ""
-    title_out = ""
     out_end = "All"
     flag_id = False
     flag_filt = False
@@ -334,7 +285,7 @@ def qry_create(options):
         filt_end = "]"
         out_end = ""
 
-    qry_string += filt_end + ")"
+    qry_string += filt_end
     title_out += out_end
     debg.dprintx("\nQuery String")
     debg.dprintx(qry_string, True)
@@ -358,7 +309,6 @@ def qry_helper(flag_filt, qry_string, title_out, flag_id=False, filt_st=""):
                         has been specified in the args.
         filt_st (str): optional param to allow adding syntactical elements
                        if a filter has been specified.
-
     Returns:
         qry_string (str): the portion of the query that was passed in with
                           the appropriate syntactical elements added.
@@ -377,20 +327,15 @@ def qry_helper(flag_filt, qry_string, title_out, flag_id=False, filt_st=""):
 def list_instances(title_out, i_info, numbered=False):
     """Display a list of all instances and their details.
 
-    This function iterates through all the instances contained in the
-    i_info dict, displayed the information contained and the name of the
-    EC2 image that was used to create the instance.
+    Iterates through all the instances in the dict, and displays
+    information for each instance.
 
     Args:
         title_out (str): the title to display before the list
         i_info (dict): information on instances and details
-        numbered (bool): indicates wheter the list should be displayed
-                         with numbers before each instance.  This is used
-                         when this function is called from the
-                         user_picklist function.
-
-    Returns:
-        None
+        numbered (bool): optional - indicates wheter the list should be
+                         displayed with numbers before each instance.
+                         This is used when called from user_picklist.
 
     """
     if not numbered:
@@ -424,10 +369,8 @@ def det_instance(command, i_info, title_out):
         command (str): command specified on the command line.
         i_info (dict): information on instances and details.
         title_out (str): the title to display before the list.
-
     Returns:
         tar_inst (str): the AWS instance-id of the target instance
-
     Raises:
         SystemExit: if no instances were found that match the
                     parameters specified in the args.
@@ -435,8 +378,8 @@ def det_instance(command, i_info, title_out):
     """
     qty_instances = len(i_info)
     if qty_instances == 0:
-        print("No instances found with parameters: %s" % (title_out))
-        sys.exit()
+        print("No instances found with parameters: {0}".format(title_out))
+        sys.exit(1)
 
     if qty_instances > 1:
         print("\n%s instances match these parameters:\n" % (qty_instances))
@@ -459,7 +402,6 @@ def user_picklist(title_out, i_info, command):
         title_out (str): the title to display before the list.
         i_info (dict): information on instances and details.
         command (str): command specified on the command line.
-
     Returns:
         tar_idx (int): the dictionary index number of the targeted instance
 
@@ -494,11 +436,9 @@ def user_entry(entry_raw, command, maxqty):
                          the value 999 if the user entered a non-number.
         command (str): command specified on the command line.
         maxqty (int): the number of instances the user is choosing from.
-
     Returns:
         entry_idx(int): the dictionary index number of the targeted instance
         entry_valid (bool): specifies if entry_idx is valid.
-
     Raises:
         SystemExit: if the user enters 0 when they are choosing from the
                     list it triggers the "abort" option offered to the user.
@@ -506,8 +446,8 @@ def user_entry(entry_raw, command, maxqty):
     """
     entry_valid = False
     if entry_raw == 0:
-        print("\n\n%saborting%s - %s instance\n" %
-              (C_ERR, C_NORM, command))
+        print("\n\n{0}aborting{1} - {2} instance\n".
+              format(C_ERR, C_NORM, command))
         sys.exit()
     elif entry_raw >= 1 and entry_raw <= maxqty:
         entry_idx = entry_raw - 1
