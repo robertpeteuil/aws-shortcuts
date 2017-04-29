@@ -8,8 +8,21 @@ from builtins import range
 import boto3
 import awss.debg as debg
 
-EC2C = boto3.client('ec2')
-EC2R = boto3.resource('ec2')
+EC2C = ""
+EC2R = ""
+
+
+def init():
+    """Attach global vars EC2C, and EC2R to the AWS service.
+
+    This must be called once before any other function in this module
+    or they won't function.
+
+    """
+    global EC2C         # pylint: disable=global-statement
+    global EC2R         # pylint: disable=global-statement
+    EC2C = boto3.client('ec2')
+    EC2R = boto3.resource('ec2')
 
 
 def getids(qry_string=None):

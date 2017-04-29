@@ -23,7 +23,7 @@ from awss.getchar import _Getch
 import awss.awsc as awsc
 import awss.debg as debg
 
-__version__ = '0.9.6.4'
+__version__ = '0.9.6.5'
 
 
 def main():
@@ -45,6 +45,7 @@ def main():
     debug = bool(options.debug > 0)
     debugall = bool(options.debug > 1)
 
+    awsc.init()
     debg.init(debug, debugall)
 
     options.func(options)
