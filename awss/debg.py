@@ -26,9 +26,6 @@ def init(deb1, deb2=False):
         deb2 (bool): optional - value of DEBUGALL to set,
                      defaults to False.
 
-    Returns:
-        None
-
     """
     global DEBUG        # pylint: disable=global-statement
     global DEBUGALL     # pylint: disable=global-statement
@@ -43,9 +40,6 @@ def dprint(item1, item2=""):
         item1 (str): item to print
         item2 (str): optional 2nd item to print
 
-    Returns:
-        None
-
     """
     if DEBUG:
         print(item1, "%s%s%s" % (C_TI, item2, C_NORM))
@@ -58,9 +52,6 @@ def dprintx(passeditem, special=False):
         passeditem (str): item to print
         special (bool): determines if item prints with PrettyPrint
                         or regular print.
-
-    Returns:
-        None
 
     """
     if DEBUGALL:
