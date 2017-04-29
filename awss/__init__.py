@@ -20,21 +20,28 @@ from __future__ import print_function
 from builtins import range
 import argparse
 import sys
-from awss.colors import C_NORM, C_HEAD, C_TI, C_WARN, C_ERR, C_STAT
 
+from awss.colors import C_NORM, C_HEAD, C_TI, C_WARN, C_ERR, C_STAT
 from awss.getchar import _Getch
 import awss.awsc as awsc
 import awss.debg as debg
 
-__version__ = '0.9.6.1'
+__version__ = '0.9.6.2'
 
 
 def main():
-    """Prepare environment, collect args and call command funct.
+    """Orchestrate collecting user args and call function for
+    command specified.
 
     This functions sets up the environment, collects relevant
     agrs and cals the function specific to the command the user
     has specified.
+
+    Args:
+        None
+
+    Returns:
+        None
     """
     parser = parser_setup()
     options = parser.parse_args()
@@ -51,11 +58,17 @@ def main():
 
 
 def parser_setup():
-    """
-    Sets up the command line parser and four subparsers, one for each command:
-    list, start, stop and ssh.
-    """
+    """Create ArgumentParser object to parse command line arguments.
 
+    Args:
+        None
+
+    Returns:
+        parser (object): containing ArgumentParser data and methods.
+
+    Raises:
+        SystemExit: if the user enters invalid args.
+    """
     parser = argparse.ArgumentParser(description="Control AWS instances from"
                                      " the command line with: list, start,"
                                      " stop or ssh.", prog='awss',
@@ -145,12 +158,11 @@ def parser_setup():
 
 
 def cmd_list(options):
-    """
-    'list' executer: input: object - created by the parser
+    """Gather data for instances matching args and call display func.
 
-    Finds instances that match the user specified args and displays them.
+    Args:
+        options (object): contains args and data from parser
     """
-
     (qry_string, title_out) = qry_create(options)
     i_info = awsc.getids(qry_string)
     items = len(i_info)
@@ -163,15 +175,16 @@ def cmd_list(options):
 
 
 def cmd_startstop(options):
-    """
-    'start' and 'stop' executer: input: object - created by the parser
+    """Start or Stop the specified instance.
 
     Finds instances that match the user specified args plus the command
     specific args.  The target instance is determined and the specified
     action is applied to the instance. The action return information is
     retreived and displayed.
-    """
 
+    Args:
+        options (object): contains args and data from parser
+    """
     statelu = {"start": "stopped", "stop": "running"}
     options.inState = statelu[options.command]
     debg.dprint("toggle set state: ", options.inState)
@@ -192,15 +205,16 @@ def cmd_startstop(options):
 
 
 def cmd_ssh(options):
-    """
-    'ssh' executer: input: object - created by the parser
+    """Connect to the specified instance via ssh.
 
     Finds instances that match the user specified args that are also
     in the 'running' state.  The target instance is determined, the
     required connection information is retreived (IP, key used, ssh
     user-name), and an 'ssh' connection is made to the instance.
-    """
 
+    Args:
+        options (object): contains args and data from parser
+    """
     import os
     import subprocess
     options.inState = "running"
@@ -236,14 +250,18 @@ def cmd_ssh(options):
 
 
 def qry_check(qry_string):
-    """
-    Query String Validator:  input: query string - in aws ec2 format
+    """Validate that the query string is functional.
 
     Check if the generated query string is empty, and if so exits.
     This is executed by the 'start', 'stop', and 'ssh' command as they must
     target a specific instance.
-    """
 
+    Args:
+        qry_string (str): the query to be used against the aws ec2 client.
+
+    Raises:
+        SystemExit: if the query string is empty.
+    """
     if qry_string == "ec2C.describe_instances()":
         print("%sError%s - instance identifier not specified" %
               (C_ERR, C_NORM))
@@ -253,9 +271,7 @@ def qry_check(qry_string):
 
 
 def qry_create(options):
-    """
-    Query Creator: input: object - created by the parser
-                   returns: Query_String, Report_Title
+    """Create query from the args specified and command chosen.
 
     Creates aws ec2 formatted query string that incorporates the args in the
     options object.  Generation of this query on the fly allows for queries
@@ -264,8 +280,14 @@ def qry_create(options):
     This function also generates the report output title for the 'list'
     function as the creation of it uses the exact same algoruthm as creating
     the query.
-    """
 
+    Args:
+        options (object): contains args and data from parser
+
+    Returns:
+        qry_string (str): the query to be used against the aws ec2 client.
+        title_out (str): the title to display before the list.
+    """
     qry_string = "EC2C.describe_instances("
     filt_st = "Filters=["
     filt_end = ""
@@ -303,16 +325,27 @@ def qry_create(options):
 
 
 def qry_helper(flag_filt, qry_string, title_out, flag_id=False, filt_st=""):
-    """
-    Query helper: input: filter_set_flag, query_string, report_title,
-                         id_set_flag (optional), string_flag (option)
-                  returns: query_string, report_title
+    """Dynamically add syntaxtical elements to query.
 
     This functions adds syntactical elements to the query string, and
     report title, based on the types and number of items added thus far.
     It is broken-out into a seperate function to eliminate duplication.
-    """
 
+    Args:
+        flag_filt (bool): indicates that at least one filter item specified.
+        qry_string (str): the portion of the query that has been constructed
+                          up to this point.
+        title_out (str): the title to display before the list.
+        flag_id (bool): optional param that specifies if the instance-id
+                        has been specified in the args.
+        filt_st (str): optional param to allow adding syntactical elements
+                       if a filter has been specified.
+
+    Returns:
+        qry_string (str): the portion of the query that was passed in with
+                          the appropriate syntactical elements added.
+        title_out (str): the title to display before the list.
+    """
     if flag_id or flag_filt:
         qry_string += ", "
         title_out += ", "
@@ -322,10 +355,7 @@ def qry_helper(flag_filt, qry_string, title_out, flag_id=False, filt_st=""):
 
 
 def list_instances(title_out, i_info, numbered="no"):
-    """
-    Displays Instance Information:
-        input: report_title, dict of inst_info, and
-            special_case_flag(optional)
+    """Display a list of all instances and their details.
 
     This function iterates through all the instances contained in the
     i_info dict, displayed the information contained, and also obtained
@@ -336,8 +366,15 @@ def list_instances(title_out, i_info, numbered="no"):
     If the special_case flag is set, it means this function is being called
     to display a list for a user to select from.  In this case, a colored
     number is displayed before each instances data.
-    """
 
+    Args:
+        title_out (str): the title to display before the list
+        i_info (dict): information on instances and details
+        numbered (bool): indicates wheter the list should be displayed
+                         with numbers before each instance.  This is used
+                         when this function is called from the
+                         user_picklist function.
+    """
     if numbered == "no":
         print("\n%s\n" % (title_out))
     for i in range(len(i_info)):
@@ -356,19 +393,25 @@ def list_instances(title_out, i_info, numbered="no"):
 
 
 def det_instance(command, i_info, title_out):
-    """
-    Determine Target Instance ID:
-            input: command, dict of instance info, report_title
-            returns: instance-id-of-target-instance, dict-index-of-target
+    """Determine the instance-id of the target instance.
 
-    This functions inspects the dict of instance-ids:
-    if it is empty, it displays a message that no instances were found that
-    matched the query conditions specified, then exits.
-    If it contains one item, then the instance-id of that item is returned.
-    If it contains more than one item, then the picklist function is called.
-    note: command, and report_title are only used for user display purposes.
-    """
+    Inspect the number of instance-ids collected:
+        If none, displays a message and exits.
+        If one item, the instance-id is returned as the target.
+        Ifmore than one, the user_picklist function is called.
 
+    Args:
+        command (str): command specified on the command line.
+        i_info (dict): information on instances and details.
+        title_out (str): the title to display before the list.
+
+    Returns:
+        tar_inst (str): the AWS instance-id of the target instance
+
+    Raises:
+        SystemExit: if no instances were found that match the
+                    parameters specified in the args.
+    """
     qty_instances = len(i_info)
     if qty_instances == 0:
         print("No instances found with parameters: %s" % (title_out))
@@ -386,19 +429,22 @@ def det_instance(command, i_info, title_out):
 
 
 def user_picklist(title_out, i_info, command):
-    """
-    Picklist Function:
-            input: report_title, dict of instance info, command
-            returns: dictionary-index-of-target
+    """Display list of instances matching args and ask user to select target.
 
-    Display Matching Instances and askd user t0 select target.  The list is
-    displayed by calling the list_instances func with the special_flag set.
-    Once the list is displayed, the user will be requires to enter a number
-    between 1 and the number of matchign instances (or a '0' to abort).
+    Once the list is displayed, the user will be requires to enter the number
+    of the instance they are targeting.
+    matching instances (or a '0' to abort).
     Entering a number outside of this range generates an invalid selection
     error message, and the user is asked again.
-    """
 
+    Args:
+        title_out (str): the title to display before the list.
+        i_info (dict): information on instances and details.
+        command (str): command specified on the command line.
+
+    Returns:
+        tar_idx (int): the dictionary index number of the targeted instance
+    """
     getch = _Getch()
     entry_valid = "False"
     i_info = awsc.getdetails(i_info)
@@ -419,18 +465,30 @@ def user_picklist(title_out, i_info, command):
 
 
 def user_entry(entry_raw, command, maxqty):
-    """
-    User Entry Validation: input: user_entry, command, max_valid_entry
+    """Checks validity of number entered by user and returns index
+    or invalid-entry flag.
 
-    This function validates the user entry:
     If it is 0, an abort message is diaplyed and the program exits.
     If the entry is between 1 and max_valid_entry, then one is subtracted
     (because its a zero based index) and it is set as the dict-index-of-
     target and the entry_valid flag is set.
     Otherwise the entry is invlid, and the functions returns the invalid_
     value and the entry_valid flag remains False.
-    """
 
+    Args:
+        entry_raw (int): contains either the number the user entered or
+                         the value 999 if the user entered a non-number.
+        command (str): command specified on the command line.
+        maxqty (int): the number of instances the user is choosing from.
+
+    Returns:
+        entry_idx(int): the dictionary index number of the targeted instance
+        entry_valid (bool): specifies if entry_idx is valid.
+
+    Raises:
+        SystemExit: if the user enters 0 when they are choosing from the
+                    list it triggers the "abort" option offered to the user.
+    """
     entry_valid = "False"
     if entry_raw == 0:
         print("\n\n%saborting%s - %s instance\n" %

@@ -17,12 +17,11 @@ EC2R = ""
 
 
 def init():
-    """
-    initializes this module for use by attaching global vars EC2C,
-    and EC2R to the AWS service.  This must be called once before
-    any other function in this module, or they won't function.
-    """
+    """Attach global vars EC2C, and EC2R to the AWS service.
 
+    This must be called once before any other function in this module
+    or they won't function.
+    """
     global EC2C         # pylint: disable=global-statement
     global EC2R         # pylint: disable=global-statement
     EC2C = boto3.client('ec2')
@@ -30,8 +29,8 @@ def init():
 
 
 def getids(qry_string=None):
-    """
-    Get All Instance-Ids that match the qry_string provided
+    """Get All Instance-Ids that match the qry_string provided.
+
         input: qry_string (optional)
         returns: dict containing Instance-Ids
 
@@ -43,7 +42,6 @@ def getids(qry_string=None):
     to searching for all EC2 instances in the default-data-center
     as defined in the user's AWS config file.
     """
-
     if qry_string is None:
         qry_string = 'EC2C.describe_instances()'
     summary_data = eval(qry_string)     # pylint: disable=eval-used
@@ -57,8 +55,8 @@ def getids(qry_string=None):
 
 
 def getdetails(i_info=None):
-    """
-    Get Details for Each Instance-Id in the dict provided.
+    """Get Details for Each Instance-Id in the dict provided.
+
         input: dict containing Instance-Ids (optional)
         output: dict containing additional key:value pairs
             for each instance, containing: execution_state,
@@ -67,7 +65,6 @@ def getdetails(i_info=None):
     Note: if no dict was provided, it calls the getids func
     to create one, then proceeds with the dict returned.
     """
-
     if i_info is None:
         i_info = getids()
     for i in i_info:
@@ -81,14 +78,13 @@ def getdetails(i_info=None):
 
 
 def gettagvalue(inst_id, tag_title="Name"):
-    """
-    Get Tag Value fpr Specified Instance-Id, and Tag
+    """Get Tag Value fpr Specified Instance-Id, and Tag.
+
         input: instance-id, and tag_title (optional)
 
     If a tag_title is not provided, it defaults to retrieving
     the value for the 'Name' tag.
     """
-
     instance_tags = EC2R.Instance(inst_id).tags
     qty_tags = len(instance_tags)
     if qty_tags:
@@ -102,8 +98,8 @@ def gettagvalue(inst_id, tag_title="Name"):
 
 
 def getaminame(inst_img_id):
-    """
-    Get Image_Name for the Image_Id specified
+    """Get Image_Name for the Image_Id specified.
+
         input: Instance_Image_Id
 
     The Instance_Image_Id is easily retrieved from the
@@ -113,18 +109,16 @@ def getaminame(inst_img_id):
     retriving the Image_Name, this function is only called when
     this information is specifically needed.
     """
-
     aminame = EC2R.Image(inst_img_id).name
     return aminame
 
 
 def getsshinfo(inst_id):
-    """
-    Get Instance Information Needed for SSH
+    """Get Instance Information Needed for SSH.
+
         input: instance-id
         return: public_ip, login_key, image_id
     """
-
     tar_inst = EC2R.Instance(inst_id)
     inst_ip = tar_inst.public_ip_address
     inst_key = tar_inst.key_name
@@ -133,12 +127,11 @@ def getsshinfo(inst_id):
 
 
 def startstop(inst_id, cmdtodo):
-    """
-    Start or Stop the Specified Instance
+    """Start or Stop the Specified Instance.
+
         input: instance-id, command (start or stop)
         return: dict containing the reponse text from AWS
     """
-
     tar_inst = EC2R.Instance(inst_id)
     thecmd = getattr(tar_inst, cmdtodo)
     response = thecmd()

@@ -1,13 +1,11 @@
-"""
-This is part of the AWSS Utility located here:
-https://github.com/robertpeteuil/aws-shortcuts
+"""Module containing functions for printing debug information.
 
-This file contains debug print functions that only print
-if this module's init() function is called in the form:
-    init(DEBUG, DEBUGALL)
+The debug print functions only print if one of the debug-modes
+was set by a previous call to this module's init() function.
 
-DEBUG allows calls to the dprint function to print
-DEBUGALL allows calls to the dprintx function to print
+There are two debug-modes:
+    DEBUG allows calls to the dprint function to print
+    DEBUGALL allows calls to the dprintx function to print
 """
 
 from __future__ import print_function
