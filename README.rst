@@ -5,7 +5,7 @@ List, start, stop and ssh to AWS instances using Name or Instance-ID
 ---------------------------------------------------------------------------------
 
 
-|TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |lang| |license|
+|TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |Py ver| |license s|
 
 --------------
 
@@ -117,8 +117,14 @@ This utility can be installed with ``pip``:
    :target: https://www.codacy.com/app/robertpeteuil/aws-shortcuts?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=robertpeteuil/aws-shortcuts&amp;utm_campaign=Badge_Coverage
 .. |license| image:: https://img.shields.io/github/license/robertpeteuil/aws-shortcuts.svg?colorB=1c64bf
    :target: https://github.com/robertpeteuil/aws-shortcuts
+.. |license s| image:: https://img.shields.io/badge/license-MIT-1c64bf.svg?style=flat-square
+   :target: https://github.com/robertpeteuil/aws-shortcuts
 .. |lang| image:: https://img.shields.io/badge/language-python-3572A5.svg?style=flat-square
    :target: https://github.com/robertpeteuil/aws-shortcuts
+
+.. |Py ver| image:: https://img.shields.io/pypi/pyversions/awss.svg
+   :target: https://pypi.python.org/pypi/bandit/
+   :alt: Python Versions
 
 .. |GitHub issues| image:: https://img.shields.io/github/issues/robertpeteuil/aws-shortcuts.svg
    :target: https://github.com/robertpeteuil/aws-shortcuts
