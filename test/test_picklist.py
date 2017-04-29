@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+"""Test module for det_instance function in awss."""
 
 from __future__ import print_function
 import pytest
@@ -50,6 +50,7 @@ debg.init(False, False)
           'state': 'running'}}, 0),
     ({}, ['1'], {}, {}, 0)])
 def test_det_target(ids, kys, anames, ilist, ide):
+    """Test valid and invalid params with det_instance function in awss."""
     global counter
     counter = 0
 

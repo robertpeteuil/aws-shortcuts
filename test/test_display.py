@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-
-'''
-This runs the display list function using sample data.
-'''
+"""Test module for list_instances function in awss."""
 
 from __future__ import print_function
 import mock
@@ -20,6 +16,7 @@ amiNameList = {
 
 
 def getlocalaminame(ami):
+    """Return name for ami-number passed as arg."""
     amiName = amiNameList[ami]
     return amiName
 
@@ -47,7 +44,7 @@ infoNoAmiName = {
 
 @mock.patch('awss.awsc.getaminame', getlocalaminame, create=True)
 def test_display_list(capsys):
-
+    """Test list_instances function in awss."""
     debg.init(False, False)
     outputTitle = "Test Report"
     list_instances(outputTitle, infoNoAmiName)

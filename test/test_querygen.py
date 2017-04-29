@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+"""Test module for qry_create function in awss."""
 
 from __future__ import print_function
 import pytest
@@ -10,21 +10,27 @@ debg.init(False, False)
 
 @pytest.fixture(params=["-i 123456", ""])
 def genid(request):
+    """Provide instance-id params to test function."""
     return request.param
 
 
 @pytest.fixture(params=["server", ""])
 def genname(request):
+    """Provide name params to test function."""
     return request.param
 
 
 @pytest.fixture(params=["running", "stopped", ""])
 def genstate(request):
+    """Provide instance-state params to test function."""
     return request.param
 
 
 class holdOptions():
+    """Hold options used by qry_create function."""
+
     def __init__(self, idnum, instname, inState):
+        """Initialize options to specified values."""
         self.id = idnum
         self.instname = instname
         self.inState = inState
@@ -76,6 +82,7 @@ expected_results = {
 
 
 def test_query_generation(genid, genname, genstate):
+    """Test all valid variations of params with qry_create function in awss."""
     print("TEST - Query_Parser  -   id: %s, name: %s, state: %s" %
           (genid, genname, genstate))
 

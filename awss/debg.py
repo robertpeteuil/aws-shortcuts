@@ -1,4 +1,4 @@
-"""Module containing functions for printing debug information.
+"""Debug print functions that execute if debug mode initialized.
 
 The debug print functions only print if one of the debug-modes
 was set by a previous call to this module's init() function.
@@ -15,14 +15,21 @@ DEBUG = False
 DEBUGALL = False
 
 
-def init(deb1=False, deb2=False):
-    """
-    initialize the values of DEBUG and DEBUGALL
-        if this init is not called, they default to False, and
-        all calls to the debug print functions, dprint and dprintx
-        will not generate output.
-    """
+def init(deb1, deb2=False):
+    """Initialize DEBUG and DEBUGALL.
 
+    Allows other modules to set DEBUG and DEBUGALL, so their
+    call to dprint or dprintx generate output.
+
+    Args:
+        deb1 (bool): value of DEBUG to set
+        deb2 (bool): optional - value of DEBUGALL to set,
+                     defaults to False.
+
+    Returns:
+        None
+
+    """
     global DEBUG        # pylint: disable=global-statement
     global DEBUGALL     # pylint: disable=global-statement
     DEBUG = deb1
@@ -30,35 +37,32 @@ def init(deb1=False, deb2=False):
 
 
 def dprint(item1, item2=""):
-    """
-    Debug Print - only print is debug mode is set
-        input: item_to_print, 2nd_item (optional)
+    """Print Text if DEBUG set.
 
-    This prints the first paramter sent without change, so color
-    strings can be inserted before calling.
-    If the optional 2nd paramter is passed, it will print in CYAN.
-    This allows for easy printing of variable names (in WHITE) and
-    their values (in CYAN) like this: dprint(item, value)
+    Args:
+        item1 (str): item to print
+        item2 (str): optional 2nd item to print
+
+    Returns:
+        None
+
     """
     if DEBUG:
         print(item1, "%s%s%s" % (C_TI, item2, C_NORM))
 
 
 def dprintx(passeditem, special=False):
-    """
-    Extra Debug Print with optional PrettyPrint
-        input: item_to_print, pretty_print_mode (optional)
+    """Print Text if DEBUGALL set, optionally with PrettyPrint.
 
-    If DEBUGALL is set, the item passed is printed with the
-    normal pritn command, or PrettyPrint if a 2nd 'True' param
-    is passed.  This provides a method of printing out entire
-    dictionaries on occasion, without making them part of the
-    normal debug display.
-    Calling without passing a 2nd param is ideal for printing
-    titles that you want to display before a pprint output of
-    a dict.
-    """
+    Args:
+        passeditem (str): item to print
+        special (bool): determines if item prints with PrettyPrint
+                        or regular print.
 
+    Returns:
+        None
+
+    """
     if DEBUGALL:
         if special:
             from pprint import pprint

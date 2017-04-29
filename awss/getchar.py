@@ -1,12 +1,13 @@
-"""Getchar Module holding cross-platform class for reading single keypresses
+"""Cross-platform object that reads single keypress.
 
-When the object is instantiated, it configures itself for the operating
+When the object is instantiated, it initializes for the operating
 system in use (windows or linux/mac).
 
 Called directly - the object returns the key pressed.
-Called via the int method - the object coverted the key pressed into
-int and returns it.  If the key pressed cannot be converted to int
+Called via the int method - the object coverted the key pressed
+into int and returns it.  If the key cannot be converted to int
 then 999 is returned.
+
 """
 
 from builtins import object
@@ -23,7 +24,7 @@ class _Getch(object):
         return self.impl()
 
     def int(self):          # pragma: no cover
-        """ Coverts a read keystroke to int or returns "999" """
+        """Return read keystroke as int else return "999"."""
         try:
             value = int(self.impl())
         except ValueError:
