@@ -15,6 +15,7 @@ Author:    Robert Peteuil   @RobertPeteuil
 """
 from __future__ import print_function
 from builtins import input
+from builtins import range
 import argparse
 import sys
 
@@ -22,7 +23,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.6.8'
+__version__ = '0.9.6.9'
 
 
 def main():                                             # pragma: no cover
@@ -150,8 +151,10 @@ def cmd_list(options):
         options (object): contains args and data from parser.
 
     """
-    (qry_string, title_out) = qry_create(options)
-    i_info = awsc.get_inst_info(qry_string)
+    # (qry_string, title_out) = qry_create(options)
+    # qry_results = awsc.get_inst_info(qry_string)
+    # i_info = decode_results(qry_results)
+    (i_info, title_out) = get_data(options)
     if i_info:
         title_out = "Instance List - " + title_out
         list_instances(title_out, i_info)
@@ -173,8 +176,10 @@ def cmd_startstop(options):
     statelu = {"start": "stopped", "stop": "running"}
     options.inState = statelu[options.command]
     debg.dprint("toggle set state: ", options.inState)
-    (qry_string, title_out) = qry_create(options)
-    i_info = awsc.get_inst_info(qry_string)
+    # (qry_string, title_out) = qry_create(options)
+    # qry_results = awsc.get_inst_info(qry_string)
+    # i_info = decode_results(qry_results)
+    (i_info, title_out) = get_data(options)
     (tar_inst, tar_idx) = det_instance(options.command, i_info, title_out)
     response = awsc.startstop(tar_inst, options.command)
     responselu = {"start": "StartingInstances", "stop": "StoppingInstances"}
@@ -203,8 +208,10 @@ def cmd_ssh(options):
     import os
     import subprocess
     options.inState = "running"
-    (qry_string, title_out) = qry_create(options)
-    i_info = awsc.get_inst_info(qry_string)
+    # (qry_string, title_out) = qry_create(options)
+    # qry_results = awsc.get_inst_info(qry_string)
+    # i_info = decode_results(qry_results)
+    (i_info, title_out) = get_data(options)
     (tar_inst, tar_idx) = det_instance(options.command, i_info, title_out)
     home_dir = os.environ['HOME']
     if options.user is None:
@@ -233,6 +240,50 @@ def cmd_ssh(options):
                         format(home_dir, i_info[tar_idx]['ssh_key'],
                                options.user, i_info[tar_idx]['pub_dns_name'])],
                         shell=True)
+
+
+def get_data(options):
+    """Get Data specific for command selected.
+
+    Args:
+        options (object): contains args and data from parser.
+    Returns:
+        i_info (dict): information on instances and details.
+        title_out (str): the title to display before the list.
+
+    """
+    (qry_string, title_out) = qry_create(options)
+    qry_results = awsc.get_inst_info(qry_string)
+    i_info = decode_results(qry_results)
+    return (i_info, title_out)
+
+
+def decode_results(qry_results):
+    """Generate dictionary of results from query.
+
+    Decodes the large dict recturned from the AWS query.
+
+    Args:
+        qry_results (dict): results from awsc.get_inst_info
+    Returns:
+        i_info (dict): information on instances and details.
+
+    """
+    i_info = {}
+    for i, j in enumerate(qry_results['Reservations']):
+        i_info[i] = {'id': j['Instances'][0]['InstanceId']}
+        i_info[i]['state'] = j['Instances'][0]['State']['Name']
+        i_info[i]['ami'] = j['Instances'][0]['ImageId']
+        i_info[i]['ssh_key'] = j['Instances'][0]['KeyName']
+        i_info[i]['pub_dns_name'] = j['Instances'][0]['PublicDnsName']
+        inst_tags = j['Instances'][0]['Tags']
+        for k in range(len(inst_tags)):
+            tagname = inst_tags[k]['Key']
+            i_info[i]["tag:" + tagname] = inst_tags[k]['Value']
+    debg.dprint("numInstances: ", len(i_info))
+    debg.dprintx("Details except AMI-name")
+    debg.dprintx(i_info, True)
+    return i_info
 
 
 def qry_create(options):

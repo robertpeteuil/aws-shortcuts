@@ -1,12 +1,11 @@
-"""Communicates with AWS services.
+"""Communicate with AWS EC2 to get data and interact with instances.
 
-Functions exist to to search for instances, gather certain
-information about instances, and start / stop instances.
+Functions for retrieving data for queried instances, retrieving
+the name of the image of an instance (AMI Name), and for starting
+or stopping instances.
 """
 
-import awss.debg as debg
 import boto3
-from builtins import range
 
 EC2C = ""
 EC2R = ""
@@ -39,50 +38,13 @@ def get_inst_info(qry_string):
     Args:
         qry_string (str): the query to be used against the aws ec2 client.
     Returns:
-        i_info (dict): information on instances and details.
+        qry_results (dict): raw information returned from AWS.
 
     """
     qry_prefix = "EC2C.describe_instances("
     qry_real = qry_prefix + qry_string + ")"
-    summary_data = eval(qry_real)     # pylint: disable=eval-used
-    i_info = {}
-    for i, j in enumerate(summary_data['Reservations']):
-        i_info[i] = {'id': j['Instances'][0]['InstanceId']}
-        i_info[i]['state'] = j['Instances'][0]['State']['Name']
-        i_info[i]['ami'] = j['Instances'][0]['ImageId']
-        i_info[i]['ssh_key'] = j['Instances'][0]['KeyName']
-        i_info[i]['pub_dns_name'] = j['Instances'][0]['PublicDnsName']
-        inst_tags = j['Instances'][0]['Tags']
-        for k in range(len(inst_tags)):
-            tagname = inst_tags[k]['Key']
-            i_info[i]["tag:" + tagname] = inst_tags[k]['Value']
-    debg.dprint("numInstances: ", len(i_info))
-    debg.dprintx("Details except AMI-name")
-    debg.dprintx(i_info, True)
-    return i_info
-
-
-def gettagvalue(inst_id, tag_title="Name"):
-    """Get value for tag in specified instance..
-
-    Args:
-        inst_id (str): instance-id to get tag value from.
-        tag_title (str): (optional) name of tag to get
-                         value from. defaults to 'Name'.
-    Returns:
-        tagvalue (str): value of the tag and instance specified
-
-    """
-    instance_tags = EC2R.Instance(inst_id).tags
-    qty_tags = len(instance_tags)
-    if qty_tags:
-        for j in range(qty_tags):
-            if instance_tags[j]['Key'] == tag_title:
-                tagvalue = instance_tags[j]['Value']
-                break
-    else:
-        tagvalue = ""
-    return tagvalue
+    qry_results = eval(qry_real)     # pylint: disable=eval-used
+    return qry_results
 
 
 def getaminame(inst_img_id):
