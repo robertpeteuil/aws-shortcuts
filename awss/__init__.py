@@ -15,15 +15,16 @@ URL:       https://github.com/robertpeteuil/aws-shortcuts
 Author:    Robert Peteuil   @RobertPeteuil
 """
 from __future__ import print_function
+from builtins import input
 import argparse
 import sys
 
 import awss.awsc as awsc
 import awss.debg as debg
-from awss.getchar import _Getch
+# from awss.getchar import _Getch
 from awss.colors import C_NORM, C_HEAD, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.6.6'
+__version__ = '0.9.6.7'
 
 
 def main():                                             # pragma: no cover
@@ -240,13 +241,9 @@ def cmd_ssh(options):
 def qry_create(options):
     """Create query from the args specified and command chosen.
 
-    Creates aws ec2 formatted query string that incorporates the args in the
-    options object.  Generation of this query on the fly allows for queries
-    that search and/or filter on multiple properties in the same query.
-
-    This function also generates the report output title for the 'list'
-    function as the creation of it uses the exact same algoruthm as creating
-    the query.
+    Creates a query string that incorporates the args in the options
+    object.  Also Creates the title for the 'list' function, as it's
+    done in parallel by the same algorythm.
 
     Args:
         options (object): contains args and data from parser
@@ -403,25 +400,40 @@ def user_picklist(title_out, i_info, command):
         i_info (dict): information on instances and details.
         command (str): command specified on the command line.
     Returns:
-        tar_idx (int): the dictionary index number of the targeted instance
+        tar_idx (int): the dictionary index number of the targeted instance.
 
     """
-    getch = _Getch()
+    # getch = _Getch()
     entry_valid = False
     i_info = awsc.getdetails(i_info)
     list_instances(title_out, i_info, True)
     while not entry_valid:
-        sys.stdout.write("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0"
-                         " aborts%s]: " % (C_WARN, C_NORM, command, C_WARN,
-                                           C_NORM, C_WARN, len(i_info),
-                                           C_NORM, C_TI, C_NORM))
-        entry_raw = getch.int()
-        keyconvert = {999: "invalid entry"}
-        entry_display = keyconvert.get(entry_raw, entry_raw)
-        sys.stdout.write(str(entry_display))
+        # sys.stdout.write("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0"
+        #                  " aborts%s]: " % (C_WARN, C_NORM, command, C_WARN,
+        #                                    C_NORM, C_WARN, len(i_info),
+        #                                    C_NORM, C_TI, C_NORM))
+        entry_base = ob_in("Enter %s#%s of instance to %s (%s1%s-%s%s%s) [%s0"
+                           " aborts%s]: " % (C_WARN, C_NORM, command,
+                                             C_WARN, C_NORM, C_WARN,
+                                             len(i_info), C_NORM, C_TI,
+                                             C_NORM))
+        # entry_raw = getch.int()
+        # keyconvert = {999: "invalid entry"}
+        # entry_display = keyconvert.get(entry_raw, entry_raw)
+        # sys.stdout.write(str(entry_display))
+        try:
+            entry_raw = int(entry_base)
+        except ValueError:
+            # print("invalid input")
+            entry_raw = 999
         (tar_idx, entry_valid) = user_entry(entry_raw, command, len(i_info))
     print()
     return tar_idx
+
+
+def ob_in(message_text):
+    """Perform input command as a function so it can be mocked."""
+    return (input(message_text))
 
 
 def user_entry(entry_raw, command, maxqty):
@@ -432,10 +444,9 @@ def user_entry(entry_raw, command, maxqty):
     return invalid index and the still unset validity flag.
 
     Args:
-        entry_raw (int): contains either the number the user entered or
-                         the value 999 if the user entered a non-number.
-        command (str): command specified on the command line.
-        maxqty (int): the number of instances the user is choosing from.
+        entry_raw (int): a number entered or 999 if a non-int was entered.
+        command (str): program command to display in prompt.
+        maxqty (int): the largest valid number that can be entered.
     Returns:
         entry_idx(int): the dictionary index number of the targeted instance
         entry_valid (bool): specifies if entry_idx is valid.
@@ -445,16 +456,19 @@ def user_entry(entry_raw, command, maxqty):
 
     """
     entry_valid = False
-    if entry_raw == 0:
-        print("\n\n{0}aborting{1} - {2} instance\n".
+    # if entry_raw == 0:
+    if not entry_raw:
+        print("{0}aborting{1} - {2} instance\n".
               format(C_ERR, C_NORM, command))
         sys.exit()
     elif entry_raw >= 1 and entry_raw <= maxqty:
         entry_idx = entry_raw - 1
         entry_valid = True
     else:
-        sys.stdout.write("\n%sInvalid entry:%s enter a number between 1"
-                         " and %s.\n" % (C_ERR, C_NORM, maxqty))
+        # sys.stdout.write("\n%sInvalid entry:%s enter a number between 1"
+        #                  " and %s.\n" % (C_ERR, C_NORM, maxqty))
+        print("%sInvalid entry:%s enter a number between 1"
+              " and %s." % (C_ERR, C_NORM, maxqty))
         entry_idx = entry_raw
     return (entry_idx, entry_valid)
 
