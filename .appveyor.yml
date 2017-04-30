@@ -25,7 +25,8 @@ build_script:
 - cmd: pip install -e .
 test_script:
 - cmd: tox
-deploy_script:
+deploy: off
+on_success:
 - cmd: >-
     echo Test Success
 
