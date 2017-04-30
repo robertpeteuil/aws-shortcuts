@@ -30,16 +30,36 @@ infoIdsOnly = {
 
 
 infoNoAmiName = {
-    0: {'ami': 'ami-16efb076', 'id': 'i-0c875fafa1e71327b',
-        'tag:Name': 'Ubuntu', 'state': 'running'},
-    1: {'ami': 'ami-165a0876', 'id': 'i-03120c2544fdf5b6f',
-        'tag:Name': 'Amazon', 'state': 'running'},
-    2: {'ami': 'ami-e09acc80', 'id': 'i-0014d16e7f68ce746',
-        'tag:Name': 'Suse', 'state': 'stopped'},
-    3: {'ami': 'ami-3e21725e', 'id': 'i-0c459a77e113c6c9c',
-        'tag:Name': 'Ubuntu', 'state': 'stopping'},
-    4: {'ami': 'ami-2cade64c', 'id': 'i-0341963e139617c75',
-        'tag:Name': 'RHEL', 'state': 'stopped'}}
+    0: {'ami': 'ami-16efb076',
+        'id': 'i-0c875fafa1e71327b',
+        'pub_dns_name': '',
+        'ssh_key': 'robert',
+        'state': 'stopped',
+        'tag': {'Name': 'Ubuntu', 'Role': 'Test'}},
+    1: {'ami': 'ami-3e21725e',
+        'id': 'i-0c459a77e113c6c9c',
+        'pub_dns_name': '',
+        'ssh_key': 'robert',
+        'state': 'stopped',
+        'tag': {'Name': 'Ubuntu'}},
+    2: {'ami': 'ami-e09acc80',
+        'id': 'i-0014d16e7f68ce746',
+        'pub_dns_name': '',
+        'ssh_key': 'robert',
+        'state': 'stopped',
+        'tag': {'Name': 'Suse', 'Role': 'Test'}},
+    3: {'ami': 'ami-165a0876',
+        'id': 'i-03120c2544fdf5b6f',
+        'pub_dns_name': '',
+        'ssh_key': 'robert',
+        'state': 'stopped',
+        'tag': {'Name': 'Amazon', 'Role': 'Test'}},
+    4: {'ami': 'ami-2cade64c',
+        'id': 'i-0341963e139617c75',
+        'pub_dns_name': '',
+        'ssh_key': 'robert',
+        'state': 'stopped',
+        'tag': {'Name': 'RHEL', 'Role': 'Test'}}}
 
 
 @mock.patch('awss.awsc.getaminame', getlocalaminame, create=True)

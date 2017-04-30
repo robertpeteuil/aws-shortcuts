@@ -23,7 +23,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.6.9'
+__version__ = '0.9.6.10'
 
 
 def main():                                             # pragma: no cover
@@ -151,10 +151,7 @@ def cmd_list(options):
         options (object): contains args and data from parser.
 
     """
-    # (qry_string, title_out) = qry_create(options)
-    # qry_results = awsc.get_inst_info(qry_string)
-    # i_info = decode_results(qry_results)
-    (i_info, title_out) = get_data(options)
+    (i_info, title_out) = gather_data(options)
     if i_info:
         title_out = "Instance List - " + title_out
         list_instances(title_out, i_info)
@@ -176,11 +173,8 @@ def cmd_startstop(options):
     statelu = {"start": "stopped", "stop": "running"}
     options.inState = statelu[options.command]
     debg.dprint("toggle set state: ", options.inState)
-    # (qry_string, title_out) = qry_create(options)
-    # qry_results = awsc.get_inst_info(qry_string)
-    # i_info = decode_results(qry_results)
-    (i_info, title_out) = get_data(options)
-    (tar_inst, tar_idx) = det_instance(options.command, i_info, title_out)
+    (i_info, title_out) = gather_data(options)
+    (tar_inst, tar_idx) = determine_inst(options.command, i_info, title_out)
     response = awsc.startstop(tar_inst, options.command)
     responselu = {"start": "StartingInstances", "stop": "StoppingInstances"}
     filt = responselu[options.command]
@@ -208,11 +202,8 @@ def cmd_ssh(options):
     import os
     import subprocess
     options.inState = "running"
-    # (qry_string, title_out) = qry_create(options)
-    # qry_results = awsc.get_inst_info(qry_string)
-    # i_info = decode_results(qry_results)
-    (i_info, title_out) = get_data(options)
-    (tar_inst, tar_idx) = det_instance(options.command, i_info, title_out)
+    (i_info, title_out) = gather_data(options)
+    (tar_inst, tar_idx) = determine_inst(options.command, i_info, title_out)
     home_dir = os.environ['HOME']
     if options.user is None:
         tar_aminame = awsc.getaminame(i_info[tar_idx]['ami'])
@@ -242,11 +233,18 @@ def cmd_ssh(options):
                         shell=True)
 
 
-def get_data(options):
+def gather_data(options):
     """Get Data specific for command selected.
 
+    Create ec2 specific query and output title based on
+    options specified, retrieves the raw response data
+    from aws, then processes it into the i_info dict,
+    which is used throughout this module.
+
     Args:
-        options (object): contains args and data from parser.
+        options (object): contains args and data from parser,
+                          that has been adjusted by the command
+                          specific functions as appropriate.
     Returns:
         i_info (dict): information on instances and details.
         title_out (str): the title to display before the list.
@@ -254,11 +252,11 @@ def get_data(options):
     """
     (qry_string, title_out) = qry_create(options)
     qry_results = awsc.get_inst_info(qry_string)
-    i_info = decode_results(qry_results)
+    i_info = process_results(qry_results)
     return (i_info, title_out)
 
 
-def decode_results(qry_results):
+def process_results(qry_results):
     """Generate dictionary of results from query.
 
     Decodes the large dict recturned from the AWS query.
@@ -277,9 +275,11 @@ def decode_results(qry_results):
         i_info[i]['ssh_key'] = j['Instances'][0]['KeyName']
         i_info[i]['pub_dns_name'] = j['Instances'][0]['PublicDnsName']
         inst_tags = j['Instances'][0]['Tags']
+        tag_dict = {}
         for k in range(len(inst_tags)):
-            tagname = inst_tags[k]['Key']
-            i_info[i]["tag:" + tagname] = inst_tags[k]['Value']
+            tag_dict[inst_tags[k]['Key']] = inst_tags[k]['Value']
+        i_info[i]['tag'] = tag_dict
+        # reference the name tag as: i_info[i]['tag']['Name']
     debg.dprint("numInstances: ", len(i_info))
     debg.dprintx("Details except AMI-name")
     debg.dprintx(i_info, True)
@@ -388,7 +388,7 @@ def list_instances(title_out, i_info, numbered=False):
         i_info[i]['aminame'] = awsc.getaminame(i_info[i]['ami'])
         print("\tName: {0}{3}{1}\t\tID: {0}{4}{1}\t\tStatus: {2}{5}{1}".
               format(C_TI, C_NORM, C_STAT[i_info[i]['state']],
-                     i_info[i]['tag:Name'], i_info[i]['id'],
+                     i_info[i]['tag']['Name'], i_info[i]['id'],
                      i_info[i]['state']))
         print("\tAMI: {0}{2}{1}\tAMI Name: {0}{3}{1}\n".
               format(C_TI, C_NORM, i_info[i]['ami'], i_info[i]['aminame']))
@@ -397,7 +397,7 @@ def list_instances(title_out, i_info, numbered=False):
     debg.dprintx(i_info, True)
 
 
-def det_instance(command, i_info, title_out):
+def determine_inst(command, i_info, title_out):
     """Determine the instance-id of the target instance.
 
     Inspect the number of instance-ids collected and take the
