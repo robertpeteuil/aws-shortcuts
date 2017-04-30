@@ -9,7 +9,6 @@ __init__ - Main module providing entry point and core code.
 awsc     - Communicates with AWS services.
 colors   - Determine color capability, define color vars and theme.
 debg     - Debug print functions that execute if debug mode initialized.
-getchar  - Cross-platform object that reads single keypress.
 
 URL:       https://github.com/robertpeteuil/aws-shortcuts
 Author:    Robert Peteuil   @RobertPeteuil
@@ -21,10 +20,9 @@ import sys
 
 import awss.awsc as awsc
 import awss.debg as debg
-# from awss.getchar import _Getch
 from awss.colors import C_NORM, C_HEAD, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.6.7'
+__version__ = '0.9.6.8'
 
 
 def main():                                             # pragma: no cover
@@ -153,14 +151,12 @@ def cmd_list(options):
 
     """
     (qry_string, title_out) = qry_create(options)
-    i_info = awsc.getids(qry_string)
-    items = len(i_info)
-    if items:
-        i_info = awsc.getdetails(i_info)
+    i_info = awsc.get_inst_info(qry_string)
+    if i_info:
         title_out = "Instance List - " + title_out
         list_instances(title_out, i_info)
     else:
-        print("No instances found with parameters: %s" % (title_out))
+        print("No instances found with parameters: {}".format(title_out))
 
 
 def cmd_startstop(options):
@@ -178,8 +174,8 @@ def cmd_startstop(options):
     options.inState = statelu[options.command]
     debg.dprint("toggle set state: ", options.inState)
     (qry_string, title_out) = qry_create(options)
-    i_info = awsc.getids(qry_string)
-    tar_inst = det_instance(options.command, i_info, title_out)
+    i_info = awsc.get_inst_info(qry_string)
+    (tar_inst, tar_idx) = det_instance(options.command, i_info, title_out)
     response = awsc.startstop(tar_inst, options.command)
     responselu = {"start": "StartingInstances", "stop": "StoppingInstances"}
     filt = responselu[options.command]
@@ -187,9 +183,9 @@ def cmd_startstop(options):
     state_term = ('CurrentState', 'PreviousState')
     for i, j in enumerate(state_term):
         resp[i] = response["{0}".format(filt)][0]["{0}".format(j)]['Name']
-    print("\tCurrent State: %s%s%s  -  Previous State: %s%s%s\n" %
-          (C_STAT[resp[0]], resp[0], C_NORM,
-           C_STAT[resp[1]], resp[1], C_NORM))
+    print("\tCurrent State: {}{}{}  -  Previous State: {}{}{}\n".
+          format(C_STAT[resp[0]], resp[0], C_NORM,
+                 C_STAT[resp[1]], resp[1], C_NORM))
 
 
 def cmd_ssh(options):
@@ -208,12 +204,11 @@ def cmd_ssh(options):
     import subprocess
     options.inState = "running"
     (qry_string, title_out) = qry_create(options)
-    i_info = awsc.getids(qry_string)
-    tar_inst = det_instance(options.command, i_info, title_out)
-    (inst_ip, inst_key, inst_img_id) = awsc.getsshinfo(tar_inst)
+    i_info = awsc.get_inst_info(qry_string)
+    (tar_inst, tar_idx) = det_instance(options.command, i_info, title_out)
     home_dir = os.environ['HOME']
     if options.user is None:
-        tar_aminame = awsc.getaminame(inst_img_id)
+        tar_aminame = awsc.getaminame(i_info[tar_idx]['ami'])
         # only first 5 chars of AMI-name used to avoid version numbers
         userlu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "fedora",
                   "cento": "centos", "openB": "root"}
@@ -223,27 +218,28 @@ def cmd_ssh(options):
         debg.dprint("LoginUser set by user: ", options.user)
 
     if options.nopem:
-        debg.dprint("Connect string: ", "ssh %s@%s" %
-                    (options.user, inst_ip))
-        print("%sNo PEM mode%s - connecting without PEM key\n" % (C_HEAD,
-                                                                  C_NORM))
-        subprocess.call(["ssh {0}@{1}".format(options.user, inst_ip)],
-                        shell=True)
+        debg.dprint("Connect string: ", "ssh {}@{}".
+                    format(options.user, i_info[tar_idx]['pub_dns_name']))
+        print("{0}No PEM mode{1} - connecting without PEM key\n".
+              format(C_HEAD, C_NORM))
+        subprocess.call(["ssh {0}@{1}".format(options.user,
+                         i_info[tar_idx]['pub_dns_name'])], shell=True)
     else:
-        debg.dprint("Connect string: ", "ssh -i %s/.aws/%s.pem %s@%s" %
-                    (home_dir, inst_key, options.user, inst_ip))
+        debg.dprint("Connect string: ", "ssh -i {}/.aws/{}.pem {}@{}".
+                    format(home_dir, i_info[tar_idx]['ssh_key'], options.user,
+                           i_info[tar_idx]['pub_dns_name']))
         print("")
         subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".
-                         format(home_dir, inst_key, options.user,
-                                inst_ip)], shell=True)
+                        format(home_dir, i_info[tar_idx]['ssh_key'],
+                               options.user, i_info[tar_idx]['pub_dns_name'])],
+                        shell=True)
 
 
 def qry_create(options):
     """Create query from the args specified and command chosen.
 
     Creates a query string that incorporates the args in the options
-    object.  Also Creates the title for the 'list' function, as it's
-    done in parallel by the same algorythm.
+    object, and creates the title for the 'list' function.
 
     Args:
         options (object): contains args and data from parser
@@ -295,17 +291,13 @@ def qry_helper(flag_filt, qry_string, title_out, flag_id=False, filt_st=""):
 
     This functions adds syntactical elements to the query string, and
     report title, based on the types and number of items added thus far.
-    It is broken-out into a seperate function to eliminate duplication.
 
     Args:
-        flag_filt (bool): indicates that at least one filter item specified.
-        qry_string (str): the portion of the query that has been constructed
-                          up to this point.
+        flag_filt (bool): at least one filter item specified.
+        qry_string (str): portion of the query constructed thus far.
         title_out (str): the title to display before the list.
-        flag_id (bool): optional param that specifies if the instance-id
-                        has been specified in the args.
-        filt_st (str): optional param to allow adding syntactical elements
-                       if a filter has been specified.
+        flag_id (bool): optional - instance-id was specified.
+        filt_st (str): optional - syntax to add on end if filter specified.
     Returns:
         qry_string (str): the portion of the query that was passed in with
                           the appropriate syntactical elements added.
@@ -336,20 +328,19 @@ def list_instances(title_out, i_info, numbered=False):
 
     """
     if not numbered:
-        print("\n%s\n" % (title_out))
+        print("\n{}\n".format(title_out))
 
     for i in i_info:
         if numbered:
-            print("Instance %s#%s%s" % (C_WARN, i + 1, C_NORM))
+            print("Instance {}#{}{}".format(C_WARN, i + 1, C_NORM))
 
         i_info[i]['aminame'] = awsc.getaminame(i_info[i]['ami'])
-        print("\tName: %s%s%s\t\tID: %s%s%s\t\tStatus: %s%s%s" %
-              (C_TI, i_info[i]['name'], C_NORM, C_TI,
-               i_info[i]['id'], C_NORM, C_STAT[i_info[i]['state']],
-               i_info[i]['state'], C_NORM))
-        print("\tAMI: %s%s%s\tAMI Name: %s%s%s\n" %
-              (C_TI, i_info[i]['ami'], C_NORM, C_TI,
-               i_info[i]['aminame'], C_NORM))
+        print("\tName: {0}{3}{1}\t\tID: {0}{4}{1}\t\tStatus: {2}{5}{1}".
+              format(C_TI, C_NORM, C_STAT[i_info[i]['state']],
+                     i_info[i]['tag:Name'], i_info[i]['id'],
+                     i_info[i]['state']))
+        print("\tAMI: {0}{2}{1}\tAMI Name: {0}{3}{1}\n".
+              format(C_TI, C_NORM, i_info[i]['ami'], i_info[i]['aminame']))
 
     debg.dprintx("All Data")
     debg.dprintx(i_info, True)
@@ -364,29 +355,29 @@ def det_instance(command, i_info, title_out):
 
     Args:
         command (str): command specified on the command line.
-        i_info (dict): information on instances and details.
-        title_out (str): the title to display before the list.
+        i_info (dict): information and details for instances.
+        title_out (str): the title to display in the listing.
     Returns:
-        tar_inst (str): the AWS instance-id of the target instance
+        tar_inst (str): the AWS instance-id of the target.
     Raises:
-        SystemExit: if no instances were found that match the
-                    parameters specified in the args.
+        SystemExit: if no instances are match parameters specified.
 
     """
     qty_instances = len(i_info)
     if qty_instances == 0:
-        print("No instances found with parameters: {0}".format(title_out))
+        print("No instances found with parameters: {}".format(title_out))
         sys.exit(1)
 
     if qty_instances > 1:
-        print("\n%s instances match these parameters:\n" % (qty_instances))
+        print("\n{} instances match these parameters:\n".format(qty_instances))
         tar_idx = user_picklist(title_out, i_info, command)
+
     else:
         tar_idx = 0
     tar_inst = i_info[tar_idx]['id']
-    print("\n%s%sing%s instance id %s%s%s" % (C_STAT[command], command, C_NORM,
-                                              C_TI, tar_inst, C_NORM))
-    return tar_inst
+    print("\n{0}{3}ing{1} instance id {2}{4}{1}".
+          format(C_STAT[command], C_NORM, C_TI, command, tar_inst))
+    return (tar_inst, tar_idx)
 
 
 def user_picklist(title_out, i_info, command):
@@ -403,35 +394,23 @@ def user_picklist(title_out, i_info, command):
         tar_idx (int): the dictionary index number of the targeted instance.
 
     """
-    # getch = _Getch()
     entry_valid = False
-    i_info = awsc.getdetails(i_info)
     list_instances(title_out, i_info, True)
+    msg_txt = ("Enter {0}#{1} of instance to {3} ({0}1{1}-{0}{4}{1})"
+               " [{2}0 aborts{1}]: ".format(C_WARN, C_NORM, C_TI,
+                                            command, len(i_info)))
     while not entry_valid:
-        # sys.stdout.write("Enter %s#%s of instance to %s (%s1%s-%s%i%s) [%s0"
-        #                  " aborts%s]: " % (C_WARN, C_NORM, command, C_WARN,
-        #                                    C_NORM, C_WARN, len(i_info),
-        #                                    C_NORM, C_TI, C_NORM))
-        entry_base = ob_in("Enter %s#%s of instance to %s (%s1%s-%s%s%s) [%s0"
-                           " aborts%s]: " % (C_WARN, C_NORM, command,
-                                             C_WARN, C_NORM, C_WARN,
-                                             len(i_info), C_NORM, C_TI,
-                                             C_NORM))
-        # entry_raw = getch.int()
-        # keyconvert = {999: "invalid entry"}
-        # entry_display = keyconvert.get(entry_raw, entry_raw)
-        # sys.stdout.write(str(entry_display))
+        entry_base = obtain_input(msg_txt)
         try:
             entry_raw = int(entry_base)
         except ValueError:
-            # print("invalid input")
             entry_raw = 999
         (tar_idx, entry_valid) = user_entry(entry_raw, command, len(i_info))
     print()
     return tar_idx
 
 
-def ob_in(message_text):
+def obtain_input(message_text):  # pragma: no cover
     """Perform input command as a function so it can be mocked."""
     return (input(message_text))
 
@@ -456,19 +435,16 @@ def user_entry(entry_raw, command, maxqty):
 
     """
     entry_valid = False
-    # if entry_raw == 0:
     if not entry_raw:
-        print("{0}aborting{1} - {2} instance\n".
+        print("{}aborting{} - {} instance\n".
               format(C_ERR, C_NORM, command))
         sys.exit()
     elif entry_raw >= 1 and entry_raw <= maxqty:
         entry_idx = entry_raw - 1
         entry_valid = True
     else:
-        # sys.stdout.write("\n%sInvalid entry:%s enter a number between 1"
-        #                  " and %s.\n" % (C_ERR, C_NORM, maxqty))
-        print("%sInvalid entry:%s enter a number between 1"
-              " and %s." % (C_ERR, C_NORM, maxqty))
+        print("{}Invalid entry:{} enter a number between 1"
+              " and {}.".format(C_ERR, C_NORM, maxqty))
         entry_idx = entry_raw
     return (entry_idx, entry_valid)
 

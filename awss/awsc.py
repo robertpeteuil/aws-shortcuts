@@ -15,8 +15,13 @@ EC2R = ""
 def init():
     """Attach global vars EC2C, and EC2R to the AWS service.
 
-    This must be called once before any other function in this module
-    or they won't function.
+    Must be called before any other functions in this module
+    will work in production mode.
+
+    To allow testing on CI servers without AWS credentials,
+    this assignment is done in this function instead of the
+    module itself - as the boto3 methods below require AWS
+    credentials on the host.
 
     """
     global EC2C         # pylint: disable=global-statement
@@ -25,18 +30,16 @@ def init():
     EC2R = boto3.resource('ec2')
 
 
-def getids(qry_string):
-    """Get All Instance-Ids that match the qry_string.
+def get_inst_info(qry_string):
+    """Get details for instances that match the qry_string.
 
     Execute a query against the AWS EC2 client object, that is
-    based on the contents of qry_string.  The raw qry_string
-    passed to this function is combined with the command prefix
-    and syntactical elements before the query executes.
+    based on the contents of qry_string.
 
     Args:
         qry_string (str): the query to be used against the aws ec2 client.
     Returns:
-        i_info (dict): contains all instance-ids returned from query.
+        i_info (dict): information on instances and details.
 
     """
     qry_prefix = "EC2C.describe_instances("
@@ -45,26 +48,15 @@ def getids(qry_string):
     i_info = {}
     for i, j in enumerate(summary_data['Reservations']):
         i_info[i] = {'id': j['Instances'][0]['InstanceId']}
+        i_info[i]['state'] = j['Instances'][0]['State']['Name']
+        i_info[i]['ami'] = j['Instances'][0]['ImageId']
+        i_info[i]['ssh_key'] = j['Instances'][0]['KeyName']
+        i_info[i]['pub_dns_name'] = j['Instances'][0]['PublicDnsName']
+        inst_tags = j['Instances'][0]['Tags']
+        for k in range(len(inst_tags)):
+            tagname = inst_tags[k]['Key']
+            i_info[i]["tag:" + tagname] = inst_tags[k]['Value']
     debg.dprint("numInstances: ", len(i_info))
-    debg.dprintx("InstanceIds Only")
-    debg.dprintx(i_info, True)
-    return i_info
-
-
-def getdetails(i_info):
-    """Get Details for Each Instance-Id in the dict provided.
-
-    Args:
-        i_info (dict): contains all instance-ids returned from query.
-    Returns:
-        i_info (dict): information on instances and details.
-
-    """
-    for i in i_info:
-        instance_data = EC2R.Instance(i_info[i]['id'])
-        i_info[i]['state'] = instance_data.state['Name']
-        i_info[i]['ami'] = instance_data.image_id
-        i_info[i]['name'] = gettagvalue(i_info[i]['id'])
     debg.dprintx("Details except AMI-name")
     debg.dprintx(i_info, True)
     return i_info
@@ -107,24 +99,6 @@ def getaminame(inst_img_id):
     """
     aminame = EC2R.Image(inst_img_id).name
     return aminame
-
-
-def getsshinfo(inst_id):
-    """Get instance information needed for ssh action.
-
-    Args:
-        inst_id (str): instance-id to get ssh info for
-    Returns:
-        inst_ip (str): public ip-address of specified instance.
-        inst_key (str): keyname for specified instance.
-        inst_img_id (str): name of image for specified instance.
-
-    """
-    tar_inst = EC2R.Instance(inst_id)
-    inst_ip = tar_inst.public_ip_address
-    inst_key = tar_inst.key_name
-    inst_img_id = tar_inst.image_id
-    return (inst_ip, inst_key, inst_img_id)
 
 
 def startstop(inst_id, cmdtodo):

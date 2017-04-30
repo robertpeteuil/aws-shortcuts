@@ -1,6 +1,6 @@
 [run]
 branch = True
-omit = awss/awsc.py,awss/getchar.py
+omit = awss/awsc.py
 
 [report]
 exclude_lines =
