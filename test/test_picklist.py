@@ -65,17 +65,18 @@ def test_det_target(ids, kys, anames, ilist, ide):
         global counter
         keye = kys[counter]
         counter += 1
-        if counter > len(kys):
-            counter = 0
-        try:
-            value = int(keye)
-        except ValueError:
-            value = 999
-        return value
+        # if counter > len(kys):
+        #     counter = 0
+        # try:
+        #     value = int(keye)
+        # except ValueError:
+        #     value = 999
+        # return value
+        return keye
 
     with mock.patch('awss.awsc.getdetails', getlocaldetails, create=True):
         with mock.patch('awss.awsc.getaminame', getlocalaminame, create=True):
-            with mock.patch('awss.getchar._Getch.int', RetKey, create=True):
+            with mock.patch('awss.ob_in', RetKey, create=True):
                 if ide:
                     debg.init(True, True)
                     tar_inst = det_instance("ssh", ids, "TEST")
