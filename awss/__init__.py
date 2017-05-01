@@ -24,7 +24,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.7rc1'
+__version__ = '0.9.7rc2'
 
 
 def main():  # pragma: no cover
@@ -242,7 +242,7 @@ def cmd_ssh_user(tar_aminame):
     # first 5 chars of AMI-name can be anywhere in AMI-Name
     userlu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "root",
               "cento": "centos", "openB": "root"}
-    usertmp = [value for key, value in userlu.items() if key in
+    usertmp = [value for key, value in list(userlu.items()) if key in
                tar_aminame.lower()]
     if usertmp:
         username = usertmp[0]
@@ -417,7 +417,7 @@ def list_instances(title_out, i_info, numbered=False):
 
 def list_tags(tags):
     """Print tags in dict so they allign with listing above."""
-    tags_sorted = sorted(tags.items(), key=operator.itemgetter(0))
+    tags_sorted = sorted(list(tags.items()), key=operator.itemgetter(0))
     c = 1
     padlu = {1: 38, 2: 49}
     for k, v in tags_sorted:
