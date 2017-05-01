@@ -47,11 +47,23 @@ def get_inst_info(qry_string):
     return qry_results
 
 
-def getaminame(inst_img_id):
-    """Get Image_Name for the image_id specified.
+def get_all_aminames(i_info):
+    """Get Image_Name for each instance in i_info.
 
-    Connects to ec2 resource.Image object, which is slower
-    than retrieving info from the ec2 resource.Instance object.
+    Args:
+        i_info (dict): information on instances and details.
+    Returns:
+        i_info (dict): i_info is returned with the aminame
+                       added for each instance.
+
+    """
+    for i in i_info:
+        i_info[i]['aminame'] = EC2R.Image(i_info[i]['ami']).name
+    return i_info
+
+
+def get_one_aminame(inst_img_id):
+    """Get Image_Name for the image_id specified.
 
     Args:
         inst_img_id (str): image_id to get name value from.

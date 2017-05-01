@@ -23,7 +23,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.6.10'
+__version__ = '0.9.6.11'
 
 
 def main():                                             # pragma: no cover
@@ -153,6 +153,7 @@ def cmd_list(options):
     """
     (i_info, title_out) = gather_data(options)
     if i_info:
+        awsc.get_all_aminames(i_info)
         title_out = "Instance List - " + title_out
         list_instances(title_out, i_info)
     else:
@@ -206,7 +207,7 @@ def cmd_ssh(options):
     (tar_inst, tar_idx) = determine_inst(options.command, i_info, title_out)
     home_dir = os.environ['HOME']
     if options.user is None:
-        tar_aminame = awsc.getaminame(i_info[tar_idx]['ami'])
+        tar_aminame = awsc.get_one_aminame(i_info[tar_idx]['ami'])
         # only first 5 chars of AMI-name used to avoid version numbers
         userlu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "fedora",
                   "cento": "centos", "openB": "root"}
@@ -371,8 +372,8 @@ def list_instances(title_out, i_info, numbered=False):
     information for each instance.
 
     Args:
-        title_out (str): the title to display before the list
-        i_info (dict): information on instances and details
+        title_out (str): the title to display before the list.
+        i_info (dict): information on instances and details.
         numbered (bool): optional - indicates wheter the list should be
                          displayed with numbers before each instance.
                          This is used when called from user_picklist.
@@ -385,12 +386,17 @@ def list_instances(title_out, i_info, numbered=False):
         if numbered:
             print("Instance {}#{}{}".format(C_WARN, i + 1, C_NORM))
 
-        i_info[i]['aminame'] = awsc.getaminame(i_info[i]['ami'])
-        print("\tName: {0}{3}{1}\t\tID: {0}{4}{1}\t\tStatus: {2}{5}{1}".
+        # print("\tName: {0}{3}{1}\t\tID: {0}{4}{1}\t\tStatus: {2}{5}{1}".
+        #       format(C_TI, C_NORM, C_STAT[i_info[i]['state']],
+        #              i_info[i]['tag']['Name'], i_info[i]['id'],
+        #              i_info[i]['state']))
+        # print("\tAMI: {0}{2}{1}\tAMI Name: {0}{3}{1}\n".
+        #       format(C_TI, C_NORM, i_info[i]['ami'], i_info[i]['aminame']))
+        print("    Name: {0}{3:<20}{1}ID: {0}{4:<20}{1:<18}Status: {2}{5}{1}".
               format(C_TI, C_NORM, C_STAT[i_info[i]['state']],
                      i_info[i]['tag']['Name'], i_info[i]['id'],
                      i_info[i]['state']))
-        print("\tAMI: {0}{2}{1}\tAMI Name: {0}{3}{1}\n".
+        print("    AMI: {0}{2:<21}{1}AMI Name: {0}{3}{1}\n".
               format(C_TI, C_NORM, i_info[i]['ami'], i_info[i]['aminame']))
 
     debg.dprintx("All Data")
@@ -446,6 +452,7 @@ def user_picklist(title_out, i_info, command):
 
     """
     entry_valid = False
+    awsc.get_all_aminames(i_info)
     list_instances(title_out, i_info, True)
     msg_txt = ("Enter {0}#{1} of instance to {3} ({0}1{1}-{0}{4}{1})"
                " [{2}0 aborts{1}]: ".format(C_WARN, C_NORM, C_TI,

@@ -80,9 +80,10 @@ def test_determine_inst(ids, kys, anames, ide, tidx):
     global counter
     counter = 0
 
-    def getlocalaminame(ami):
-        amiName = anames[ami]
-        return amiName
+    def getlclaminame(ami):
+        for i in ami:
+            ami[i]['aminame'] = anames[ami[i]['ami']]
+        return ami
 
     def RetKey(item1):
         global counter
@@ -90,7 +91,7 @@ def test_determine_inst(ids, kys, anames, ide, tidx):
         counter += 1
         return keye
 
-    with mock.patch('awss.awsc.getaminame', getlocalaminame, create=True):
+    with mock.patch('awss.awsc.get_all_aminames', getlclaminame, create=True):
         with mock.patch('awss.obtain_input', RetKey, create=True):
             if ide:
                 debg.init(True, True)
