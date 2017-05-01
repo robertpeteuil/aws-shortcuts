@@ -1,8 +1,8 @@
 AWS Shortcuts for Command-Line Instance Control
 ===============================================
 
-List, start, stop and ssh to AWS instances using Name or Instance-ID
----------------------------------------------------------------------------------
+List, start, stop and ssh to AWS instances using Name, ID or Wilcards
+---------------------------------------------------------------------
 
 
 |TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |Py ver| |license sm|
