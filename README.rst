@@ -87,7 +87,7 @@ Details
 Target Instance Determination
 -----------------------------
 
-The ``start``, ``stop``, and ``ssh`` commands check if multiple instances match the parameters. 
+The ``start``, ``stop``, and ``ssh`` commands check if multiple instances match the parameters.
 If so, the the matching instances are listed, and the user selects the intended target.
 
 Example screenshot of selecting instance from list:
