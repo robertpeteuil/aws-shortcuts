@@ -21,9 +21,9 @@ import sys
 
 import awss.awsc as awsc
 import awss.debg as debg
-from awss.colors import C_NORM, C_HEAD, C_TI, C_WARN, C_ERR, C_STAT
+from awss.colors import C_NORM, C_HEAD, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.6.11'
+__version__ = '0.9.6.12'
 
 
 def main():                                             # pragma: no cover
@@ -386,21 +386,33 @@ def list_instances(title_out, i_info, numbered=False):
         if numbered:
             print("Instance {}#{}{}".format(C_WARN, i + 1, C_NORM))
 
-        # print("\tName: {0}{3}{1}\t\tID: {0}{4}{1}\t\tStatus: {2}{5}{1}".
-        #       format(C_TI, C_NORM, C_STAT[i_info[i]['state']],
-        #              i_info[i]['tag']['Name'], i_info[i]['id'],
-        #              i_info[i]['state']))
-        # print("\tAMI: {0}{2}{1}\tAMI Name: {0}{3}{1}\n".
-        #       format(C_TI, C_NORM, i_info[i]['ami'], i_info[i]['aminame']))
-        print("    Name: {0}{3:<20}{1}ID: {0}{4:<20}{1:<18}Status: {2}{5}{1}".
+        print("  {6}Name: {1}{3:<22}{1}ID: {0}{4:<20}{1:<18}Status: {2}{5}{1}".
               format(C_TI, C_NORM, C_STAT[i_info[i]['state']],
                      i_info[i]['tag']['Name'], i_info[i]['id'],
-                     i_info[i]['state']))
-        print("    AMI: {0}{2:<21}{1}AMI Name: {0}{3}{1}\n".
+                     i_info[i]['state'], C_HEAD2))
+        print("  AMI: {0}{2:<23}{1}AMI Name: {0}{3}{1}".
               format(C_TI, C_NORM, i_info[i]['ami'], i_info[i]['aminame']))
-
+        list_tags(i_info[i]['tag'])
     debg.dprintx("All Data")
     debg.dprintx(i_info, True)
+
+
+def list_tags(tags):
+    """Print tags in dict passed so they allign with listing above."""
+    c = 1
+    padlu = {1: 38, 2: 49}
+    for k, v in tags.items():
+        if k != "Name":
+            if c < 3:
+                pada = padlu[c]
+                sys.stdout.write("  {2}{0}:{3} {1}".
+                                 format(k, v, C_HEAD2, C_NORM).ljust(pada))
+                c += 1
+            else:
+                sys.stdout.write("{2}{0}:{3} {1}\n".format(k, v, C_HEAD2,
+                                                           C_NORM))
+                c = 1
+    print("\n")
 
 
 def determine_inst(command, i_info, title_out):
