@@ -58,7 +58,8 @@ def get_all_aminames(i_info):
 
     """
     for i in i_info:
-        i_info[i]['aminame'] = EC2R.Image(i_info[i]['ami']).name
+        # i_info[i]['aminame'] = EC2R.Image(i_info[i]['ami']).name
+        i_info[i]['aminame'] = getattr(EC2R.Image(i_info[i]['ami']), 'name')
     return i_info
 
 
