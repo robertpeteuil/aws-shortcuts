@@ -24,7 +24,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.7rc2'
+__version__ = '0.9.7'
 
 
 def main():  # pragma: no cover
@@ -184,7 +184,7 @@ def cmd_startstop(options):
     state_term = ('CurrentState', 'PreviousState')
     for i, j in enumerate(state_term):
         resp[i] = response["{0}".format(filt)][0]["{0}".format(j)]['Name']
-    print("\tCurrent State: {}{}{}  -  Previous State: {}{}{}\n".
+    print("Current State: {}{}{}  -  Previous State: {}{}{}\n".
           format(C_STAT[resp[0]], resp[0], C_NORM,
                  C_STAT[resp[1]], resp[1], C_NORM))
 
