@@ -18,15 +18,16 @@ from builtins import input
 from builtins import range
 import argparse
 import sys
+import operator
 
 import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.6.12'
+__version__ = '0.9.7rc1'
 
 
-def main():                                             # pragma: no cover
+def main():  # pragma: no cover
     """Collect user args and call command funct.
 
     Collect command line args and setup environment then call
@@ -208,14 +209,9 @@ def cmd_ssh(options):
     home_dir = os.environ['HOME']
     if options.user is None:
         tar_aminame = awsc.get_one_aminame(i_info[tar_idx]['ami'])
-        # only first 5 chars of AMI-name used to avoid version numbers
-        userlu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "fedora",
-                  "cento": "centos", "openB": "root"}
-        options.user = userlu.get(tar_aminame[:5], "ec2-user")
-        debg.dprint("loginuser Calculated: ", options.user)
+        options.user = cmd_ssh_user(tar_aminame)
     else:
         debg.dprint("LoginUser set by user: ", options.user)
-
     if options.nopem:
         debg.dprint("Connect string: ", "ssh {}@{}".
                     format(options.user, i_info[tar_idx]['pub_dns_name']))
@@ -232,6 +228,29 @@ def cmd_ssh(options):
                         format(home_dir, i_info[tar_idx]['ssh_key'],
                                options.user, i_info[tar_idx]['pub_dns_name'])],
                         shell=True)
+
+
+def cmd_ssh_user(tar_aminame):
+    """Calculate instance login-username based on image-name.
+
+    Args:
+        tar_aminame (str): name of the image.
+    Returns:
+        username (str): name for ssh based on AMI-name.
+
+    """
+    # first 5 chars of AMI-name can be anywhere in AMI-Name
+    userlu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "root",
+              "cento": "centos", "openB": "root"}
+    usertmp = [value for key, value in userlu.items() if key in
+               tar_aminame.lower()]
+    if usertmp:
+        username = usertmp[0]
+    else:
+        username = "ec2-user"
+    debg.dprint("loginuser Calculated: ", username)
+
+    return username
 
 
 def gather_data(options):
@@ -280,7 +299,6 @@ def process_results(qry_results):
         for k in range(len(inst_tags)):
             tag_dict[inst_tags[k]['Key']] = inst_tags[k]['Value']
         i_info[i]['tag'] = tag_dict
-        # reference the name tag as: i_info[i]['tag']['Name']
     debg.dprint("numInstances: ", len(i_info))
     debg.dprintx("Details except AMI-name")
     debg.dprintx(i_info, True)
@@ -390,7 +408,7 @@ def list_instances(title_out, i_info, numbered=False):
               format(C_TI, C_NORM, C_STAT[i_info[i]['state']],
                      i_info[i]['tag']['Name'], i_info[i]['id'],
                      i_info[i]['state'], C_HEAD2))
-        print("  AMI: {0}{2:<23}{1}AMI Name: {0}{3}{1}".
+        print("  AMI: {0}{2:<23}{1}AMI Name: {0}{3:.41}{1}".
               format(C_TI, C_NORM, i_info[i]['ami'], i_info[i]['aminame']))
         list_tags(i_info[i]['tag'])
     debg.dprintx("All Data")
@@ -398,10 +416,11 @@ def list_instances(title_out, i_info, numbered=False):
 
 
 def list_tags(tags):
-    """Print tags in dict passed so they allign with listing above."""
+    """Print tags in dict so they allign with listing above."""
+    tags_sorted = sorted(tags.items(), key=operator.itemgetter(0))
     c = 1
     padlu = {1: 38, 2: 49}
-    for k, v in tags.items():
+    for k, v in tags_sorted:
         if k != "Name":
             if c < 3:
                 pada = padlu[c]
