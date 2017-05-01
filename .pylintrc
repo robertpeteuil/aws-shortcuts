@@ -59,11 +59,7 @@ confidence=INFERENCE_FAILURE
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=
-
-#intern-builtin,nonzero-method,parameter-unpacking,backtick,raw_input-builtin,dict-view-method,filter-builtin-not-iterating,long-builtin,unichr-builtin,input-builtin,unicode-builtin,file-builtin
-
-#map-builtin-not-iterating,delslice-method,apply-builtin,cmp-method,setslice-method,coerce-method,long-suffix,raising-string,import-star-module-level,buffer-builtin,reload-builtin,unpacking-in-except,print-statement,hex-method,old-octal-literal,metaclass-assignment,dict-iter-method,range-builtin-not-iterating,using-cmp-argument,indexing-exception,no-absolute-import,coerce-builtin,getslice-method,suppressed-message,execfile-builtin,round-builtin,useless-suppression,reduce-builtin,old-raise-syntax,zip-builtin-not-iterating,cmp-builtin,xrange-builtin,standarderror-builtin,old-division,oct-method,next-method-called,old-ne-operator,basestring-builtin
+disable=print-statement,parameter-unpacking,unpacking-in-except,old-raise-syntax,backtick,long-suffix,old-ne-operator,old-octal-literal,import-star-module-level,apply-builtin,basestring-builtin,buffer-builtin,cmp-builtin,coerce-builtin,execfile-builtin,file-builtin,long-builtin,raw_input-builtin,reduce-builtin,standarderror-builtin,unicode-builtin,xrange-builtin,coerce-method,delslice-method,getslice-method,setslice-method,no-absolute-import,old-division,dict-iter-method,dict-view-method,next-method-called,metaclass-assignment,indexing-exception,raising-string,reload-builtin,oct-method,hex-method,nonzero-method,cmp-method,input-builtin,round-builtin,intern-builtin,unichr-builtin,map-builtin-not-iterating,zip-builtin-not-iterating,range-builtin-not-iterating,filter-builtin-not-iterating,using-cmp-argument,eq-without-hash,div-method,idiv-method,rdiv-method,exception-message-attribute,invalid-str-codec,sys-max-int,bad-python3-import,deprecated-string-function,deprecated-str-translate-call,redefined-builtin,redefined-variable-type,R0204,W0603,W0123,W0612,E0401
 
 
 [REPORTS]
@@ -189,7 +185,7 @@ max-nested-blocks=5
 [FORMAT]
 
 # Maximum number of characters on a single line.
-max-line-length=100
+max-line-length=79
 
 # Regexp for a line that is allowed to be longer than the limit.
 ignore-long-lines=^\s*(# )?<?https?://\S+>?$
@@ -202,7 +198,7 @@ single-line-if-stmt=no
 # separator` is used to allow tabulation in dicts, etc.: {1  : 1,\n222: 2}.
 # `trailing-comma` allows a space between comma and closing bracket: (a, ).
 # `empty-line` allows space-only lines.
-no-space-check=trailing-comma,dict-separator
+# no-space-check=trailing-comma,dict-separator
 
 # Maximum number of lines in a module
 max-module-lines=1000
@@ -289,7 +285,7 @@ generated-members=
 [VARIABLES]
 
 # Tells whether we should check for unused import in __init__ files.
-init-import=no
+init-import=yes
 
 # A regular expression matching the name of dummy variables (i.e. expectedly
 # not used).
@@ -348,7 +344,7 @@ max-parents=7
 max-attributes=10
 
 # Minimum number of public methods for a class (see R0903).
-min-public-methods=1
+min-public-methods=0
 
 # Maximum number of public methods for a class (see R0904).
 max-public-methods=20

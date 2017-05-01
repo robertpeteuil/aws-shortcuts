@@ -18,13 +18,15 @@ environment:
   - TOXENV: py35
   - TOXENV: py36
   - TOXENV: flake8
+  - TOXENV: bandit
   - TOXENV: readme
 cache: .tox
 build_script:
 - cmd: pip install -e .
 test_script:
 - cmd: tox
-deploy_script:
+deploy: off
+on_success:
 - cmd: >-
     echo Test Success
 
