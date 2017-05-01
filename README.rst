@@ -28,6 +28,11 @@ Overview
 - Start Instance: ``awss start NAME`` or ``awss start -i ID``
 - Stop Instance: ``awss stop NAME`` or ``awss stop -i ID``
 
+Example output of ``awss list``
+-------------------------------
+
+.. image:: https://cloud.githubusercontent.com/assets/1554603/25595372/6c3bd5e2-2e79-11e7-9ebc-4730f93c2cb6.png
+
 Details
 -------
 
@@ -79,12 +84,15 @@ Details
   - start instance by name or instance-id
   - command specific help ``awss stop -h``
 
-Target Instance Verification
-----------------------------
+Target Instance Determination
+-----------------------------
 
-The ``start``, ``stop``, and ``ssh`` commands verify that their action will apply to only one instance.
+The ``start``, ``stop``, and ``ssh`` commands check if multiple instances match the parameters. 
+If so, the the matching instances are listed, and the user selects the intended target.
 
-- When multiple instances match the specifications given, a selection list of matching instances is displayed, and the user enters the number displayed next to the intended target.
+Example screenshot of selecting instance from list:
+
+.. image:: https://cloud.githubusercontent.com/assets/1554603/25595396/84b4ef64-2e79-11e7-922f-d645b007af57.png
 
 
 Platforms & Python Versions Tested
