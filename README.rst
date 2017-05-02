@@ -19,21 +19,27 @@ Overview
 
 **awss** has the following sub-commands: **list**, **start**, **stop**, and **ssh**.
 
-- SSH to an Instance: **awss ssh NAME** or **awss ssh -i ID**
+- SSH to an Instance.  ex: **awss ssh NAME**
 
   - Additional paramters described in  `Details`_.
 
-- List Instances: **awss list**
+- List Instances.  ex: **awss list**
 
   - Additional paramters described in  `Details`_.
 
-- Start Instance: **awss start NAME** or **awss start -i ID**
-- Stop Instance: **awss stop NAME** or **awss stop -i ID**
+- Start Instance.  ex: **awss start NAME**
+- Stop Instance.  ex: **awss stop NAME**
 
-Example output of **awss list**
--------------------------------
+Example screenshots
+-------------------
+
+**"awss list" - instance details listed (tag keys are listed in blue)**
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/25595372/6c3bd5e2-2e79-11e7-9ebc-4730f93c2cb6.png
+
+**"awss start" using Name and wildcard -> duplicate results -> selecting target from list**
+
+.. image:: https://cloud.githubusercontent.com/assets/1554603/25595396/84b4ef64-2e79-11e7-922f-d645b007af57.png
 
 
 Tested Platforms & Python Versions
@@ -115,9 +121,7 @@ Target Instance Determination
 The **start**, **stop**, and **ssh** commands check if multiple instances match the parameters.
 If so, the the matching instances are listed, and the user selects the intended target.
 
-**Example screenshot of selecting instance from list**
 
-.. image:: https://cloud.githubusercontent.com/assets/1554603/25595396/84b4ef64-2e79-11e7-922f-d645b007af57.png
 
 
 
