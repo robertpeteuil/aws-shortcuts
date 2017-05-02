@@ -1,21 +1,23 @@
 AWS Shortcuts for Command-Line Instance Control
 ===============================================
 
-List, start, stop and ssh to AWS instances using Name, ID and Wilcards
+List, start, stop and ssh to AWS instances using Name, ID and wilcards
 ----------------------------------------------------------------------
 
 
-|TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |Py ver| |license sm|
+|TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |Py ver| |PyL|
 
 --------------
 
-AWS Shortcuts (awss) allows listing, starting, stopping and connecting to instances by name, instance-id, and supports wilcards.  The ``awss list`` command displays every tag & value for each instances along with their status and core info.  In the near future you will also be able to use any combination of ``Tag`` :  ``Value`` combinations when specifying instances.
+AWS Shortcuts (awss) allows listing, starting, stopping and connecting to instances by name, instance-id, while using wilcards.  The **awss list** command displays every tag : value, status and core info for each instance.  
+
+In future versions, specifing one or more **Tag** :  **Value** combinations will be possible in targeting instances.  For example, connect to the instance where the "Project" tag is "SecretProject" and the "Role" tag is "Development".  Syntax and details, TBD, but this is in active development.
 
 
 Overview
 --------
 
-``awss`` has the following sub-commands: ``list``, ``start``, ``stop``, and ``ssh``.
+**awss** has the following sub-commands: **list**, **start**, **stop**, and **ssh**.
 
 - SSH to an Instance: ``awss ssh NAME`` or ``awss ssh -i ID``
 
@@ -28,7 +30,7 @@ Overview
 - Start Instance: ``awss start NAME`` or ``awss start -i ID``
 - Stop Instance: ``awss stop NAME`` or ``awss stop -i ID``
 
-Example output of ``awss list``
+Example output of **awss list**
 -------------------------------
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/25595372/6c3bd5e2-2e79-11e7-9ebc-4730f93c2cb6.png
@@ -134,20 +136,19 @@ This utility can be installed with ``pip``:
    :target: https://www.codacy.com/app/robertpeteuil/aws-shortcuts?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=robertpeteuil/aws-shortcuts&amp;utm_campaign=Badge_Coverage
 
 .. |Py ver| image:: https://img.shields.io/pypi/pyversions/awss.svg
-   :target: https://pypi.python.org/pypi/bandit/
+   :target: https://pypi.python.org/pypi/awss/
    :alt: Python Versions
 
-.. |license sm| image:: https://img.shields.io/badge/license-MIT-1c64bf.svg?style=flat-square
-   :target: https://github.com/robertpeteuil/aws-shortcuts
+.. |PyL| image:: https://img.shields.io/pypi/l/awss.svg
+   :target: https://pypi.python.org/pypi/awss/
+
+  
 
 
 .. |GitHub issues| image:: https://img.shields.io/github/issues/robertpeteuil/aws-shortcuts.svg
    :target: https://github.com/robertpeteuil/aws-shortcuts
 .. |GitHub release| image:: https://img.shields.io/github/release/robertpeteuil/aws-shortcuts.svg?colorB=1c64bf
    :target: https://github.com/robertpeteuil/aws-shortcuts
-.. |Code Climate| image:: https://codeclimate.com/github/robertpeteuil/aws-shortcuts/badges/gpa.svg?style=flat-square
-   :target: https://codeclimate.com/github/robertpeteuil/aws-shortcuts
-.. |lang| image:: https://img.shields.io/badge/language-python-3572A5.svg?style=flat-square
-   :target: https://github.com/robertpeteuil/aws-shortcuts
+
 .. |license| image:: https://img.shields.io/github/license/robertpeteuil/aws-shortcuts.svg?colorB=1c64bf
    :target: https://github.com/robertpeteuil/aws-shortcuts
