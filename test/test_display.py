@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-from awss import list_instances
+from awss.core import list_instances
 import awss.debg as debg
 
 

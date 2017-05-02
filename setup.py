@@ -18,8 +18,8 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='awss',
     packages=['awss'],
-    entry_points={'console_scripts': ['awss=awss:main']},
-    version='0.9.7',
+    entry_points={'console_scripts': ['awss=awss.core:main']},
+    version='0.9.7.1',
     author="Robert Peteuil",
     author_email="robert.s.peteuil@gmail.com",
     url='https://github.com/robertpeteuil/aws-shortcuts',

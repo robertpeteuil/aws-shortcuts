@@ -4,7 +4,7 @@ from __future__ import print_function
 import pytest
 import mock
 
-from awss import determine_inst
+from awss.core import determine_inst
 import awss.debg as debg
 
 debg.init(False, False)
@@ -92,7 +92,7 @@ def test_determine_inst(ids, kys, anames, ide, tidx):
         return keye
 
     with mock.patch('awss.awsc.get_all_aminames', getlclaminame, create=True):
-        with mock.patch('awss.obtain_input', RetKey, create=True):
+        with mock.patch('awss.core.obtain_input', RetKey, create=True):
             if ide:
                 debg.init(True, True)
                 (tar_inst, tar_idx) = determine_inst("ssh", ids, "TEST")

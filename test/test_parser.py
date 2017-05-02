@@ -3,7 +3,7 @@
 from __future__ import print_function
 import pytest
 
-from awss import parser_setup
+from awss.core import parser_setup
 
 
 @pytest.fixture(params=["start ", "stop "])

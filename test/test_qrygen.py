@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import pytest
-from awss import qry_create
+from awss.core import qry_create
 import awss.debg as debg
 
 debg.init(False, False)
