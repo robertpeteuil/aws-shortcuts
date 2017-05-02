@@ -1,4 +1,4 @@
-version: 0.9.6.{build}
+version: 0.9.7.{build}
 init:
 - cmd: >-
     pip install --upgrade six
@@ -8,9 +8,13 @@ init:
     pip install coverage
 
     pip install codacy-coverage
+
+    pip install codecov
 environment:
   CODACY_PROJECT_TOKEN:
     secure: JiPmBi3x+D1RDWbWXFLtigq3OJ3sdrOisDjdw4718q8VOlC/oF6Or8i6DPr9SrGs
+  CODECOV_TOKEN:
+    secure: sOKFWMIx8082DQo03X10a0ZPC4LKKAD2ww1kqtGONrBK+6ZSIBiRtOod4+z3+2am
   matrix:
   - TOXENV: py27
   - TOXENV: py33
@@ -18,7 +22,6 @@ environment:
   - TOXENV: py35
   - TOXENV: py36
   - TOXENV: flake8
-  - TOXENV: bandit
   - TOXENV: readme
 cache: .tox
 build_script:
@@ -28,10 +31,6 @@ test_script:
 deploy: off
 on_success:
 - cmd: >-
-    echo Test Success
+    coverage combine
 
-    coverage combine & exit 0
-
-    coverage xml & exit 0
-
-    python-codacy-coverage -r coverage.xml & exit 0
+    codecov
