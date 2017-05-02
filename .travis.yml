@@ -50,7 +50,5 @@ matrix:
     - BREW_PYTHON='python3'
 
 after_success:
-  - echo Test Success
-  - codecov
   - coverage xml
   - python-codacy-coverage -r coverage.xml

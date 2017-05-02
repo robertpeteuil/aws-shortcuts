@@ -29,5 +29,3 @@ build_script:
 test_script:
 - cmd: tox
 deploy: off
-on_success:
-- cmd: codecov
