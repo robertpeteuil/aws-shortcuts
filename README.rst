@@ -9,7 +9,7 @@ List, start, stop and ssh to AWS instances using Name, ID and wilcards
 
 --------------
 
-AWS Shortcuts (awss) allows listing, starting, stopping and connecting to instances by name, instance-id, while using wilcards.  The **awss list** command displays every tag : value, status and core info for each instance.  
+AWS Shortcuts (awss) allows listing, starting, stopping and connecting to instances by name, instance-id, while using wilcards.  The **awss list** command displays every tag : value, status and core info for each instance.
 
 In future versions, specifing one or more **Tag** :  **Value** combinations will be possible in targeting instances.  For example, connect to the instance where the "Project" tag is "SecretProject" and the "Role" tag is "Development".  Syntax and details, TBD, but this is in active development.
 
@@ -141,14 +141,3 @@ This utility can be installed with ``pip``:
 
 .. |PyL| image:: https://img.shields.io/pypi/l/awss.svg
    :target: https://pypi.python.org/pypi/awss/
-
-  
-
-
-.. |GitHub issues| image:: https://img.shields.io/github/issues/robertpeteuil/aws-shortcuts.svg
-   :target: https://github.com/robertpeteuil/aws-shortcuts
-.. |GitHub release| image:: https://img.shields.io/github/release/robertpeteuil/aws-shortcuts.svg?colorB=1c64bf
-   :target: https://github.com/robertpeteuil/aws-shortcuts
-
-.. |license| image:: https://img.shields.io/github/license/robertpeteuil/aws-shortcuts.svg?colorB=1c64bf
-   :target: https://github.com/robertpeteuil/aws-shortcuts
