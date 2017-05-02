@@ -242,7 +242,7 @@ def cmd_ssh_user(tar_aminame):
     """
     # first 5 chars of AMI-name can be anywhere in AMI-Name
     userlu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "root",
-              "cento": "centos", "openB": "root"}
+              "cento": "centos", "openb": "root"}
     usertmp = [value for key, value in list(userlu.items()) if key in
                tar_aminame.lower()]
     if usertmp:
