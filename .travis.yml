@@ -51,7 +51,6 @@ matrix:
 
 after_success:
   - echo Test Success
-  - coverage combine
   - codecov
   - coverage xml
   - python-codacy-coverage -r coverage.xml

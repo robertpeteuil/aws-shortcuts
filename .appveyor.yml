@@ -30,7 +30,4 @@ test_script:
 - cmd: tox
 deploy: off
 on_success:
-- cmd: >-
-    coverage combine
-
-    codecov
+- cmd: codecov
