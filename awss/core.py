@@ -25,7 +25,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.7.1'
+__version__ = '0.9.8'
 
 
 def main():  # pragma: no cover

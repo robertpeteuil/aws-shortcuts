@@ -9,9 +9,10 @@ List, start, stop and ssh to AWS instances using Name, ID and wildcards
 
 --------------
 
-AWS Shortcuts (awss) allows listing, starting, stopping and connecting to instances by name or instance-id, with wildcard support.  The per instance information listed by **awss list** includes all tags, run-state, instance-id and image-name.
+AWS Shortcuts (awss) allows listing, starting, stopping and connecting to instances by name, partial names with wilcards, or instance-id.  The instance information listed includes: all tags & values, name, current-state, instance-id and image-name.
 
-In future versions, targeting instances will also be possible with **Tag : Value** combinations, in combination with Name and run-state.  For example, connect to the instance where: "Project" tag is "SecretProject" and "Role" tag is "Development".
+A coming update will add the ability to target instances with **Tag : Value** combinations.
+For example: specify instance where Name starts with "Ub*", Tag "Project" = "SecretProject" and Tag "Role" = "Development".
 
 
 Overview
@@ -19,25 +20,25 @@ Overview
 
 **awss** has the following sub-commands: **list**, **start**, **stop**, and **ssh**.
 
-- SSH to an Instance.  ex: **awss ssh NAME**
+- SSH to an Instance:  **awss ssh NAME**
 
   - Additional paramters described in  `Details`_.
 
-- List Instances.  ex: **awss list**
+- List Instances:  **awss list**
 
   - Additional paramters described in  `Details`_.
 
-- Start Instance.  ex: **awss start NAME**
-- Stop Instance.  ex: **awss stop NAME**
+- Start Instance:  **awss start NAME**
+- Stop Instance:  **awss stop NAME**
 
 Example screenshots
 -------------------
 
-**"awss list" - instance details listed (tag keys are listed in blue)**
+**"awss list" - list instance details (tag keys are listed in blue)**
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/25595372/6c3bd5e2-2e79-11e7-9ebc-4730f93c2cb6.png
 
-**"awss start" using Name and wildcard -> duplicate results -> selecting target from list**
+**"awss start" using Name with wildcard -> duplicate results -> selecting target from list**
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/25595396/84b4ef64-2e79-11e7-922f-d645b007af57.png
 
@@ -114,14 +115,6 @@ Details
 
   - start instance by name or instance-id
   - command specific help **awss stop -h**
-
-Target Instance Determination
------------------------------
-
-The **start**, **stop**, and **ssh** commands check if multiple instances match the parameters.
-If so, the the matching instances are listed, and the user selects the intended target.
-
-
 
 
 
