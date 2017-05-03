@@ -3,19 +3,10 @@
 import awss.debg as debg
 from awss.core import process_results
 
+# import raw query data returned from AWS
 from awsrawdata import rawdata
-
-expected_info = {
-    0: {'ami': 'ami-3d3a6b78',
-        'id': 'i-04a10a9a89f05523d',
-        'pub_dns_name': '',
-        'ssh_key': 'james',
-        'state': 'stopped',
-        'tag': {'Department': 'IT',
-                'Name': 'Fedora',
-                'Project': 'SysAdmin',
-                'Role': 'Regression',
-                'Team': 'Dev10a'}}}
+# import expected info extracted from raw data
+from awstidydata import expected_info
 
 
 def test_process_results():
