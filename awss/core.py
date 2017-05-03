@@ -202,12 +202,12 @@ def cmd_ssh(options):
         options (object): contains args and data from parser
 
     """
-    import os
+    from os.path import expanduser
     import subprocess
     options.inState = "running"
     (i_info, title_out) = gather_data(options)
     (tar_inst, tar_idx) = determine_inst(options.command, i_info, title_out)
-    home_dir = os.environ['HOME']
+    home_dir = expanduser("~")
     if options.user is None:
         tar_aminame = awsc.get_one_aminame(i_info[tar_idx]['ami'])
         options.user = cmd_ssh_user(tar_aminame)

@@ -3,7 +3,7 @@
 from __future__ import print_function
 import mock
 import pytest
-import os
+from os.path import expanduser
 
 import awss.debg as debg
 
@@ -17,7 +17,7 @@ from awstidydata import expected_info
 from awsrawdata import rawdata
 
 debg.init(False, False)
-home_dir = os.environ['HOME']
+home_dir = expanduser("~")
 
 
 class holdOptions():
