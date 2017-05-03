@@ -4,13 +4,16 @@ from __future__ import print_function
 import pytest
 import mock
 
-from awss import determine_inst
+from awss.core import determine_inst
 import awss.debg as debg
+
+# import ami numbers to names lookup table
+from awstidydata import ami_lookup
 
 debg.init(False, False)
 
 
-@pytest.mark.parametrize(("ids", "kys", "anames", "ide", "tidx"), [
+@pytest.mark.parametrize(("ids", "kys", "expct_inst", "expct_idx"), [
     ({0: {'ami': 'ami-16efb076',
           'id': 'i-0c875fafa1e71327b',
           'pub_dns_name': '',
@@ -42,11 +45,6 @@ debg.init(False, False)
           'state': 'stopped',
           'tag': {'Name': 'RHEL', 'Role': 'Test'}}},
      ['a', 'P', '.', '9', '3'],
-     {'ami-16efb076': 'ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64',
-      'ami-3e21725e': 'ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64',
-      'ami-e09acc80': 'suse-sles-12-sp2-v20161214-hvm-ssd-x86_64',
-      'ami-165a0876': 'amzn-ami-hvm-2016.09.1.20170119-x86_64-gp2',
-      'ami-2cade64c': 'RHEL-7.3_HVM_GA-20161026-x86_64-1-Hourly2-GP2'},
      'i-0014d16e7f68ce746', 2),
     ({0: {'ami': 'ami-2cade64c',
           'id': 'i-0341963e139617c75',
@@ -55,7 +53,6 @@ debg.init(False, False)
           'state': 'stopped',
           'tag': {'Name': 'RHEL', 'Role': 'Test'}}},
      ['1'],
-     {'ami-2cade64c': 'RHEL-7.3_HVM_GA-20161026-x86_64-1-Hourly2-GP2'},
      'i-0341963e139617c75', 0),
     ({0: {'ami': 'ami-16efb076',
           'id': 'i-0c875fafa1e71327b',
@@ -70,34 +67,32 @@ debg.init(False, False)
           'state': 'stopped',
           'tag': {'Name': 'Amazon', 'Role': 'Test'}}},
      ['a', '7', '0'],
-     {'ami-16efb076': 'ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64',
-      'ami-165a0876': 'amzn-ami-hvm-2016.09.1.20170119-x86_64-gp2'},
      0, 0),
-    ({}, ['1'], {},
+    ({}, ['1'],
      0, 0)])
-def test_determine_inst(ids, kys, anames, ide, tidx):
+def test_determine_inst(ids, kys, expct_inst, expct_idx):
     """Test valid and invalid params with det_instance function in awss."""
     global counter
     counter = 0
 
-    def getlclaminame(ami):
+    def local_aminames(ami):
         for i in ami:
-            ami[i]['aminame'] = anames[ami[i]['ami']]
+            ami[i]['aminame'] = ami_lookup[ami[i]['ami']]
         return ami
 
-    def RetKey(item1):
+    def local_input(item1):
         global counter
         keye = kys[counter]
         counter += 1
         return keye
 
-    with mock.patch('awss.awsc.get_all_aminames', getlclaminame, create=True):
-        with mock.patch('awss.obtain_input', RetKey, create=True):
-            if ide:
+    with mock.patch('awss.awsc.get_all_aminames', local_aminames, create=True):
+        with mock.patch('awss.core.obtain_input', local_input, create=True):
+            if expct_inst:
                 debg.init(True, True)
                 (tar_inst, tar_idx) = determine_inst("ssh", ids, "TEST")
-                assert tar_inst == ide
-                assert tar_idx == tidx
+                assert tar_inst == expct_inst
+                assert tar_idx == expct_idx
             else:
                 with pytest.raises(SystemExit):
                     debg.init(True, True)

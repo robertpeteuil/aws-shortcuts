@@ -7,6 +7,7 @@ before_install:
 - if [[ $BREW_PYTHON == 'python3' ]]; then brew update; brew install $BREW_PYTHON; fi
 install:
 - pip install --upgrade six
+- pip install codecov
 before_script:
 - pip install tox
 - pip install coverage
@@ -49,7 +50,5 @@ matrix:
     - BREW_PYTHON='python3'
 
 after_success:
-  - echo Test Success
-  - coverage combine
   - coverage xml
   - python-codacy-coverage -r coverage.xml
