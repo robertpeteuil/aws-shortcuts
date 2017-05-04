@@ -88,3 +88,16 @@ rawdata = {u'Reservations': [
             'vary': 'Accept-Encoding',
             'server': 'AmazonEC2'},
         'RequestId': '171a0078-bcbd-1924-91d8-b5a26cbcb23c'}}
+
+rawnodata = {
+    u'Reservations': [],
+    'ResponseMetadata': {
+        'RetryAttempts': 0,
+        'HTTPStatusCode': 200,
+        'RequestId': '171a0078-1924-91d8-bcbd-b5a26cbcb23c',
+        'HTTPHeaders': {
+            'transfer-encoding': 'chunked',
+            'vary': 'Accept-Encoding',
+            'server': 'AmazonEC2',
+            'content-type': 'text/xml;charset=UTF-8',
+            'date': 'Mon, 01 May 2016 01:32:10 GMT'}}}

@@ -7,16 +7,16 @@ from os.path import expanduser
 
 import awss.debg as debg
 
-# import ami numbers to names lookup table
+# ami numbers to names lookup table
 from awstidydata import ami_lookup
-# import response received when stopping and starting instances
+# response received when stopping and starting instances
 from awstidydata import stop_resp, start_resp
-# import expected info extracted from raw data
+# expected info extracted from raw data
 from awstidydata import expected_info
-# import raw query data returned from AWS
-from awsrawdata import rawdata
+# raw query data returned from AWS
+from awsrawdata import rawdata, rawnodata
 
-debg.init(False, False)
+# home_dir is used by ssh function to look for the PEM key.
 home_dir = expanduser("~")
 
 
@@ -34,31 +34,49 @@ class holdOptions():
         self.nopem = inPem
 
 
-def l_gami(ami_num):
-    amiName = ami_lookup[ami_num]
-    return amiName
-
-
 def l_allami(ami):
     for i in ami:
         ami[i]['aminame'] = ami_lookup[ami[i]['ami']]
     return ami
 
 
-@pytest.mark.parametrize(("cmd", "qrystr", "exp_resp", "sshcmd"), [
-    ("list", "InstanceIds=['i-04a10a9a89f05523d']", "", ""),
-    ("stop", "InstanceIds=['i-04a10a9a89f05523d'], Filters=[{'Name':"
-     " 'instance-state-name','Values': ['running']}]", stop_resp, ""),
-    ("start", "InstanceIds=['i-04a10a9a89f05523d'], Filters=[{'Name':"
-     " 'instance-state-name','Values': ['stopped']}]", start_resp, ""),
-    ("ssh", "InstanceIds=['i-04a10a9a89f05523d'], Filters=[{'Name':"
-     " 'instance-state-name','Values': ['running']}]", "",
-     "ssh -i {0}/.aws/james.pem root@{1}".
-     format(home_dir, expected_info[0]['pub_dns_name']))])
+@pytest.mark.parametrize(("cmd", "qrystr", "idnum", "idname", "val"), [
+    ("list", "InstanceIds=['i-04a10a9a89f05523d']",
+     "i-04a10a9a89f05523d", "", 1),
+    ("list", "Filters=[{'Name': 'tag:Name', 'Values': ['server']}]",
+     "", "server", 0)])
 @mock.patch('awss.awsc.get_all_aminames', l_allami, create=True)
-@mock.patch('awss.awsc.get_one_aminame', l_gami, create=True)
-def test_determine_inst(capsys, cmd, qrystr, exp_resp, sshcmd):
-    """Test commands with a specific instance # to match our raw data."""
+def test_list_inst(capsys, cmd, qrystr, idnum, idname, val):
+    """Test list command with a specific queries to match raw data.
+
+    Tests for both normal listing, and listing when no instances
+    have been found.
+    """
+
+    qryoptions = holdOptions(cmd, idnum, idname)
+
+    def l_getinfo(qryrec):
+        assert qryrec == qrystr
+        if val:
+            retinfo = rawdata
+        else:
+            retinfo = rawnodata
+        return retinfo
+
+    with mock.patch('awss.awsc.get_inst_info', l_getinfo, create=True):
+        debg.init(True, True)
+        from awss.core import cmd_list
+        cmd_list(qryoptions)
+
+
+@pytest.mark.parametrize(("cmd", "qrystr", "exp_resp"), [
+    ("stop", "InstanceIds=['i-04a10a9a89f05523d'], Filters=[{'Name':"
+     " 'instance-state-name','Values': ['running']}]", stop_resp),
+    ("start", "InstanceIds=['i-04a10a9a89f05523d'], Filters=[{'Name':"
+     " 'instance-state-name','Values': ['stopped']}]", start_resp)])
+@mock.patch('awss.awsc.get_all_aminames', l_allami, create=True)
+def test_startstop(capsys, cmd, qrystr, exp_resp):
+    """Test startstop with a specific instance # to match raw data."""
 
     idnum = "i-04a10a9a89f05523d"
 
@@ -71,22 +89,53 @@ def test_determine_inst(capsys, cmd, qrystr, exp_resp, sshcmd):
     def l_toggle(instif, command):
         return exp_resp
 
+    with mock.patch('awss.awsc.get_inst_info', l_getinfo, create=True):
+        with mock.patch('awss.awsc.startstop', l_toggle, create=True):
+            debg.init(True, True)
+            from awss.core import cmd_startstop
+            cmd_startstop(qryoptions)
+
+
+def l_gami(ami_num):
+    amiName = ami_lookup[ami_num]
+    return amiName
+
+
+@pytest.mark.parametrize(("cmd", "qrystr", "sshcmd", "iuser", "ipem"), [
+    ("ssh", "InstanceIds=['i-04a10a9a89f05523d'], Filters=[{'Name':"
+     " 'instance-state-name','Values': ['running']}]",
+     "ssh -i {0}/.aws/james.pem root@{1}".
+     format(home_dir, expected_info[0]['pub_dns_name']),
+     None, ""),
+    ("ssh", "InstanceIds=['i-04a10a9a89f05523d'], Filters=[{'Name':"
+     " 'instance-state-name','Values': ['running']}]",
+     "ssh root@{0}".format(expected_info[0]['pub_dns_name']),
+     None, "-p"),
+    ("ssh", "InstanceIds=['i-04a10a9a89f05523d'], Filters=[{'Name':"
+     " 'instance-state-name','Values': ['running']}]",
+     "ssh -i {0}/.aws/james.pem adminuser@{1}".
+     format(home_dir, expected_info[0]['pub_dns_name']),
+     "adminuser", "")])
+@mock.patch('awss.awsc.get_one_aminame', l_gami, create=True)
+def test_ssh(capsys, cmd, qrystr, sshcmd, iuser, ipem):
+    """Test ssh in modes: normal, specified username, and no pem-key."""
+
+    idnum = "i-04a10a9a89f05523d"
+
+    qryoptssh = holdOptions(cmd, idnum, None, None, iuser, ipem)
+
+    def l_getinfo(qryrec):
+        assert qryrec == qrystr
+        return rawdata
+
     def l_scall(datain, shell):
         global rec_response
         rec_response = datain[0]
         return
 
     with mock.patch('awss.awsc.get_inst_info', l_getinfo, create=True):
-        with mock.patch('awss.awsc.startstop', l_toggle, create=True):
-            with mock.patch('subprocess.call', l_scall, create=True):
-                debg.init(True, True)
-                if cmd == "list":
-                    from awss.core import cmd_list
-                    cmd_list(qryoptions)
-                elif cmd == "stop" or cmd == "start":
-                    from awss.core import cmd_startstop
-                    cmd_startstop(qryoptions)
-                elif cmd == "ssh":
-                    from awss.core import cmd_ssh
-                    cmd_ssh(qryoptions)
-                    assert rec_response == sshcmd
+        with mock.patch('subprocess.call', l_scall, create=True):
+            debg.init(True, True)
+            from awss.core import cmd_ssh
+            cmd_ssh(qryoptssh)
+            assert rec_response == sshcmd
