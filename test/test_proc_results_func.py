@@ -4,9 +4,9 @@ import awss.debg as debg
 from awss.core import process_results
 
 # import raw query data returned from AWS
-from awsrawdata import rawdata
+from awsresponse import rawdata
 # import expected info extracted from raw data
-from awstidydata import expected_info
+from awsstestdata import expected_info
 
 
 def test_process_results():

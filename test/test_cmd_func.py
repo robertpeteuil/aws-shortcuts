@@ -8,13 +8,13 @@ from os.path import expanduser
 import awss.debg as debg
 
 # ami numbers to names lookup table
-from awstidydata import ami_lookup
-# response received when stopping and starting instances
-from awstidydata import stop_resp, start_resp
+from awsstestdata import ami_lookup
 # expected info extracted from raw data
-from awstidydata import expected_info
+from awsstestdata import expected_info
+# response received when stopping and starting instances
+from awsresponse import stop_resp, start_resp
 # raw query data returned from AWS
-from awsrawdata import rawdata, rawnodata
+from awsresponse import rawdata, rawnodata
 
 # home_dir is used by ssh function to look for the PEM key.
 home_dir = expanduser("~")

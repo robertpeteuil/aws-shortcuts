@@ -8,7 +8,7 @@ from awss.core import determine_inst
 import awss.debg as debg
 
 # import ami numbers to names lookup table
-from awstidydata import ami_lookup
+from awsstestdata import ami_lookup
 
 debg.init(False, False)
 
