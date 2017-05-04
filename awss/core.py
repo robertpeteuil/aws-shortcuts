@@ -28,7 +28,7 @@ from awss.colors import C_NORM, C_HEAD, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 __version__ = '0.9.8'
 
 
-def main():  # pragma: no cover
+def main():
     """Collect user args and call command funct.
 
     Collect command line args and setup environment then call
