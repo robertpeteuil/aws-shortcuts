@@ -11,7 +11,7 @@ EC2C = ""
 EC2R = ""
 
 
-def init():
+def init():  # pragma: no cover
     """Attach global vars EC2C, and EC2R to the AWS service.
 
     Must be called before any other functions in this module

@@ -1,3 +1,11 @@
+"""AWS Return Data for testing awss test scripts.
+
+Contains:
+    rawdata (dict)      = response from AWS for all instances.
+    rawnodata (dict)    = response from AWS for no instances.
+    start_resp (dict)   = response from AWS after instance started.
+    stop_resp (dict)    = response from AWS after instance stopped.
+"""
 rawdata = {u'Reservations': [
     {u'Instances': [
         {u'SourceDestCheck': True,
@@ -88,3 +96,42 @@ rawdata = {u'Reservations': [
             'vary': 'Accept-Encoding',
             'server': 'AmazonEC2'},
         'RequestId': '171a0078-bcbd-1924-91d8-b5a26cbcb23c'}}
+
+rawnodata = {
+    u'Reservations': [],
+    'ResponseMetadata': {
+        'RetryAttempts': 0,
+        'HTTPStatusCode': 200,
+        'RequestId': '171a0078-1924-91d8-bcbd-b5a26cbcb23c',
+        'HTTPHeaders': {
+            'transfer-encoding': 'chunked',
+            'vary': 'Accept-Encoding',
+            'server': 'AmazonEC2',
+            'content-type': 'text/xml;charset=UTF-8',
+            'date': 'Mon, 01 May 2016 01:32:10 GMT'}}}
+
+start_resp = {
+    u'StartingInstances':
+    [{u'InstanceId': 'i-04a10a9a89f05523d', u'CurrentState':
+     {u'Code': 0, u'Name': 'pending'},
+      u'PreviousState': {u'Code': 80, u'Name': 'stopped'}}],
+    'ResponseMetadata':
+    {'RetryAttempts': 0, 'HTTPStatusCode': 200,
+     'RequestId': '20fe24aa-0e0e-4389-bc38-49d9a8c4dd55',
+     'HTTPHeaders':
+         {'transfer-encoding': 'chunked', 'vary': 'Accept-Encoding',
+          'server': 'AmazonEC2', 'content-type': 'text/xml;charset=UTF-8',
+          'date': 'Mon, 01 May 2016 01:12:21 GMT'}}}
+
+stop_resp = {
+    u'StoppingInstances':
+    [{u'InstanceId': 'i-04a10a9a89f05523d', u'CurrentState':
+     {u'Code': 64, u'Name': 'stopping'},
+      u'PreviousState': {u'Code': 16, u'Name': 'running'}}],
+    'ResponseMetadata':
+    {'RetryAttempts': 0, 'HTTPStatusCode': 200,
+     'RequestId': '1aa0dcfd-b6c5-4121-bdeb-8c9abf0de921',
+     'HTTPHeaders':
+        {'transfer-encoding': 'chunked', 'vary': 'Accept-Encoding',
+         'server': 'AmazonEC2', 'content-type': 'text/xml;charset=UTF-8',
+         'date': 'Mon, 01 May 2016 01:12:21 GMT'}}}

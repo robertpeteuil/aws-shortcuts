@@ -6,7 +6,7 @@ from awss.core import list_instances
 import awss.debg as debg
 
 # import dictionary of 10 instances filled with sample data
-from awstidydata import ii_all
+from awsstestdata import ii_all
 
 
 def test_display_list(capsys):

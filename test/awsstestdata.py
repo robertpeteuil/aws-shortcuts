@@ -1,4 +1,4 @@
-"""Generate Data for testing awss test scripts.
+"""Data in internal awss structures for testing awss test scripts.
 
 Contains:
     ii_noami (dict)     = instance dict without AMI name.
@@ -9,8 +9,6 @@ Contains:
                           name: value format.
     tags_dict (dict)    = indexed dict of dictionaries containing
                           tags in name: value format.
-    start_resp (dict)   = response from AWS after instance started.
-    stop_resp (dict)    = response from AWS after instance stopped.
     expected_info (dict)= info from rawdata processed into i_info dict.
 """
 
@@ -312,32 +310,6 @@ tags_dict = {
         'Name': 'Fedora', 'Team': 'Dev10a'},
     9: {'Department': 'IT', 'Project': 'Web UI', 'Team': 'Dev10a',
         'Name': 'WordPress', 'Stage': 'Alpha'}}
-
-start_resp = {
-    u'StartingInstances':
-    [{u'InstanceId': 'i-04a10a9a89f05523d', u'CurrentState':
-     {u'Code': 0, u'Name': 'pending'},
-      u'PreviousState': {u'Code': 80, u'Name': 'stopped'}}],
-    'ResponseMetadata':
-    {'RetryAttempts': 0, 'HTTPStatusCode': 200,
-     'RequestId': '20fe24aa-0e0e-4389-bc38-49d9a8c4dd55',
-     'HTTPHeaders':
-         {'transfer-encoding': 'chunked', 'vary': 'Accept-Encoding',
-          'server': 'AmazonEC2', 'content-type': 'text/xml;charset=UTF-8',
-          'date': 'Mon, 01 May 2016 01:12:21 GMT'}}}
-
-stop_resp = {
-    u'StoppingInstances':
-    [{u'InstanceId': 'i-04a10a9a89f05523d', u'CurrentState':
-     {u'Code': 64, u'Name': 'stopping'},
-      u'PreviousState': {u'Code': 16, u'Name': 'running'}}],
-    'ResponseMetadata':
-    {'RetryAttempts': 0, 'HTTPStatusCode': 200,
-     'RequestId': '1aa0dcfd-b6c5-4121-bdeb-8c9abf0de921',
-     'HTTPHeaders':
-        {'transfer-encoding': 'chunked', 'vary': 'Accept-Encoding',
-         'server': 'AmazonEC2', 'content-type': 'text/xml;charset=UTF-8',
-         'date': 'Mon, 01 May 2016 01:12:21 GMT'}}}
 
 expected_info = {
     0: {'ami': 'ami-3d3a6b78',
