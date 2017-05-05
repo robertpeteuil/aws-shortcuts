@@ -25,7 +25,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.8'
+__version__ = '0.9.8.1'
 
 
 def main():
@@ -419,6 +419,7 @@ def list_instances(title_out, i_info, numbered=False):
 def list_tags(tags):
     """Print tags in dict so they allign with listing above."""
     tags_sorted = sorted(list(tags.items()), key=operator.itemgetter(0))
+    tag_sec_spacer = ""
     c = 1
     padlu = {1: 38, 2: 49}
     for k, v in tags_sorted:
@@ -428,11 +429,13 @@ def list_tags(tags):
                 sys.stdout.write("  {2}{0}:{3} {1}".
                                  format(k, v, C_HEAD2, C_NORM).ljust(pada))
                 c += 1
+                tag_sec_spacer = "\n"
             else:
                 sys.stdout.write("{2}{0}:{3} {1}\n".format(k, v, C_HEAD2,
                                                            C_NORM))
                 c = 1
-    print("\n")
+                tag_sec_spacer = ""
+    print(tag_sec_spacer)
 
 
 def determine_inst(command, i_info, title_out):
@@ -453,7 +456,7 @@ def determine_inst(command, i_info, title_out):
 
     """
     qty_instances = len(i_info)
-    if qty_instances == 0:
+    if not qty_instances:
         print("No instances found with parameters: {}".format(title_out))
         sys.exit(1)
 
@@ -496,7 +499,6 @@ def user_picklist(title_out, i_info, command):
         except ValueError:
             entry_raw = 999
         (tar_idx, entry_valid) = user_entry(entry_raw, command, len(i_info))
-    print()
     return tar_idx
 
 
