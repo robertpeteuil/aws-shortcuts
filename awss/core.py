@@ -43,6 +43,7 @@ def main():
 
     awsc.init()
     debg.init(debug, debugall)
+    print(C_NORM)
 
     options.func(options)
 
@@ -156,9 +157,7 @@ def cmd_list(options):
     (i_info, param_str) = gather_data(options)
     if i_info:
         awsc.get_all_aminames(i_info)
-        # param_str = "Instance List - " + param_str
-        param_str = "\nInstance List - " + param_str + "\n"
-        # list_instances(param_str, i_info)
+        param_str = "Instance List - " + param_str + "\n"
         list_instances(i_info, param_str)
     else:
         print("No instances found with parameters: {}".format(param_str))
@@ -179,7 +178,6 @@ def cmd_startstop(options):
     options.inst_state = statelu[options.command]
     debg.dprint("toggle set state: ", options.inst_state)
     (i_info, param_str) = gather_data(options)
-    # (tar_inst, tar_idx) = determine_inst(options.command, i_info, param_str)
     (tar_inst, tar_idx) = determine_inst(i_info, param_str, options.command)
     response = awsc.startstop(tar_inst, options.command)
     responselu = {"start": "StartingInstances", "stop": "StoppingInstances"}
@@ -209,7 +207,6 @@ def cmd_ssh(options):
     import subprocess
     options.inst_state = "running"
     (i_info, param_str) = gather_data(options)
-    # (tar_inst, tar_idx) = determine_inst(options.command, i_info, param_str)
     (tar_inst, tar_idx) = determine_inst(i_info, param_str, options.command)
     home_dir = expanduser("~")
     if options.user is None:
@@ -388,7 +385,6 @@ def qry_helper(flag_filt, qry_string, param_str, flag_id=False, filt_st=""):
     return (qry_string, param_str)
 
 
-# def list_instances(param_str, i_info, numbered=False):
 def list_instances(i_info, param_str, numbered=False):
     """Display a list of all instances and their details.
 
@@ -396,15 +392,13 @@ def list_instances(i_info, param_str, numbered=False):
     information for each instance.
 
     Args:
-        param_str (str): the title to display before the list.
         i_info (dict): information on instances and details.
+        param_str (str): the title to display before the list.
         numbered (bool): optional - indicates wheter the list should be
                          displayed with numbers before each instance.
                          This is used when called from user_picklist.
 
     """
-    # if not numbered:
-    #     print("\n{}\n".format(param_str))
     print(param_str)
 
     for i in i_info:
@@ -427,13 +421,13 @@ def list_tags(tags):
     tags_sorted = sorted(list(tags.items()), key=operator.itemgetter(0))
     tag_sec_spacer = ""
     c = 1
-    padlu = {1: 38, 2: 49}
+    pad_col = {1: 38, 2: 49}
     for k, v in tags_sorted:
         if k != "Name":
             if c < 3:
-                pada = padlu[c]
+                padamt = pad_col[c]
                 sys.stdout.write("  {2}{0}:{3} {1}".
-                                 format(k, v, C_HEAD2, C_NORM).ljust(pada))
+                                 format(k, v, C_HEAD2, C_NORM).ljust(padamt))
                 c += 1
                 tag_sec_spacer = "\n"
             else:
@@ -444,7 +438,6 @@ def list_tags(tags):
     print(tag_sec_spacer)
 
 
-# def determine_inst(command, i_info, param_str):
 def determine_inst(i_info, param_str, command):
     """Determine the instance-id of the target instance.
 
@@ -453,9 +446,9 @@ def determine_inst(i_info, param_str, command):
     and call user_picklist function if multiple ids exist.
 
     Args:
-        command (str): command specified on the command line.
         i_info (dict): information and details for instances.
         param_str (str): the title to display in the listing.
+        command (str): command specified on the command line.
     Returns:
         tar_inst (str): the AWS instance-id of the target.
     Raises:
@@ -468,25 +461,24 @@ def determine_inst(i_info, param_str, command):
         sys.exit(1)
 
     if qty_instances > 1:
-        print("\n{} instances match these parameters:".format(qty_instances))
-        tar_idx = user_picklist(i_info, param_str, command)
+        print("{} instances match these parameters:".format(qty_instances))
+        tar_idx = user_picklist(i_info, command)
 
     else:
         tar_idx = 0
     tar_inst = i_info[tar_idx]['id']
-    print("\n{0}{3}ing{1} instance id {2}{4}{1}".
+    print("{0}{3}ing{1} instance id {2}{4}{1}".
           format(C_STAT[command], C_NORM, C_TI, command, tar_inst))
     return (tar_inst, tar_idx)
 
 
-def user_picklist(i_info, param_str, command):
+def user_picklist(i_info, command):
     """Display list of instances matching args and ask user to select target.
 
     Instance list displayed and user asked to enter the number corresponding
     to the desired target instance, or '0' to abort.
 
     Args:
-        param_str (str): the title to display before the list.
         i_info (dict): information on instances and details.
         command (str): command specified on the command line.
     Returns:
@@ -495,8 +487,6 @@ def user_picklist(i_info, param_str, command):
     """
     valid_entry = False
     awsc.get_all_aminames(i_info)
-    # list_instances(param_str, i_info, True)
-    # list_instances("", i_info, True)
     list_instances(i_info, "", True)
     msg_txt = ("Enter {0}#{1} of instance to {3} ({0}1{1}-{0}{4}{1})"
                " [{2}0 aborts{1}]: ".format(C_WARN, C_NORM, C_TI,
@@ -525,8 +515,8 @@ def user_entry(entry_int, num_inst, command):
 
     Args:
         entry_int (int): a number entered or 999 if a non-int was entered.
-        command (str): program command to display in prompt.
         num_inst (int): the largest valid number that can be entered.
+        command (str): program command to display in prompt.
     Returns:
         entry_idx(int): the dictionary index number of the targeted instance
         valid_entry (bool): specifies if entry_idx is valid.

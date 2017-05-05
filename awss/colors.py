@@ -9,16 +9,17 @@ try:
                           colorama.Fore.RED)
     BLUE, CYAN, WHITE = (colorama.Fore.BLUE, colorama.Fore.CYAN,
                          colorama.Fore.WHITE)
+    BRIGHT, RESET = colorama.Style.BRIGHT, colorama.Fore.RESET
 except ImportError:  # pragma: no cover
     # No colorama, fallback to no-color mode
-    GREEN = YELLOW = RED = BLUE = CYAN = WHITE = ''
+    GREEN = YELLOW = RED = BLUE = CYAN = WHITE = BRIGHT = RESET = ''
 
 # Create 'color theme' by aliasing color vars to vars that
 #       are imported and used by other modules.
 #   User can change colors used in modules by simply changing
 #       their assignment here, thus avoiding having to change
 #       the color var-name throughout the module.
-C_NORM = WHITE
+C_NORM = RESET
 C_HEAD = GREEN
 C_HEAD2 = BLUE
 C_TI = CYAN
