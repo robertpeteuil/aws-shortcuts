@@ -89,10 +89,10 @@ def parser_setup():
     parser_list.add_argument('-i', '--id', action="store",
                              help='specify instance by id')
     parser_list.add_argument('-s', '--stopped', action='store_const',
-                             dest="inState", const="stopped",
+                             dest="inst_state", const="stopped",
                              help='list stopped instances')
     parser_list.add_argument('-r', '--running', action='store_const',
-                             dest="inState", const="running",
+                             dest="inst_state", const="running",
                              help='list running instances')
     parser_list.add_argument('-d', '--debug', action="count",
                              default=0, help=argparse.SUPPRESS)
@@ -153,13 +153,15 @@ def cmd_list(options):
         options (object): contains args and data from parser.
 
     """
-    (i_info, title_out) = gather_data(options)
+    (i_info, param_str) = gather_data(options)
     if i_info:
         awsc.get_all_aminames(i_info)
-        title_out = "Instance List - " + title_out
-        list_instances(title_out, i_info)
+        # param_str = "Instance List - " + param_str
+        param_str = "\nInstance List - " + param_str + "\n"
+        # list_instances(param_str, i_info)
+        list_instances(i_info, param_str)
     else:
-        print("No instances found with parameters: {}".format(title_out))
+        print("No instances found with parameters: {}".format(param_str))
 
 
 def cmd_startstop(options):
@@ -174,10 +176,11 @@ def cmd_startstop(options):
 
     """
     statelu = {"start": "stopped", "stop": "running"}
-    options.inState = statelu[options.command]
-    debg.dprint("toggle set state: ", options.inState)
-    (i_info, title_out) = gather_data(options)
-    (tar_inst, tar_idx) = determine_inst(options.command, i_info, title_out)
+    options.inst_state = statelu[options.command]
+    debg.dprint("toggle set state: ", options.inst_state)
+    (i_info, param_str) = gather_data(options)
+    # (tar_inst, tar_idx) = determine_inst(options.command, i_info, param_str)
+    (tar_inst, tar_idx) = determine_inst(i_info, param_str, options.command)
     response = awsc.startstop(tar_inst, options.command)
     responselu = {"start": "StartingInstances", "stop": "StoppingInstances"}
     filt = responselu[options.command]
@@ -204,9 +207,10 @@ def cmd_ssh(options):
     """
     from os.path import expanduser
     import subprocess
-    options.inState = "running"
-    (i_info, title_out) = gather_data(options)
-    (tar_inst, tar_idx) = determine_inst(options.command, i_info, title_out)
+    options.inst_state = "running"
+    (i_info, param_str) = gather_data(options)
+    # (tar_inst, tar_idx) = determine_inst(options.command, i_info, param_str)
+    (tar_inst, tar_idx) = determine_inst(i_info, param_str, options.command)
     home_dir = expanduser("~")
     if options.user is None:
         tar_aminame = awsc.get_one_aminame(i_info[tar_idx]['ami'])
@@ -268,13 +272,13 @@ def gather_data(options):
                           specific functions as appropriate.
     Returns:
         i_info (dict): information on instances and details.
-        title_out (str): the title to display before the list.
+        param_str (str): the title to display before the list.
 
     """
-    (qry_string, title_out) = qry_create(options)
+    (qry_string, param_str) = qry_create(options)
     qry_results = awsc.get_inst_info(qry_string)
     i_info = process_results(qry_results)
-    return (i_info, title_out)
+    return (i_info, param_str)
 
 
 def process_results(qry_results):
@@ -316,10 +320,10 @@ def qry_create(options):
         options (object): contains args and data from parser
     Returns:
         qry_string (str): the query to be used against the aws ec2 client.
-        title_out (str): the title to display before the list.
+        param_str (str): the title to display before the list.
 
     """
-    qry_string = filt_end = title_out = ""
+    qry_string = filt_end = param_str = ""
     filt_st = "Filters=["
     out_end = "All"
     flag_id = False
@@ -327,37 +331,37 @@ def qry_create(options):
 
     if options.id:
         qry_string += "InstanceIds=['%s']" % (options.id)
-        title_out += "id: '%s'" % (options.id)
+        param_str += "id: '%s'" % (options.id)
         flag_id = True
         out_end = ""
 
     if options.instname:
-        (qry_string, title_out) = qry_helper(flag_id, qry_string, title_out)
+        (qry_string, param_str) = qry_helper(flag_id, qry_string, param_str)
         flag_filt = True
         filt_end = "]"
         out_end = ""
         qry_string += filt_st + ("{'Name': 'tag:Name', 'Values': ['%s']}"
                                  % (options.instname))
-        title_out += "name: '%s'" % (options.instname)
+        param_str += "name: '%s'" % (options.instname)
 
-    if options.inState:
-        (qry_string, title_out) = qry_helper(flag_filt, qry_string,
-                                             title_out, flag_id, filt_st)
+    if options.inst_state:
+        (qry_string, param_str) = qry_helper(flag_filt, qry_string,
+                                             param_str, flag_id, filt_st)
         qry_string = (qry_string + "{'Name': 'instance-state-name',"
-                      "'Values': ['%s']}" % (options.inState))
-        title_out += "state: '%s'" % (options.inState)
+                      "'Values': ['%s']}" % (options.inst_state))
+        param_str += "state: '%s'" % (options.inst_state)
         filt_end = "]"
         out_end = ""
 
     qry_string += filt_end
-    title_out += out_end
+    param_str += out_end
     debg.dprintx("\nQuery String")
     debg.dprintx(qry_string, True)
-    debg.dprint("title_out: ", title_out)
-    return(qry_string, title_out)
+    debg.dprint("param_str: ", param_str)
+    return(qry_string, param_str)
 
 
-def qry_helper(flag_filt, qry_string, title_out, flag_id=False, filt_st=""):
+def qry_helper(flag_filt, qry_string, param_str, flag_id=False, filt_st=""):
     """Dynamically add syntaxtical elements to query.
 
     This functions adds syntactical elements to the query string, and
@@ -366,40 +370,42 @@ def qry_helper(flag_filt, qry_string, title_out, flag_id=False, filt_st=""):
     Args:
         flag_filt (bool): at least one filter item specified.
         qry_string (str): portion of the query constructed thus far.
-        title_out (str): the title to display before the list.
+        param_str (str): the title to display before the list.
         flag_id (bool): optional - instance-id was specified.
         filt_st (str): optional - syntax to add on end if filter specified.
     Returns:
         qry_string (str): the portion of the query that was passed in with
                           the appropriate syntactical elements added.
-        title_out (str): the title to display before the list.
+        param_str (str): the title to display before the list.
 
     """
     if flag_id or flag_filt:
         qry_string += ", "
-        title_out += ", "
+        param_str += ", "
 
     if not flag_filt:
         qry_string += filt_st
-    return (qry_string, title_out)
+    return (qry_string, param_str)
 
 
-def list_instances(title_out, i_info, numbered=False):
+# def list_instances(param_str, i_info, numbered=False):
+def list_instances(i_info, param_str, numbered=False):
     """Display a list of all instances and their details.
 
     Iterates through all the instances in the dict, and displays
     information for each instance.
 
     Args:
-        title_out (str): the title to display before the list.
+        param_str (str): the title to display before the list.
         i_info (dict): information on instances and details.
         numbered (bool): optional - indicates wheter the list should be
                          displayed with numbers before each instance.
                          This is used when called from user_picklist.
 
     """
-    if not numbered:
-        print("\n{}\n".format(title_out))
+    # if not numbered:
+    #     print("\n{}\n".format(param_str))
+    print(param_str)
 
     for i in i_info:
         if numbered:
@@ -438,7 +444,8 @@ def list_tags(tags):
     print(tag_sec_spacer)
 
 
-def determine_inst(command, i_info, title_out):
+# def determine_inst(command, i_info, param_str):
+def determine_inst(i_info, param_str, command):
     """Determine the instance-id of the target instance.
 
     Inspect the number of instance-ids collected and take the
@@ -448,7 +455,7 @@ def determine_inst(command, i_info, title_out):
     Args:
         command (str): command specified on the command line.
         i_info (dict): information and details for instances.
-        title_out (str): the title to display in the listing.
+        param_str (str): the title to display in the listing.
     Returns:
         tar_inst (str): the AWS instance-id of the target.
     Raises:
@@ -457,12 +464,12 @@ def determine_inst(command, i_info, title_out):
     """
     qty_instances = len(i_info)
     if not qty_instances:
-        print("No instances found with parameters: {}".format(title_out))
+        print("No instances found with parameters: {}".format(param_str))
         sys.exit(1)
 
     if qty_instances > 1:
-        print("\n{} instances match these parameters:\n".format(qty_instances))
-        tar_idx = user_picklist(title_out, i_info, command)
+        print("\n{} instances match these parameters:".format(qty_instances))
+        tar_idx = user_picklist(i_info, param_str, command)
 
     else:
         tar_idx = 0
@@ -472,33 +479,35 @@ def determine_inst(command, i_info, title_out):
     return (tar_inst, tar_idx)
 
 
-def user_picklist(title_out, i_info, command):
+def user_picklist(i_info, param_str, command):
     """Display list of instances matching args and ask user to select target.
 
     Instance list displayed and user asked to enter the number corresponding
     to the desired target instance, or '0' to abort.
 
     Args:
-        title_out (str): the title to display before the list.
+        param_str (str): the title to display before the list.
         i_info (dict): information on instances and details.
         command (str): command specified on the command line.
     Returns:
         tar_idx (int): the dictionary index number of the targeted instance.
 
     """
-    entry_valid = False
+    valid_entry = False
     awsc.get_all_aminames(i_info)
-    list_instances(title_out, i_info, True)
+    # list_instances(param_str, i_info, True)
+    # list_instances("", i_info, True)
+    list_instances(i_info, "", True)
     msg_txt = ("Enter {0}#{1} of instance to {3} ({0}1{1}-{0}{4}{1})"
                " [{2}0 aborts{1}]: ".format(C_WARN, C_NORM, C_TI,
                                             command, len(i_info)))
-    while not entry_valid:
-        entry_base = obtain_input(msg_txt)
+    while not valid_entry:
+        entry_raw = obtain_input(msg_txt)
         try:
-            entry_raw = int(entry_base)
+            entry_int = int(entry_raw)
         except ValueError:
-            entry_raw = 999
-        (tar_idx, entry_valid) = user_entry(entry_raw, command, len(i_info))
+            entry_int = 999
+        (tar_idx, valid_entry) = user_entry(entry_int, len(i_info), command)
     return tar_idx
 
 
@@ -507,7 +516,7 @@ def obtain_input(message_text):  # pragma: no cover
     return (input(message_text))
 
 
-def user_entry(entry_raw, command, maxqty):
+def user_entry(entry_int, num_inst, command):
     """Validate user entry and returns index and validity flag.
 
     Processes the user entry and take the appropriate action: abort
@@ -515,30 +524,30 @@ def user_entry(entry_raw, command, maxqty):
     return invalid index and the still unset validity flag.
 
     Args:
-        entry_raw (int): a number entered or 999 if a non-int was entered.
+        entry_int (int): a number entered or 999 if a non-int was entered.
         command (str): program command to display in prompt.
-        maxqty (int): the largest valid number that can be entered.
+        num_inst (int): the largest valid number that can be entered.
     Returns:
         entry_idx(int): the dictionary index number of the targeted instance
-        entry_valid (bool): specifies if entry_idx is valid.
+        valid_entry (bool): specifies if entry_idx is valid.
     Raises:
         SystemExit: if the user enters 0 when they are choosing from the
                     list it triggers the "abort" option offered to the user.
 
     """
-    entry_valid = False
-    if not entry_raw:
+    valid_entry = False
+    if not entry_int:
         print("{}aborting{} - {} instance\n".
               format(C_ERR, C_NORM, command))
         sys.exit()
-    elif entry_raw >= 1 and entry_raw <= maxqty:
-        entry_idx = entry_raw - 1
-        entry_valid = True
+    elif entry_int >= 1 and entry_int <= num_inst:
+        entry_idx = entry_int - 1
+        valid_entry = True
     else:
         print("{}Invalid entry:{} enter a number between 1"
-              " and {}.".format(C_ERR, C_NORM, maxqty))
-        entry_idx = entry_raw
-    return (entry_idx, entry_valid)
+              " and {}.".format(C_ERR, C_NORM, num_inst))
+        entry_idx = entry_int
+    return (entry_idx, valid_entry)
 
 
 if __name__ == '__main__':

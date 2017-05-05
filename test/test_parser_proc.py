@@ -68,7 +68,7 @@ def test_list_parse_valid(inname, innum, instate, debugstate):
     assert options.debug == debugstate[1]
     assert options.instname == inname[1]
     assert options.id == innum[1]
-    assert options.inState == instate[1]
+    assert options.inst_state == instate[1]
 
 
 def test_startstop_parse_valid(cmdname, inname, innum, debugstate):

@@ -13,6 +13,6 @@ def test_display_list(capsys):
     """Test list_instances function in awss."""
     debg.init(False, False)
     outputTitle = "Test Report"
-    list_instances(outputTitle, ii_all)
+    list_instances(ii_all, outputTitle)
     out, err = capsys.readouterr()
     assert err == ""
