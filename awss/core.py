@@ -322,43 +322,51 @@ def qry_create(options):
     """
     qry_string = filt_end = param_str = ""
     filt_st = "Filters=["
-    out_end = "All"
-    flag_id = False
-    flag_filt = False
+    param_str_default = "All"
+    # flag_id = False
+    # flag_filt = False
 
     if options.id:
         qry_string += "InstanceIds=['%s']" % (options.id)
         param_str += "id: '%s'" % (options.id)
-        flag_id = True
-        out_end = ""
+        # flag_id = True
+        param_str_default = ""
 
     if options.instname:
-        (qry_string, param_str) = qry_helper(flag_id, qry_string, param_str)
-        flag_filt = True
+        # (qry_string, param_str) = qry_helper(flag_id, qry_string,
+        #                                      param_str)
+        (qry_string, param_str) = qry_helper(bool(options.id),
+                                             qry_string, param_str)
+        # flag_filt = True
         filt_end = "]"
-        out_end = ""
+        param_str_default = ""
         qry_string += filt_st + ("{'Name': 'tag:Name', 'Values': ['%s']}"
                                  % (options.instname))
         param_str += "name: '%s'" % (options.instname)
 
     if options.inst_state:
-        (qry_string, param_str) = qry_helper(flag_filt, qry_string,
-                                             param_str, flag_id, filt_st)
-        qry_string = (qry_string + "{'Name': 'instance-state-name',"
-                      "'Values': ['%s']}" % (options.inst_state))
+        # (qry_string, param_str) = qry_helper(flag_id, qry_string,
+        #                                      param_str, flag_filt, filt_st)
+        (qry_string, param_str) = qry_helper(bool(options.id),
+                                             qry_string, param_str,
+                                             bool(options.instname), filt_st)
+        # qry_string = (qry_string + "{'Name': 'instance-state-name',"
+        #               "'Values': ['%s']}" % (options.inst_state))
+        qry_string += ("{'Name': 'instance-state-name',"
+                       "'Values': ['%s']}" % (options.inst_state))
         param_str += "state: '%s'" % (options.inst_state)
         filt_end = "]"
-        out_end = ""
+        param_str_default = ""
 
     qry_string += filt_end
-    param_str += out_end
+    param_str += param_str_default
     debg.dprintx("\nQuery String")
     debg.dprintx(qry_string, True)
     debg.dprint("param_str: ", param_str)
     return(qry_string, param_str)
 
 
-def qry_helper(flag_filt, qry_string, param_str, flag_id=False, filt_st=""):
+def qry_helper(flag_id, qry_string, param_str, flag_filt=False, filt_st=""):
     """Dynamically add syntaxtical elements to query.
 
     This functions adds syntactical elements to the query string, and
@@ -380,6 +388,8 @@ def qry_helper(flag_filt, qry_string, param_str, flag_id=False, filt_st=""):
         qry_string += ", "
         param_str += ", "
 
+    # if name wasnt set, add filterstring to query
+    # real syntax not passed until adding instance_status
     if not flag_filt:
         qry_string += filt_st
     return (qry_string, param_str)
