@@ -5,7 +5,7 @@ starting, stopping and connecting to AWS EC2 instances by Name or ID.
 
 Modules in this library:
 
-__init__ - Main module providing entry point and core code.
+core     - Main module providing entry point and core code.
 awsc     - Communicates with AWS services.
 colors   - Determine color capability, define color vars and theme.
 debg     - Debug print functions that execute if debug mode initialized.
@@ -25,7 +25,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.8.1'
+__version__ = '0.9.9'
 
 
 def main():
@@ -329,21 +329,15 @@ def qry_create(options):
     qry_string = filt_end = param_str = ""
     filt_st = "Filters=["
     param_str_default = "All"
-    # flag_id = False
-    # flag_filt = False
 
     if options.id:
         qry_string += "InstanceIds=['%s']" % (options.id)
         param_str += "id: '%s'" % (options.id)
-        # flag_id = True
         param_str_default = ""
 
     if options.instname:
-        # (qry_string, param_str) = qry_helper(flag_id, qry_string,
-        #                                      param_str)
         (qry_string, param_str) = qry_helper(bool(options.id),
                                              qry_string, param_str)
-        # flag_filt = True
         filt_end = "]"
         param_str_default = ""
         qry_string += filt_st + ("{'Name': 'tag:Name', 'Values': ['%s']}"
@@ -351,13 +345,9 @@ def qry_create(options):
         param_str += "name: '%s'" % (options.instname)
 
     if options.inst_state:
-        # (qry_string, param_str) = qry_helper(flag_id, qry_string,
-        #                                      param_str, flag_filt, filt_st)
         (qry_string, param_str) = qry_helper(bool(options.id),
                                              qry_string, param_str,
                                              bool(options.instname), filt_st)
-        # qry_string = (qry_string + "{'Name': 'instance-state-name',"
-        #               "'Values': ['%s']}" % (options.inst_state))
         qry_string += ("{'Name': 'instance-state-name',"
                        "'Values': ['%s']}" % (options.inst_state))
         param_str += "state: '%s'" % (options.inst_state)
@@ -394,8 +384,6 @@ def qry_helper(flag_id, qry_string, param_str, flag_filt=False, filt_st=""):
         qry_string += ", "
         param_str += ", "
 
-    # if name wasnt set, add filterstring to query
-    # real syntax not passed until adding instance_status
     if not flag_filt:
         qry_string += filt_st
     return (qry_string, param_str)
