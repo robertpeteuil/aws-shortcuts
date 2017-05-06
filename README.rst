@@ -5,7 +5,7 @@ List, start, stop and ssh to AWS instances using Name, ID and wildcards
 -----------------------------------------------------------------------
 
 
-|TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |Py ver| |PyL|
+|TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |lang| |PyL|
 
 --------------
 
@@ -139,3 +139,6 @@ Details
 
 .. |PyL| image:: https://img.shields.io/pypi/l/awss.svg
    :target: https://pypi.python.org/pypi/awss/
+
+.. |lang| image:: https://img.shields.io/badge/language-python-3572A5.svg
+  :target: https://github.com/robertpeteuil/aws-shortcuts
