@@ -27,4 +27,4 @@ test_script:
 - cmd: tox
 deploy: off
 on_success:
-- cmd: codecov -e TOXENV CI APPVEYOR APPVEYOR_BUILD_NUMBER
+- cmd: codecov -e TOXENV
