@@ -44,7 +44,7 @@ def test_main_list(awsc_mock, instate, debugstate):
         assert options_rec.command == 'list'
         assert options_rec.id == 'i-04a10a9a89f05523d'
         assert options_rec.debug == debugstate[1]
-        assert options_rec.inState == instate[1]
+        assert options_rec.inst_state == instate[1]
 
     with mock.patch('awss.core.cmd_list', cmd_list, create=True):
         with mock.patch.object(sys, 'argv', testlist):

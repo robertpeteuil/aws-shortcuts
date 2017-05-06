@@ -23,13 +23,13 @@ home_dir = expanduser("~")
 class holdOptions():
     """Hold options used by cmd_function function."""
 
-    def __init__(self, inCommand, idin, instname=None, inState=None,
+    def __init__(self, inCommand, idin, instname=None, inst_state=None,
                  inUser=None, inPem=False):
         """Initialize options to specified values."""
         self.command = inCommand
         self.id = idin
         self.instname = instname
-        self.inState = inState
+        self.inst_state = inst_state
         self.user = inUser
         self.nopem = inPem
 
@@ -138,4 +138,4 @@ def test_ssh(capsys, cmd, qrystr, sshcmd, iuser, ipem):
             debg.init(True, True)
             from awss.core import cmd_ssh
             cmd_ssh(qryoptssh)
-            assert rec_response == sshcmd
+            assert rec_response == sshcmd  # noqa

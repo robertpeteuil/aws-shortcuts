@@ -29,11 +29,11 @@ def genstate(request):
 class holdOptions():
     """Hold options used by qry_create function."""
 
-    def __init__(self, idnum, instname, inState):
+    def __init__(self, idnum, instname, inst_state):
         """Initialize options to specified values."""
         self.id = idnum
         self.instname = instname
-        self.inState = inState
+        self.inst_state = inst_state
 
 
 idlu = {"-i 123456": 0b0001, "": 0b0000}

@@ -90,11 +90,11 @@ def test_determine_inst(ids, kys, expct_inst, expct_idx):
         with mock.patch('awss.core.obtain_input', local_input, create=True):
             if expct_inst:
                 debg.init(True, True)
-                (tar_inst, tar_idx) = determine_inst("ssh", ids, "TEST")
+                (tar_inst, tar_idx) = determine_inst(ids, "TEST", "ssh")
                 assert tar_inst == expct_inst
                 assert tar_idx == expct_idx
             else:
                 with pytest.raises(SystemExit):
                     debg.init(True, True)
-                    tar_inst = determine_inst("ssh", ids, "TEST")
+                    tar_inst = determine_inst(ids, "TEST", "ssh")
                     pass

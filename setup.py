@@ -19,7 +19,7 @@ setup(
     name='awss',
     packages=['awss'],
     entry_points={'console_scripts': ['awss=awss.core:main']},
-    version='0.9.8',
+    version='0.9.9',
     author="Robert Peteuil",
     author_email="robert.s.peteuil@gmail.com",
     url='https://github.com/robertpeteuil/aws-shortcuts',
