@@ -50,5 +50,6 @@ matrix:
     - BREW_PYTHON='python3'
 
 after_success:
+  - bash <(curl -s https://codecov.io/bash) -e TOXENV || echo "Codecov did not collect coverage reports"
   - coverage xml
   - python-codacy-coverage -r coverage.xml
