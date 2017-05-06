@@ -291,20 +291,26 @@ def process_results(qry_results):
     """
     i_info = {}
     for i, j in enumerate(qry_results['Reservations']):
+        if j['Instances'][0]['State']['Name'] == 'terminated':
+            continue
         i_info[i] = {'id': j['Instances'][0]['InstanceId']}
         i_info[i]['state'] = j['Instances'][0]['State']['Name']
         i_info[i]['ami'] = j['Instances'][0]['ImageId']
         i_info[i]['ssh_key'] = j['Instances'][0]['KeyName']
         i_info[i]['pub_dns_name'] = j['Instances'][0]['PublicDnsName']
-        inst_tags = j['Instances'][0]['Tags']
-        tag_dict = {}
-        for k in range(len(inst_tags)):
-            tag_dict[inst_tags[k]['Key']] = inst_tags[k]['Value']
-        i_info[i]['tag'] = tag_dict
+        i_info[i]['tag'] = process_tags(j['Instances'][0]['Tags'])
     debg.dprint("numInstances: ", len(i_info))
     debg.dprintx("Details except AMI-name")
     debg.dprintx(i_info, True)
     return i_info
+
+
+def process_tags(inst_tags):
+    """Create dict of instance tags as only name:value pairs."""
+    tag_dict = {}
+    for k in range(len(inst_tags)):
+        tag_dict[inst_tags[k]['Key']] = inst_tags[k]['Value']
+    return tag_dict
 
 
 def qry_create(options):
