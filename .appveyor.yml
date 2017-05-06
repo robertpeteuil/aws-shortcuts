@@ -27,4 +27,4 @@ test_script:
 - cmd: tox
 deploy: off
 on_success:
-- cmd: bash <(curl -s https://codecov.io/bash) -e TOXENV || echo "Codecov did not collect coverage reports"
+- cmd: codecov -e TOXENV CI APPVEYOR APPVEYOR_BUILD_NUMBER
