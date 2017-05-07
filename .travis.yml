@@ -4,6 +4,7 @@ branches:
   - develop
 language: python
 before_install:
+- if [[ $TRAVIS_BRANCH == 'develop' ]] && [[ $TRAVIS_OS_NAME = 'osx' ]]; then exit 0; fi
 - if [[ $BREW_PYTHON == 'python3' ]]; then brew update; brew install $BREW_PYTHON; fi
 install:
 - pip install --upgrade six
