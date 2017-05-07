@@ -25,7 +25,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.9'
+__version__ = '0.9.10'
 
 
 def main():
@@ -291,14 +291,15 @@ def process_results(qry_results):
     """
     i_info = {}
     for i, j in enumerate(qry_results['Reservations']):
-        if j['Instances'][0]['State']['Name'] == 'terminated':
-            continue
         i_info[i] = {'id': j['Instances'][0]['InstanceId']}
         i_info[i]['state'] = j['Instances'][0]['State']['Name']
         i_info[i]['ami'] = j['Instances'][0]['ImageId']
         i_info[i]['ssh_key'] = j['Instances'][0]['KeyName']
         i_info[i]['pub_dns_name'] = j['Instances'][0]['PublicDnsName']
-        i_info[i]['tag'] = process_tags(j['Instances'][0]['Tags'])
+        try:
+            i_info[i]['tag'] = process_tags(j['Instances'][0]['Tags'])
+        except KeyError:
+            i_info[i]['tag'] = {"Name": ""}
     debg.dprint("numInstances: ", len(i_info))
     debg.dprintx("Details except AMI-name")
     debg.dprintx(i_info, True)

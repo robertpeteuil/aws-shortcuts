@@ -9,10 +9,11 @@ try:
                           colorama.Fore.RED)
     BLUE, CYAN, WHITE = (colorama.Fore.BLUE, colorama.Fore.CYAN,
                          colorama.Fore.WHITE)
+    MAGENTA = colorama.Fore.MAGENTA
     BRIGHT, RESET = colorama.Style.BRIGHT, colorama.Fore.RESET
 except ImportError:  # pragma: no cover
     # No colorama, fallback to no-color mode
-    GREEN = YELLOW = RED = BLUE = CYAN = WHITE = BRIGHT = RESET = ''
+    GREEN = YELLOW = RED = BLUE = CYAN = WHITE = MAGENTA = BRIGHT = RESET = ''
 
 
 C_NORM = RESET
@@ -36,9 +37,9 @@ require replacing all occurences of the color var being changed.
 
 
 C_STAT = {"running": C_GOOD, "start": C_GOOD, "ssh": C_GOOD,
-          "pending": C_WARN, "starting": C_WARN,
-          "stopped": C_ERR, "stop": C_ERR, "stopping": C_ERR,
-          "shutting-down": C_ERR, "terminated": C_ERR}
+          "pending": C_WARN, "starting": C_WARN, "stopping": C_WARN,
+          "stopped": C_ERR, "stop": C_ERR, "shutting-down": C_ERR,
+          "terminated": MAGENTA}
 """Color dictionary for AWS EC2 instance status colors.
 
 Any value encountered in the AWS data must be listed or a KeyError is

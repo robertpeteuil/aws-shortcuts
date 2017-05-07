@@ -1,4 +1,5 @@
-version: 0.9.7.{build}
+version: 0.9.9.{build}
+skip_tags: true
 init:
 - cmd: >-
     pip install --upgrade six
@@ -7,12 +8,8 @@ init:
 
     pip install coverage
 
-    pip install codacy-coverage
-
     pip install codecov
 environment:
-  CODACY_PROJECT_TOKEN:
-    secure: JiPmBi3x+D1RDWbWXFLtigq3OJ3sdrOisDjdw4718q8VOlC/oF6Or8i6DPr9SrGs
   CODECOV_TOKEN:
     secure: sOKFWMIx8082DQo03X10a0ZPC4LKKAD2ww1kqtGONrBK+6ZSIBiRtOod4+z3+2am
   matrix:
@@ -29,3 +26,5 @@ build_script:
 test_script:
 - cmd: tox
 deploy: off
+on_success:
+- cmd: codecov -e TOXENV

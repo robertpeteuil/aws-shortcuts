@@ -4,6 +4,7 @@ branches:
   - develop
 language: python
 before_install:
+- if [[ $TRAVIS_BRANCH == 'develop' ]] && [[ $TRAVIS_OS_NAME = 'osx' ]]; then exit 0; fi
 - if [[ $BREW_PYTHON == 'python3' ]]; then brew update; brew install $BREW_PYTHON; fi
 install:
 - pip install --upgrade six
@@ -50,5 +51,6 @@ matrix:
     - BREW_PYTHON='python3'
 
 after_success:
+  - bash <(curl -s https://codecov.io/bash) -e TOXENV || echo "Codecov did not collect coverage reports"
   - coverage xml
   - python-codacy-coverage -r coverage.xml
