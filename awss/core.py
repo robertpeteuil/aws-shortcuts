@@ -291,8 +291,8 @@ def process_results(qry_results):
     """
     i_info = {}
     for i, j in enumerate(qry_results['Reservations']):
-        if j['Instances'][0]['State']['Name'] == 'terminated':
-            continue
+        # if j['Instances'][0]['State']['Name'] == 'terminated':
+        #     continue
         i_info[i] = {'id': j['Instances'][0]['InstanceId']}
         i_info[i]['state'] = j['Instances'][0]['State']['Name']
         i_info[i]['ami'] = j['Instances'][0]['ImageId']

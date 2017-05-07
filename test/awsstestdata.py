@@ -9,7 +9,8 @@ Contains:
                           name: value format.
     tags_dict (dict)    = indexed dict of dictionaries containing
                           tags in name: value format.
-    expected_info (dict)= info from rawdata processed into i_info dict.
+    expected_info (dict)    = i_info dict processed from rawdata.
+    expected_info_nt (dict) = i_info dict processed from rawdata_nt.
 """
 
 ii_noami = {
@@ -322,3 +323,11 @@ expected_info = {
                 'Project': 'SysAdmin',
                 'Role': 'Regression',
                 'Team': 'Dev10a'}}}
+
+expected_info_nt = {
+    0: {'ami': 'ami-3d3a6b78',
+        'id': 'i-04a10a9a89f05523d',
+        'pub_dns_name': 'ec2-54-219-64-145.us-west-1.compute.amazonaws.com',
+        'ssh_key': 'james',
+        'state': 'running',
+        'tag': {'Name': ''}}}
