@@ -8,7 +8,6 @@ except ImportError:
     )
 from codecs import open
 from os import path
-from awss.core import __version__
 
 here = path.abspath(path.dirname(__file__))
 
@@ -20,7 +19,7 @@ setup(
     name='awss',
     packages=['awss'],
     entry_points={'console_scripts': ['awss=awss.core:main']},
-    version=__version__,
+    version='0.9.10',
     author="Robert Peteuil",
     author_email="robert.s.peteuil@gmail.com",
     url='https://github.com/robertpeteuil/aws-shortcuts',
