@@ -3,6 +3,7 @@
 Contains:
     rawdata (dict)      = response from AWS for an instance.
     rawdata_nt (dict)   = response from AWS for an instance without tags.
+    rawdata_term (dict) = response from AWS for a terminated instance.
     rawnodata (dict)    = response from AWS for no instances.
     start_resp (dict)   = response from AWS after instance started.
     stop_resp (dict)    = response from AWS after instance stopped.
@@ -182,6 +183,56 @@ rawdata_nt = {u'Reservations': [
             'vary': 'Accept-Encoding',
             'server': 'AmazonEC2'},
         'RequestId': '171a0078-bcbd-1924-91d8-b5a26cbcb23c'}}
+
+rawdata_term = {
+    u'Reservations': [
+        {u'Groups': [],
+         u'Instances': [{
+             u'AmiLaunchIndex': 0,
+             u'Architecture': 'x86_64',
+             u'BlockDeviceMappings': [],
+             u'ClientToken': 'DPSAr5354928108794',
+             u'EbsOptimized': False,
+             u'Hypervisor': 'xen',
+             u'ImageId': 'ami-05cf2265',
+             u'InstanceId': 'i-04a10a9a89f05523d',
+             u'InstanceType': 't2.micro',
+             u'KeyName': 'james',
+             u'LaunchTime': '2016-05-01-19-19-45',
+             u'Monitoring': {u'State': 'disabled'},
+             u'NetworkInterfaces': [],
+             u'Placement': {
+                 u'AvailabilityZone': 'us-west-2a',
+                 u'GroupName': '',
+                 u'Tenancy': 'default'},
+             u'PrivateDnsName': '',
+             u'ProductCodes': [],
+             u'PublicDnsName': '',
+             u'RootDeviceName': '/dev/sda1',
+             u'RootDeviceType': 'ebs',
+             u'SecurityGroups': [],
+             u'State': {
+                 u'Code': 48,
+                 u'Name': 'terminated'},
+             u'StateReason': {
+                 u'Code': 'Client.UserInitiatedShutdown',
+                 u'Message': 'Client.UserInitiatedShutdown:'
+                 '     initiated shutdown'},
+             u'StateTransitionReason': 'User initiated (2016-05-01'
+             '    1:05 GMT)',
+             u'VirtualizationType': 'hvm'}],
+         u'OwnerId': '262637777988',
+         u'ReservationId': 'r-0fbb688d2f399e2fa'}],
+    'ResponseMetadata': {
+        'HTTPHeaders': {
+            'content-type': 'text/xml;charset=UTF-8',
+            'date': 'Mon, 01 May 2016 01:12:21 GMT',
+            'server': 'AmazonEC2',
+            'transfer-encoding': 'chunked',
+            'vary': 'Accept-Encoding'},
+        'HTTPStatusCode': 200,
+        'RequestId': '171a0078-ac7c-4b15-91c0-b5a26cbcb23c',
+        'RetryAttempts': 0}}
 
 rawnodata = {
     u'Reservations': [],
