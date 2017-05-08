@@ -4,6 +4,7 @@ from __future__ import print_function
 import mock
 import pytest
 from os.path import expanduser
+import os
 
 import awss.debg as debg
 
@@ -101,23 +102,29 @@ def l_gami(ami_num):
     return amiName
 
 
-@pytest.mark.parametrize(("cmd", "qrystr", "sshcmd", "iuser", "ipem"), [
+@pytest.mark.parametrize(("cmd", "qrystr", "cmd_lin", "cmd_win",
+                          "iuser", "ipem"), [
     ("ssh", "InstanceIds=['i-04a10a9a89f05523d'], Filters=[{'Name':"
      " 'instance-state-name','Values': ['running']}]",
      "ssh -i {0}/.aws/james.pem root@{1}".
+     format(home_dir, expected_info[0]['pub_dns_name']),
+     "powershell plink -i {0}\.aws\james.ppk root@{1}".
      format(home_dir, expected_info[0]['pub_dns_name']),
      None, ""),
     ("ssh", "InstanceIds=['i-04a10a9a89f05523d'], Filters=[{'Name':"
      " 'instance-state-name','Values': ['running']}]",
      "ssh root@{0}".format(expected_info[0]['pub_dns_name']),
+     "powershell plink root@{0}".format(expected_info[0]['pub_dns_name']),
      None, "-p"),
     ("ssh", "InstanceIds=['i-04a10a9a89f05523d'], Filters=[{'Name':"
      " 'instance-state-name','Values': ['running']}]",
      "ssh -i {0}/.aws/james.pem adminuser@{1}".
      format(home_dir, expected_info[0]['pub_dns_name']),
+     "powershell plink -i {0}\.aws\james.ppk adminuser@{1}".
+     format(home_dir, expected_info[0]['pub_dns_name']),
      "adminuser", "")])
 @mock.patch('awss.awsc.get_one_aminame', l_gami, create=True)
-def test_ssh(capsys, cmd, qrystr, sshcmd, iuser, ipem):
+def test_ssh(capsys, cmd, qrystr, cmd_lin, cmd_win, iuser, ipem):
     """Test ssh in modes: normal, specified username, and no pem-key."""
 
     idnum = "i-04a10a9a89f05523d"
@@ -130,8 +137,13 @@ def test_ssh(capsys, cmd, qrystr, sshcmd, iuser, ipem):
 
     def l_scall(datain, shell):
         global rec_response
-        rec_response = datain[0]
+        rec_response = datain
         return
+
+    if os.name == 'nt':
+        sshcmd = cmd_win
+    else:
+        sshcmd = cmd_lin
 
     with mock.patch('awss.awsc.get_inst_info', l_getinfo, create=True):
         with mock.patch('subprocess.call', l_scall, create=True):

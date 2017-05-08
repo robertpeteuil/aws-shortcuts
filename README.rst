@@ -11,8 +11,7 @@ List, start, stop and ssh to AWS instances using Name, ID and wildcards
 
 AWS Shortcuts (awss) allows listing, starting, stopping and connecting to instances by name, partial names with wilcards, or instance-id.  The instance information listed includes: all tags & values, name, current-state, instance-id and image-name.
 
-A coming update will add the ability to target instances with **Tag : Value** combinations.
-For example: specify instance where Name starts with "Ub*", Tag "Project" = "SecretProject" and Tag "Role" = "Development".
+Conecting via SSH on Windows computers is performed by using the command line version of PuTTY, called plink.  On Windows, plink serves as the ssh command, and is run within powershell, so ansi-escape sequences, and colors, are possible.
 
 
 Overview
@@ -22,11 +21,11 @@ Overview
 
 - SSH to an Instance:  **awss ssh NAME**
 
-  - Additional paramters described in  `Details`_.
+  - Additional paramters described in `Command Details`_.
 
 - List Instances:  **awss list**
 
-  - Additional paramters described in  `Details`_.
+  - Additional paramters described in `Command Details`_.
 
 - Start Instance:  **awss start NAME**
 - Stop Instance:  **awss stop NAME**
@@ -52,7 +51,7 @@ Platforms:
 
 - Linux
 - macOS (OS X)
-- Windows
+- Windows (see `Windows Prereqs`_ for ssh functionality)
 
 Installation
 ------------
@@ -63,10 +62,55 @@ This utility can be installed with **pip**:
 
   pip install awss
 
+Windows Prereqs
+---------------
+Because Wiindows does not have a built-in ssh command, using the **awss ssh** command on windows requires:
 
+- Installation of `PuTTY suite <http://www.putty.org/>`_
 
-Details
--------
+  - use the "Windows Installer", install all options, and include it on your path
+
+- Converting ssh keys from Amazon's ".pem" format to ".ppk" format
+
+  - keys can be converted using the `puttygen utility <http://stackoverflow.com/questions/3190667/convert-pem-to-ppk-file-format>`_ (installed with PuTTY)
+
+- Powershell must be on the system (installed by default in recent versions of Windows)
+
+Configuration
+-------------
+
+**SSH Access Keys** (.pem files)
+
+- Keys should be stored in the **.aws** folder in your home directory
+
+**AWS Credentials** can be stored using *either one of these two methods*:
+
+- Environment variables "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY" and "AWS_DEFAULT_REGION"
+- Files named "credentials" and "config" in the **.aws** folder in your home directory
+
+  - The Windows home directory is referred to by the environment variable %UserProfile%
+
+  **{HOME}/.aws/credentials**
+
+  .. code::
+
+    [default]
+    aws_access_key_id=AKIAIOSFODNN7EXAMPLE
+    aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+  **{HOME}/.aws/config**
+
+  .. code::
+
+    [default]
+    region=us-west-2
+    output=json
+
+- Information on AWS Credentials is in the `AWS Getting Setup guide. <http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-set-up.html>`_
+- Information on configuration files in is the `AWS Getting Started guide. <http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`_
+
+Command Details
+---------------
 
 - SSH to Instance: **awss ssh NAME** or **awss ssh -i ID**
 
@@ -141,4 +185,4 @@ Details
    :target: https://pypi.python.org/pypi/awss/
 
 .. |lang| image:: https://img.shields.io/badge/language-python-3572A5.svg
-  :target: https://github.com/robertpeteuil/aws-shortcuts
+   :target: https://github.com/robertpeteuil/aws-shortcuts

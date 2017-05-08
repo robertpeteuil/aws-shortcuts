@@ -23,9 +23,9 @@ import operator
 
 import awss.awsc as awsc
 import awss.debg as debg
-from awss.colors import C_NORM, C_HEAD, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
+from awss.colors import C_NORM, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.10'
+__version__ = '0.9.11'
 
 
 def main():
@@ -203,8 +203,9 @@ def cmd_ssh(options):
         options (object): contains args and data from parser
 
     """
-    from os.path import expanduser
+    import os
     import subprocess
+    from os.path import expanduser
     options.inst_state = "running"
     (i_info, param_str) = gather_data(options)
     (tar_inst, tar_idx) = determine_inst(i_info, param_str, options.command)
@@ -214,22 +215,20 @@ def cmd_ssh(options):
         options.user = cmd_ssh_user(tar_aminame)
     else:
         debg.dprint("LoginUser set by user: ", options.user)
-    if options.nopem:
+    os_spec = {"nt": ["powershell plink", "\\", "ppk"]}
+    c_itm = os_spec.get(os.name, ["ssh", "/", "pem"])
+    cmd_ssh_run = c_itm[0]
+    if not options.nopem:
+        cmd_ssh_run += (" -i {0}{1}.aws{1}{2}.{3}".
+                        format(home_dir, c_itm[1], i_info[tar_idx]['ssh_key'],
+                               c_itm[2]))
+    else:
         debg.dprint("Connect string: ", "ssh {}@{}".
                     format(options.user, i_info[tar_idx]['pub_dns_name']))
-        print("{0}No PEM mode{1} - connecting without PEM key\n".
-              format(C_HEAD, C_NORM))
-        subprocess.call(["ssh {0}@{1}".format(options.user,
-                         i_info[tar_idx]['pub_dns_name'])], shell=True)
-    else:
-        debg.dprint("Connect string: ", "ssh -i {}/.aws/{}.pem {}@{}".
-                    format(home_dir, i_info[tar_idx]['ssh_key'], options.user,
-                           i_info[tar_idx]['pub_dns_name']))
-        print("")
-        subprocess.call(["ssh -i {0}/.aws/{1}.pem {2}@{3}".
-                        format(home_dir, i_info[tar_idx]['ssh_key'],
-                               options.user, i_info[tar_idx]['pub_dns_name'])],
-                        shell=True)
+    cmd_ssh_run += " {0}@{1}".format(options.user,
+                                     i_info[tar_idx]['pub_dns_name'])
+    print(cmd_ssh_run)
+    subprocess.call(cmd_ssh_run, shell=True)
 
 
 def cmd_ssh_user(tar_aminame):
@@ -244,14 +243,11 @@ def cmd_ssh_user(tar_aminame):
     # first 5 chars of AMI-name can be anywhere in AMI-Name
     userlu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "root",
               "cento": "centos", "openb": "root"}
-    usertmp = [value for key, value in list(userlu.items()) if key in
-               tar_aminame.lower()]
-    if usertmp:
-        username = usertmp[0]
-    else:
-        username = "ec2-user"
+    usertemp = ['name'] + [value for key, value in list(userlu.items())
+                           if key in tar_aminame.lower()]
+    usertemp = dict(zip(usertemp[::2], usertemp[1::2]))
+    username = usertemp.get('name', 'ec2-user')
     debg.dprint("loginuser Calculated: ", username)
-
     return username
 
 
