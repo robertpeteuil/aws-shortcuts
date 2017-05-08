@@ -51,7 +51,7 @@ Platforms:
 
 - Linux
 - macOS (OS X)
-- Windows (see `Windows Prereqs`_)
+- Windows (see `Windows Prereqs`_ for ssh functionality)
 
 Installation
 ------------
@@ -67,9 +67,11 @@ Windows Prereqs
 Because Wiindows does not have a built-in ssh command, using the **awss ssh** command on windows requires:
 
 - Installation of `PuTTY suite <http://www.putty.org/>`_
+
   - use the "Windows Installer", install all options, and include it on your path
 
 - Converting ssh keys from Amazon's ".pem" format to ".ppk" format
+
   - keys can be converted using the `puttygen utility <http://stackoverflow.com/questions/3190667/convert-pem-to-ppk-file-format>`_ (installed with PuTTY)
 
 - Powershell must be on the system (installed by default in recent versions of Windows)
@@ -81,10 +83,11 @@ Configuration
 
 - Keys should be stored in the **.aws** folder in your home directory
 
-**AWS Credentials** can be stored in either:
+**AWS Credentials** can be stored using *either one of these two methods*:
 
 - Environment variables "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY" and "AWS_DEFAULT_REGION"
 - Files named "credentials" and "config" in the **.aws** folder in your home directory
+
   - The Windows home directory is referred to by the environment variable %UserProfile%
 
   **{HOME}/.aws/credentials**
