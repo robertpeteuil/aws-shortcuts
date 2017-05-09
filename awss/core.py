@@ -3,15 +3,33 @@
 The AWS Shortcuts (awss) library is a CLI utility allowing listing,
 starting, stopping and connecting to AWS EC2 instances by Name or ID.
 
-Modules in this library:
+License:
+
+    AWSS - Control and connect to AWS EC2 instances from command line
+    Copyright (C) 2017  Robert Peteuil
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+URL:       https://github.com/robertpeteuil/aws-shortcuts
+Author:    Robert Peteuil
+
+Modules:
 
 core     - Main module providing entry point and core code.
 awsc     - Communicates with AWS services.
 colors   - Determine color capability, define color vars and theme.
 debg     - Debug print functions that execute if debug mode initialized.
-
-URL:       https://github.com/robertpeteuil/aws-shortcuts
-Author:    Robert Peteuil   @RobertPeteuil
 
 """
 from __future__ import print_function
@@ -25,7 +43,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.11'
+__version__ = '0.9.12'
 
 
 def main():
@@ -62,8 +80,8 @@ def parser_setup():
     parser = argparse.ArgumentParser(description="Control AWS instances from"
                                      " the command line with: list, start,"
                                      " stop or ssh.", prog='awss',
-                                     usage="\tawss {command} ( 'NAME' or"
-                                     " '-i ID' ) [ OPTIONS ]\n\t{command} ="
+                                     usage="\tawss {command} [ 'NAME' ] "
+                                     "[ '-i ID' ] [ OPTIONS ]\n\t{command} ="
                                      " list | start | stop | ssh")
     parser.add_argument('-v', '--version', action="version",
                         version="awss {0}".format(__version__))
@@ -77,12 +95,14 @@ def parser_setup():
     # Parser for LIST command
     parser_list = subparsers.add_parser('list', description="List AWS "
                                         "instances from the command line. "
-                                        " 'awss list' will list all instances,"
-                                        " or instances can be specified with "
-                                        "combinations of NAME, instance-id and"
-                                        " current-state.  ex: 'awss list TEST "
+                                        "'awss list' will list instances"
+                                        " specified using combinations of "
+                                        "NAME, instance-id and current-state."
+                                        "  If no specifications are given, "
+                                        " all instances will be listed."
+                                        "  ex: 'awss list TEST "
                                         "-r' will list instances named 'TEST'"
-                                        " that are currently running",
+                                        " that are currently running.",
                                         usage="\tawss list [none] [NAME] [-i "
                                         "ID] [-r] [-s] [OPTIONS]")
     parser_list.add_argument('instname', nargs='?', metavar='NAME',
@@ -100,11 +120,10 @@ def parser_setup():
     parser_list.set_defaults(func=cmd_list)
 
     # Parser for START command
-    parser_start = subparsers.add_parser('start', usage="\tawss start ( [NAME]"
-                                         " [-i ID] ) [-h]",
+    parser_start = subparsers.add_parser('start', usage="\tawss start [NAME]"
+                                         " [-i ID] [-h]",
                                          description="Start an AWS instance"
-                                         " from the command line. Either NAME"
-                                         " or instance-id must be specified.")
+                                         " from the command line.")
     parser_start.add_argument('instname', nargs='?', metavar='NAME',
                               help='specify instance by name')
     parser_start.add_argument('-i', '--id', action="store",
@@ -114,11 +133,10 @@ def parser_setup():
     parser_start.set_defaults(func=cmd_startstop)
 
     # Parser for STOP command
-    parser_stop = subparsers.add_parser('stop', usage="\tawss stop ( [NAME]"
-                                        " [-i ID] ) [-h]",
+    parser_stop = subparsers.add_parser('stop', usage="\tawss stop [NAME]"
+                                        " [-i ID] [-h]",
                                         description="Stop an AWS instance"
-                                        " from the command line. Either NAME"
-                                        " or instance-id must be specified.")
+                                        " from the command line.")
     parser_stop.add_argument('instname', nargs='?', metavar='NAME',
                              help='specify instance by name')
     parser_stop.add_argument('-i', '--id', action="store",
@@ -128,11 +146,10 @@ def parser_setup():
     parser_stop.set_defaults(func=cmd_startstop)
 
     # Parser for SSH command
-    parser_ssh = subparsers.add_parser('ssh', usage="\tawss ssh ( [NAME]"
-                                       " [-i ID] ) [-u USER] [-p] [-h]",
+    parser_ssh = subparsers.add_parser('ssh', usage="\tawss ssh [NAME]"
+                                       " [-i ID] [-u USER] [-p] [-h]",
                                        description="Connect to an AWS i"
-                                       "nstance via ssh. Either NAME "
-                                       "or instance-id must be specified.")
+                                       "nstance via ssh.")
     parser_ssh.add_argument('instname', nargs='?', metavar='NAME',
                             help='specify instance by name')
     parser_ssh.add_argument('-i', '--id', action="store",
