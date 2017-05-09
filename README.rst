@@ -5,7 +5,7 @@ List, start, stop and ssh to AWS instances using Name, ID and wildcards
 -----------------------------------------------------------------------
 
 
-|TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |lang| |PyL|
+|TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |lang|
 
 --------------
 
