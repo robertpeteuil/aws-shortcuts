@@ -5,7 +5,7 @@ List, start, stop and ssh to AWS instances using Name, ID and wildcards
 -----------------------------------------------------------------------
 
 
-|TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |lang| |PyL|
+|TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |lang|
 
 --------------
 
@@ -64,24 +64,26 @@ This utility can be installed with **pip**:
 
 Windows Prereqs
 ---------------
-Because Wiindows does not have a built-in ssh command, using the **awss ssh** command on windows requires:
+Windows does not have a built-in ssh command, so using the **awss ssh** command on windows requires:
 
-- Installation of `PuTTY suite <http://www.putty.org/>`_
+- Installation of `PuTTY Suite <http://www.putty.org/>`_
 
   - use the "Windows Installer", install all options, and include it on your path
 
 - Converting ssh keys from Amazon's ".pem" format to ".ppk" format
 
-  - keys can be converted using the `puttygen utility <http://stackoverflow.com/questions/3190667/convert-pem-to-ppk-file-format>`_ (installed with PuTTY)
+  - keys can be converted using the `puttygen utility <http://stackoverflow.com/questions/3190667/convert-pem-to-ppk-file-format>`_ (installed with PuTTY Suite)
 
-- Powershell must be on the system (installed by default in recent versions of Windows)
+- Powershell (native part of Windows since Windows XP Service Pack 3, and Windows 7)
 
 Configuration
 -------------
 
-**SSH Access Keys** (.pem files)
+**SSH Access Keys** (.pem or .ppk files)
 
 - Keys should be stored in the **.aws** folder in your home directory
+- Unix-type systems must set permission on files with a command such as ``sudo chmod 400 ~/.aws/*.pem``
+- Windows systems must convert files to ".ppk" format, as described in `Windows Prereqs`_
 
 **AWS Credentials** can be stored using *either one of these two methods*:
 
