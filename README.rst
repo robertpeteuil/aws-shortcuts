@@ -1,37 +1,33 @@
-AWS Shortcuts for Command-Line Instance Control
-===============================================
+AWSS - Easily Connect to EC2 Instances from the Shell via Pick-List or Name
+===========================================================================
 
-List, start, stop and ssh to AWS instances using Name, ID and wildcards
------------------------------------------------------------------------
+Connect/start/stop instances via pick-list or Name or List info for all/some/specific instances
+------------------------------------------------------------------------------------------------
 
 
 |TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |lang|
 
 --------------
 
-AWS Shortcuts (awss) allows listing, starting, stopping and connecting to instances by name, partial names with wilcards, or instance-id.  The instance information listed includes: all tags & values, name, current-state, instance-id and image-name.
+AWS Shortcuts (awss) gives you easy and simple control of your instances right from the command line.  
 
-Conecting via SSH on Windows computers is performed by using the command line version of PuTTY, called plink.  On Windows, plink serves as the ssh command, and is run within powershell, so ansi-escape sequences, and colors, are possible.
+- Connect to instances via SSH directly from the shell by selecting it from a list, specifing a name or partial name with wildcards, or instance-id.  
+- List instance information for: all instances, running instances, stopped instances, by name or partial name with wildcards, or instance-id.
+- Start or Stop instances by selected from a list, specifying a name or partial name with wildcards, or instance-id.
 
+This utility retrieves instance information by communicating with the AWS API.  This allows connecting to instances directly from the shell after address changes or when the instance-id, ssh-username, or key are unknown.  AWSS automatically retrieves this info from the AWS API as needed and establishes the connection for you.
 
-Overview
---------
+The pick-list feature allows connection, stopping and starting of instances by simply selecting them from a list.  This is particularly useful when the instance-id is unknown and/or instances don't have tags or names assigned.  If you can identify it from the information displayed for each instance, you can access and control it.
 
-**awss** has the following sub-commands: **list**, **start**, **stop**, and **ssh**.
+AWSS is tested on on Linux, Mac and Windows, with 95% code coverage.  Using the SSH command on Windows has some basic pre-requisites described in the `Windows Prereqs`_ section.
 
-- SSH to an Instance:  **awss ssh NAME**
-
-  - Additional paramters described in `Command Details`_.
-
-- List Instances:  **awss list**
-
-  - Additional paramters described in `Command Details`_.
-
-- Start Instance:  **awss start NAME**
-- Stop Instance:  **awss stop NAME**
 
 Example screenshots
 -------------------
+
+**"awss ssh" with no instance specified -> select from pick-list of running instances**
+
+.. image:: https://cloud.githubusercontent.com/assets/1554603/26036941/363b9bf2-389d-11e7-88ab-3ab0e1d52f30.jpg
 
 **"awss list" - list instance details (tag keys are listed in blue)**
 
@@ -74,7 +70,7 @@ Windows does not have a built-in ssh command, so using the **awss ssh** command 
 
   - keys can be converted using the `puttygen utility <http://stackoverflow.com/questions/3190667/convert-pem-to-ppk-file-format>`_ (installed with PuTTY Suite)
 
-- Powershell (native part of Windows since Windows XP Service Pack 3, and Windows 7)
+- Powershell (native in of Windows since Windows XP Service Pack 3)
 
 Configuration
 -------------
@@ -114,44 +110,44 @@ Configuration
 Command Details
 ---------------
 
-- SSH to Instance: **awss ssh NAME** or **awss ssh -i ID**
+- SSH to Instance: **awss ssh**, **awss ssh NAME** or **awss ssh -i ID**
 
   - typing **awss ssh** without a name or ID will display all running instances
 
-    - this allows the user to select from the list if they can't remember the name.
+    - this allows the user to select from the list if they can't remember the name
     - this can be combined with wilcards, for example **awss ssh U\***  to display
-      a list of instances starting with "U" to select from.
+      a list of instances starting with "U" to select from
 
   - the login-name is automatically calculated based on the image-type of the instance
   - override the calculated login-name **-u USERNAME**
   - connect without PEM keys (if properly configured) **-p**
   - command specific help **awss ssh -h**
 
-- List Instances: **awss list**
+- List Instances: **awss list** (other variations listed below)
 
   - list all instances (default), or use wilcards **awss list D***
   - list running instances **-r** or **--running**
   - list stopped instances **-s** or **--stopped**
   - list instances with specified name **awss list NAME**
   - list instance with specified instance-id **awss list -i ID**
-  - instance-state and NAME may be combined in queries.
+  - instance-state and NAME may be combined in queries
 
     - ex: list instances with NAME currently running: **awss list NAME -r**
 
   - command specific help **awss list -h**
 
-- Start Instance: **awss start NAME** or **awss start -i ID**
+- Start Instance: **awss start**, **awss start NAME** or **awss start -i ID**
 
   - typing **awss start** without a name or ID will display all stopped instances
 
-    - this allows the user to select from the list if they can't remember the name.
+    - this allows the user to select from the list if they can't remember the name
     - this can be combined with wilcards, for example **awss start U\*** to display
-      a list of instances starting with "U" to select from.
+      a list of instances starting with "U" to select from
 
   - start instance by name or instance-id
   - command specific help **awss start -h**
 
-- Stop Instance: **awss stop NAME** or **awss stop -i ID**
+- Stop Instance: **awss stop**, **awss stop NAME** or **awss stop -i ID**
 
   - typing **awss stop** without a name or ID will display all running instances
 
