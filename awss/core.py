@@ -43,7 +43,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.12'
+__version__ = '0.9.12.1'
 
 
 def main():
@@ -439,9 +439,11 @@ def list_tags(tags):
     tags_sorted = sorted(list(tags.items()), key=operator.itemgetter(0))
     tag_sec_spacer = ""
     c = 1
+    ignored_keys = ["Name", "aws:ec2spot:fleet-request-id"]
     pad_col = {1: 38, 2: 49}
     for k, v in tags_sorted:
-        if k != "Name":
+        # if k != "Name":
+        if k not in ignored_keys:
             if c < 3:
                 padamt = pad_col[c]
                 sys.stdout.write("  {2}{0}:{3} {1}".
