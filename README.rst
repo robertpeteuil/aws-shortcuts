@@ -19,11 +19,11 @@ AWSS is extremely useful when the following items are unknown for a target insta
 - The keyfile associated with the SSH account
 
 
-The SSH, Start, and Stop commands allow targeting instances in multiple ways: 
+The SSH, Start, and Stop commands allow targeting instances in multiple ways:
 
 -  Select from a list of instances
 -  Specify an instance Name, or partial Name using wildcards
--  Specify an instance-id  
+-  Specify an instance-id
 
 
 Example screenshots
