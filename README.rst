@@ -1,31 +1,35 @@
-AWSS - Easily Connect to EC2 Instances from the Shell via Pick-List or Name
-===========================================================================
+AWSS - CLI Instance Connection and Control when Instance Details are Unknown
+============================================================================
 
-Connect/start/stop instances via pick-list or Name or List info for all/some/specific instances
-------------------------------------------------------------------------------------------------
+Connect/start/stop instances by selecting target from a list or specifying Name or partial Name
+-----------------------------------------------------------------------------------------------
 
 
 |TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |lang|
 
 --------------
 
-AWS Shortcuts (awss) gives you easy and simple control of your instances right from the command line.  
+Use AWSS to establish SSH connections and control instances without the need to specify IP addresses, instance-ids or Names.  This eliminates the need to leave the CLI to retrieive this information from the Web Portal, allowing you to remain focused on the CLI.
 
-- Connect to instances via SSH directly from the shell by selecting it from a list, specifing a name or partial name with wildcards, or instance-id.  
-- List instance information for: all instances, running instances, stopped instances, by name or partial name with wildcards, or instance-id.
-- Start or Stop instances by selected from a list, specifying a name or partial name with wildcards, or instance-id.
+AWSS is extremely useful when the following items are unknown for a target instance:
 
-This utility retrieves instance information by communicating with the AWS API.  This allows connecting to instances directly from the shell after address changes or when the instance-id, ssh-username, or key are unknown.  AWSS automatically retrieves this info from the AWS API as needed and establishes the connection for you.
+- The current IP address (common with on-demand instances)
+- The instance-id
+- The login-user required for connecting via SSH
+- The keyfile associated with the SSH account
 
-The pick-list feature allows connection, stopping and starting of instances by simply selecting them from a list.  This is particularly useful when the instance-id is unknown and/or instances don't have tags or names assigned.  If you can identify it from the information displayed for each instance, you can access and control it.
 
-AWSS is tested on on Linux, Mac and Windows, with 95% code coverage.  Using the SSH command on Windows has some basic pre-requisites described in the `Windows Prereqs`_ section.
+The SSH, Start, and Stop commands allow targeting instances in multiple ways: 
+
+-  Select from a list of instances
+-  Specify an instance Name, or partial Name using wildcards
+-  Specify an instance-id  
 
 
 Example screenshots
 -------------------
 
-**"awss ssh" with no instance specified -> select from pick-list of running instances**
+**"awss ssh" with no instance specified -> select from list of running instances**
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/26036941/363b9bf2-389d-11e7-88ab-3ab0e1d52f30.jpg
 
@@ -33,7 +37,7 @@ Example screenshots
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/25595372/6c3bd5e2-2e79-11e7-9ebc-4730f93c2cb6.png
 
-**"awss start" using Name with wildcard -> duplicate results -> selecting target from list**
+**"awss start" using Name with wildcard -> list of matching results -> selecting target from list**
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/25595396/84b4ef64-2e79-11e7-922f-d645b007af57.png
 
