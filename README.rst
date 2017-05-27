@@ -1,5 +1,5 @@
-AWSS - CLI Instance Connection and Control when Instance Details are Unknown
-============================================================================
+EC2 CLI Instance Connection and Control when Instance Details are Unknown
+=========================================================================
 
 Connect and Control Instances by Name or Selection from Instance List
 ---------------------------------------------------------------------
@@ -9,7 +9,7 @@ Connect and Control Instances by Name or Selection from Instance List
 
 --------------
 
-Use AWSS to establish SSH connections and control instances without the need to know IP addresses, instance-ids or Names.  This eliminates the need to leave the shell to use the Web Portal to retreive this information.  This eliminates workflow distruption and allows you to remain focused on the shell and the tasks you need to perform.
+Use AWSS to establish SSH connections and control instances without the need to know IP addresses, instance-ids or Names.  This eliminates the need to leave the shell to use the Web Portal to retreive this information, which prevents workflow distruption and allows you to remain focused on the shell and the tasks at hand.
 
 AWSS is extremely useful when the following items are unknown for a target instance:
 
