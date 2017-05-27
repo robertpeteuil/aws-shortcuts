@@ -1,5 +1,5 @@
-AWSS - CLI Instance Connection and Control when Instance Details are Unknown
-============================================================================
+EC2 CLI Instance Connection and Control when Instance Details are Unknown
+=========================================================================
 
 Connect and Control Instances by Name or Selection from Instance List
 ---------------------------------------------------------------------
