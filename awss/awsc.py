@@ -79,8 +79,11 @@ def get_all_aminames(i_info):
 
     """
     for i in i_info:
-        # pylint: disable=maybe-no-member
-        i_info[i]['aminame'] = EC2R.Image(i_info[i]['ami']).name
+        try:
+            # pylint: disable=maybe-no-member
+            i_info[i]['aminame'] = EC2R.Image(i_info[i]['ami']).name
+        except AttributeError:
+            i_info[i]['aminame'] = "Unknown"
     return i_info
 
 
@@ -93,7 +96,10 @@ def get_one_aminame(inst_img_id):
         aminame (str): name of the image.
 
     """
-    aminame = EC2R.Image(inst_img_id).name
+    try:
+        aminame = EC2R.Image(inst_img_id).name
+    except AttributeError:
+        aminame = "Unknown"
     return aminame
 
 
