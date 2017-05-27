@@ -43,7 +43,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.12'
+__version__ = '0.9.12.2'
 
 
 def main():
@@ -229,7 +229,8 @@ def cmd_ssh(options):
     home_dir = expanduser("~")
     if options.user is None:
         tar_aminame = awsc.get_one_aminame(i_info[tar_idx]['ami'])
-        options.user = cmd_ssh_user(tar_aminame)
+        options.user = cmd_ssh_user(tar_aminame,
+                                    i_info[tar_idx]['tag']['Name'])
     else:
         debg.dprint("LoginUser set by user: ", options.user)
     os_spec = {"nt": ["powershell plink", "\\", "ppk"]}
@@ -248,15 +249,18 @@ def cmd_ssh(options):
     subprocess.call(cmd_ssh_run, shell=True)
 
 
-def cmd_ssh_user(tar_aminame):
+def cmd_ssh_user(tar_aminame, inst_name):
     """Calculate instance login-username based on image-name.
 
     Args:
-        tar_aminame (str): name of the image.
+        tar_aminame (str): name of the image instance created with.
+        inst_name (str): name of the instance.
     Returns:
         username (str): name for ssh based on AMI-name.
 
     """
+    if tar_aminame == "Unknown":
+        tar_aminame = inst_name
     # first 5 chars of AMI-name can be anywhere in AMI-Name
     userlu = {"ubunt": "ubuntu", "debia": "admin", "fedor": "root",
               "cento": "centos", "openb": "root"}
@@ -439,9 +443,11 @@ def list_tags(tags):
     tags_sorted = sorted(list(tags.items()), key=operator.itemgetter(0))
     tag_sec_spacer = ""
     c = 1
+    ignored_keys = ["Name", "aws:ec2spot:fleet-request-id"]
     pad_col = {1: 38, 2: 49}
     for k, v in tags_sorted:
-        if k != "Name":
+        # if k != "Name":
+        if k not in ignored_keys:
             if c < 3:
                 padamt = pad_col[c]
                 sys.stdout.write("  {2}{0}:{3} {1}".
