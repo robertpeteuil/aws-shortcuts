@@ -24,13 +24,6 @@ License:
 URL:       https://github.com/robertpeteuil/aws-shortcuts
 Author:    Robert Peteuil
 
-Modules:
-
-core     - Main module providing entry point and core code.
-awsc     - Communicates with AWS services.
-colors   - Determine color capability, define color vars and theme.
-debg     - Debug print functions that execute if debug mode initialized.
-
 """
 from __future__ import print_function
 from builtins import input
@@ -43,7 +36,7 @@ import awss.awsc as awsc
 import awss.debg as debg
 from awss.colors import C_NORM, C_HEAD2, C_TI, C_WARN, C_ERR, C_STAT
 
-__version__ = '0.9.12.2'
+__version__ = '0.9.13'
 
 
 def main():
