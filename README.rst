@@ -1,43 +1,36 @@
 AWSS - CLI Instance Connection and Control when Instance Details are Unknown
 ============================================================================
 
-Connect/start/stop instances by selecting target from a list or specifying Name or partial Name
------------------------------------------------------------------------------------------------
+Connect and Control Instances by Name or Selection from Instance List
+---------------------------------------------------------------------
 
 
 |TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |lang|
 
 --------------
 
-Use AWSS to establish SSH connections and control instances without the need to specify IP addresses, instance-ids or Names.  This eliminates the need to leave the CLI to retrieive this information from the Web Portal, allowing you to remain focused on the CLI.
+Use AWSS to establish SSH connections and control instances without the need to know IP addresses, instance-ids or Names.  This eliminates the need to leave the shell to use the Web Portal to retreive this information.  This eliminates workflow distruption and allows you to remain focused on the shell and the tasks you need to perform.
 
 AWSS is extremely useful when the following items are unknown for a target instance:
 
-- The current IP address (common with on-demand instances)
-- The instance-id
+- The current IP address (changes frequently for on-demand instances)
 - The login-user required for connecting via SSH
 - The keyfile associated with the SSH account
-
-
-The SSH, Start, and Stop commands allow targeting instances in multiple ways:
-
--  Select from a list of instances
--  Specify an instance Name, or partial Name using wildcards
--  Specify an instance-id
+- The instance-id
 
 
 Example screenshots
 -------------------
 
-**"awss ssh" with no instance specified -> select from list of running instances**
+**Running "awss ssh" without specifying any additional info allows you to select from list of running instances**
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/26036941/363b9bf2-389d-11e7-88ab-3ab0e1d52f30.jpg
 
-**"awss list" - list instance details (tag keys are listed in blue)**
+**Running "awss list" will list all instances and their details, including all tags (listed in blue)**
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/25595372/6c3bd5e2-2e79-11e7-9ebc-4730f93c2cb6.png
 
-**"awss start" using Name with wildcard -> list of matching results -> selecting target from list**
+**Running "awss start" with a partial Name (and wildcard), lists matching results and allows selecting the target**
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/25595396/84b4ef64-2e79-11e7-922f-d645b007af57.png
 
@@ -173,15 +166,14 @@ Command Details
 .. |AppVeyor| image:: https://ci.appveyor.com/api/projects/status/1meclb632h49sik7/branch/master?svg=true
    :target: https://ci.appveyor.com/project/robertpeteuil/aws-shortcuts/branch/master
 
+.. |Py ver| image:: https://img.shields.io/pypi/pyversions/awss.svg
+   :target: https://pypi.python.org/pypi/awss/
+
 .. |Codacy Grade| image:: https://api.codacy.com/project/badge/Grade/477279a80d31407a99fb3c3551e066cb
    :target: https://www.codacy.com/app/robertpeteuil/aws-shortcuts?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=robertpeteuil/aws-shortcuts&amp;utm_campaign=Badge_Grade
 
 .. |Codacy Cov| image:: https://api.codacy.com/project/badge/Coverage/477279a80d31407a99fb3c3551e066cb
    :target: https://www.codacy.com/app/robertpeteuil/aws-shortcuts?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=robertpeteuil/aws-shortcuts&amp;utm_campaign=Badge_Coverage
-
-.. |Py ver| image:: https://img.shields.io/pypi/pyversions/awss.svg
-   :target: https://pypi.python.org/pypi/awss/
-   :alt: Python Versions
 
 .. |PyL| image:: https://img.shields.io/pypi/l/awss.svg
    :target: https://pypi.python.org/pypi/awss/
