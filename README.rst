@@ -5,7 +5,7 @@ Connect and Control Instances by Name or Selection from Instance List
 ---------------------------------------------------------------------
 
 
-|TRAVIS| |AppVeyor| |Codacy Grade| |Codacy Cov| |PyPi release| |lang|
+|TRAVIS| |AppVeyor| |Codacy Grade| |Codecov Cov| |PyPi release| |lang|
 
 --------------
 
@@ -174,6 +174,9 @@ Command Details
 
 .. |Codacy Cov| image:: https://api.codacy.com/project/badge/Coverage/477279a80d31407a99fb3c3551e066cb
    :target: https://www.codacy.com/app/robertpeteuil/aws-shortcuts?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=robertpeteuil/aws-shortcuts&amp;utm_campaign=Badge_Coverage
+
+.. |Codecov Cov| image:: https://codecov.io/gh/robertpeteuil/aws-shortcuts/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/robertpeteuil/aws-shortcuts
 
 .. |PyL| image:: https://img.shields.io/pypi/l/awss.svg
    :target: https://pypi.python.org/pypi/awss/
