@@ -1,7 +1,7 @@
-EC2 CLI Instance Connection and Control when Instance Details are Unknown
-=========================================================================
+AWS CLI Shortcuts - Simplified Instance Management
+==================================================
 
-Connect and Control Instances by Name or Selection from Instance List
+Easily List, Control and Connect to Instances directly from the Shell
 ---------------------------------------------------------------------
 
 
@@ -9,28 +9,31 @@ Connect and Control Instances by Name or Selection from Instance List
 
 --------------
 
-Use AWSS to establish SSH connections and control instances without the need to know IP addresses, instance-ids or Names.  This eliminates the need to leave the shell to use the Web Portal to retreive this information, which prevents workflow distruption and allows you to remain focused on the shell and the tasks at hand.
+Identify, control and connect-to instances directly from the command line with AWSS.  It requires no parameters and allows the use of wildcards when specifying instances, making it ideal when minimal instance details are known or multiple instances match known parameters.  In these scenarios, a pick-list is displayed of instances that match the command and parameters specified.  
 
-AWSS is extremely useful when the following items are unknown for a target instance:
+This enables easy identification and selection of desired target instances, and eliminates the need to leave the shell to retrieve information from the Web Portal - preventing workflow disruption and retaining your focus.
 
-- The current IP address (changes frequently for on-demand instances)
-- The login-user required for connecting via SSH
-- The keyfile associated with the SSH account
-- The instance-id
+AWSS is extremely useful in many scenarios, including:
+
+- Connecting to on-demand instances that frequently change state, and thus IP address as well.
+- Connecting to instances where the required login-user is unknown.
+- Connecting to instances where the required key associated with the login-user is unknown.
+- Connecting to instances where the instance-id is unknown.
+- Connecting to instances where 'name' is not set or unique.
 
 
-Example screenshots
+Screenshots
 -------------------
 
-**Running "awss ssh" without specifying any additional info allows you to select from list of running instances**
+**"awss ssh" without any parameters - allowing selection from a list of possible 'ssh' targets**
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/26036941/363b9bf2-389d-11e7-88ab-3ab0e1d52f30.jpg
 
-**Running "awss list" will list all instances and their details, including all tags (listed in blue)**
+**"awss list" - presents a list of all instances, details and all tags**
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/25595372/6c3bd5e2-2e79-11e7-9ebc-4730f93c2cb6.png
 
-**Running "awss start" with a partial Name (and wildcard), lists matching results and allows selecting the target**
+**"awss start" with partial Name and wildcard supplied - allowing selection from a list of possible targets**
 
 .. image:: https://cloud.githubusercontent.com/assets/1554603/25595396/84b4ef64-2e79-11e7-922f-d645b007af57.png
 
