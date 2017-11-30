@@ -90,7 +90,7 @@ Configuration
 
   **{HOME}/.aws/credentials**
 
-  .. code::
+  .. code:: ini
 
     [default]
     aws_access_key_id=AKIAIOSFODNN7EXAMPLE
@@ -98,7 +98,7 @@ Configuration
 
   **{HOME}/.aws/config**
 
-  .. code::
+  .. code:: ini
 
     [default]
     region=us-west-2
