@@ -14,7 +14,6 @@ environment:
     secure: sOKFWMIx8082DQo03X10a0ZPC4LKKAD2ww1kqtGONrBK+6ZSIBiRtOod4+z3+2am
   matrix:
   - TOXENV: py27
-  - TOXENV: py33
   - TOXENV: py34
   - TOXENV: py35
   - TOXENV: py36

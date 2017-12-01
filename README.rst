@@ -41,7 +41,7 @@ Screenshots
 Tested Platforms & Python Versions
 ----------------------------------
 
-Python 2.7, 3.3, 3.4, 3.5, 3.6
+Python 2.7, 3.4, 3.5, 3.6
 
 Platforms:
 
