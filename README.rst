@@ -9,7 +9,7 @@ Easily List, Control and Connect to Instances directly from the Shell
 
 --------------
 
-Identify, control and connect-to instances directly from the command line with AWSS.  It requires no parameters and allows the use of wildcards when specifying instances, making it ideal when minimal instance details are known or multiple instances match known parameters.  In these scenarios, a pick-list is displayed of instances that match the command and parameters specified.  
+Identify, control and connect-to instances directly from the command line with AWSS.  It requires no parameters and allows the use of wildcards when specifying instances, making it ideal when minimal instance details are known or multiple instances match known parameters.  In these scenarios, a pick-list is displayed of instances that match the command and parameters specified.
 
 This enables easy identification and selection of desired target instances, and eliminates the need to leave the shell to retrieve information from the Web Portal - preventing workflow disruption and retaining your focus.
 
