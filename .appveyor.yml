@@ -16,7 +16,6 @@ environment:
   - TOXENV: py27
   - TOXENV: py34
   - TOXENV: py35
-  - TOXENV: py36
   - TOXENV: flake8
   - TOXENV: readme
 cache: .tox
