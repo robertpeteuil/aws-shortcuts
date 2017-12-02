@@ -3,10 +3,6 @@ branches:
   - master
   - develop
 language: python
-before_install:
-- if [[ $TRAVIS_BRANCH == 'develop' ]] && [[ $TRAVIS_OS_NAME = 'osx' ]]; then exit 0; fi
-- if [[ $BREW_PYTHON == 'python' ]]; then sudo /usr/bin/easy_install pip; fi
-- if [[ $BREW_PYTHON == 'python3' ]]; then brew update; brew install $BREW_PYTHON; alias pip='pip3'; fi
 install:
 - pip install --upgrade six
 - pip install codecov
@@ -38,16 +34,6 @@ matrix:
     env: TOXENV=bandit
   - python: 2.7
     env: TOXENV=readme
-  - os: osx
-    language: generic
-    env:
-    - TOXENV=py27
-    - BREW_PYTHON='python'
-  - os: osx
-    language: generic
-    env:
-    - TOXENV=py36
-    - BREW_PYTHON='python3'
 
 after_success:
   - bash <(curl -s https://codecov.io/bash) -e TOXENV || echo "Codecov did not collect coverage reports"
