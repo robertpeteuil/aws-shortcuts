@@ -5,7 +5,7 @@ branches:
 language: python
 before_install:
 - if [[ $TRAVIS_BRANCH == 'develop' ]] && [[ $TRAVIS_OS_NAME = 'osx' ]]; then exit 0; fi
-- if [[ $BREW_PYTHON ]]; then brew update; brew install $BREW_PYTHON; fi
+- if [[ $BREW_PYTHON ]]; then brew update; brew install "$BREW_PYTHON" brew-pip; fi
 install:
 - pip install --upgrade six
 - pip install codecov
