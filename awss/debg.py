@@ -10,7 +10,7 @@ There are two debug-modes:
 License:
 
     AWSS - Control and connect to AWS EC2 instances from command line
-    Copyright (C) 2017  Robert Peteuil
+    Copyright (C) 2017-2018  Robert Peteuil
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
