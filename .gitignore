@@ -8,6 +8,15 @@ __pycache__/
 *.so
 *~
 
+# ide
+.idea/
+.vscode/
+
+# python venv
+venv/
+venv1/
+venv2/
+
 # due to using testing tools
 test.py
 testdata.py
