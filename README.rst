@@ -5,7 +5,7 @@ Easily List, Control and Connect to Instances directly from the Shell
 ---------------------------------------------------------------------
 
 
-|TRAVIS| |AppVeyor| |Codacy Grade| |Codecov Cov| |Dependency| |PyPi release| |lang|
+|TRAVIS| |AppVeyor| |Codacy Grade| |Codecov Cov| |PyPi release| |lang|
 
 --------------
 
@@ -186,6 +186,3 @@ Command Details
 
 .. |lang| image:: https://img.shields.io/badge/language-python-3572A5.svg
    :target: https://github.com/robertpeteuil/aws-shortcuts
-
-.. |Dependency| image:: https://gemnasium.com/badges/github.com/robertpeteuil/aws-shortcuts.svg
-   :target: https://gemnasium.com/github.com/robertpeteuil/aws-shortcuts
